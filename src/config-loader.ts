@@ -258,7 +258,8 @@ export function mergeAgentConfigs(
           console.warn(
             `[micode-beads] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
           );
-          const { model: _ignored, ...safeOverrides } = userOverride;
+          const safeOverrides = { ...userOverride };
+          delete safeOverrides.model;
           finalConfig = { ...finalConfig, ...safeOverrides };
         }
       } else {
