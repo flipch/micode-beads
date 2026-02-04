@@ -52,12 +52,16 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish to npm
-        if: steps.published.outputs.published != 'true' && secrets.NPM_TOKEN != ''
+      - name: Publish to npm (OIDC trusted publishing)
+        if: steps.published.outputs.published != 'true' && vars.NPM_PUBLISH_OIDC == 'true'
+        run: npm publish --provenance --access public --ignore-scripts
+
+      - name: Publish to npm (token)
+        if: steps.published.outputs.published != 'true' && vars.NPM_PUBLISH_OIDC != 'true' && secrets.NPM_TOKEN != ''
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public --ignore-scripts
 
-      - name: Publish skipped (missing token)
-        if: steps.published.outputs.published != 'true' && secrets.NPM_TOKEN == ''
-        run: echo "NPM_TOKEN is not set. Add it in repo secrets to enable publishing."
+      - name: Publish skipped (no auth)
+        if: steps.published.outputs.published != 'true' && vars.NPM_PUBLISH_OIDC != 'true' && secrets.NPM_TOKEN == ''
+        run: echo "No publish auth configured. Set vars.NPM_PUBLISH_OIDC=true for OIDC or add NPM_TOKEN."
