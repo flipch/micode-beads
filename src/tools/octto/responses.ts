@@ -2,7 +2,6 @@
 import { tool } from "@opencode-ai/plugin/tool";
 
 import { type SessionStore, STATUSES } from "../../octto/session";
-
 import type { OcttoTools } from "./types";
 
 export function createResponseTools(sessions: SessionStore): OcttoTools {

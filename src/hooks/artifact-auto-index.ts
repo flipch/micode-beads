@@ -1,13 +1,16 @@
 // src/hooks/artifact-auto-index.ts
 // Auto-indexes artifacts when written to thoughts/ directories
 
-import type { PluginInput } from "@opencode-ai/plugin";
 import { readFileSync } from "node:fs";
+
+import type { PluginInput } from "@opencode-ai/plugin";
+
 import { getArtifactIndex } from "../tools/artifact-index";
 import { log } from "../utils/logger";
 
-const LEDGER_PATH_PATTERN = /thoughts\/ledgers\/CONTINUITY_(.+)\.md$/;
-const PLAN_PATH_PATTERN = /thoughts\/shared\/plans\/(.+)\.md$/;
+// Use [^/]+ instead of .+ to prevent ReDoS (polynomial backtracking)
+const LEDGER_PATH_PATTERN = /thoughts\/ledgers\/CONTINUITY_([^/]+)\.md$/;
+const PLAN_PATH_PATTERN = /thoughts\/shared\/plans\/([^/]+)\.md$/;
 
 export function parseLedger(content: string, filePath: string, sessionName: string) {
   const goalMatch = content.match(/## Goal\n([^\n]+)/);

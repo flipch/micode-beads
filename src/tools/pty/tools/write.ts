@@ -1,5 +1,6 @@
 // src/tools/pty/tools/write.ts
 import { tool } from "@opencode-ai/plugin/tool";
+
 import type { PTYManager } from "../manager";
 
 const DESCRIPTION = `Sends input data to an active PTY session.

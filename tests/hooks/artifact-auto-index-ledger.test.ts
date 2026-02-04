@@ -1,4 +1,5 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
+
 import { parseLedger } from "../../src/hooks/artifact-auto-index";
 
 describe("artifact-auto-index ledger parsing", () => {

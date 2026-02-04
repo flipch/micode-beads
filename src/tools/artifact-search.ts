@@ -1,5 +1,6 @@
 // src/tools/artifact-search.ts
 import { tool } from "@opencode-ai/plugin/tool";
+
 import { getArtifactIndex } from "./artifact-index";
 
 export const artifact_search = tool({

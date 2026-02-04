@@ -1,7 +1,8 @@
 // src/tools/pty/manager.ts
-import { spawn, type IPty } from "bun-pty";
+import { type IPty, spawn } from "bun-pty";
+
 import { RingBuffer } from "./buffer";
-import type { PTYSession, PTYSessionInfo, SpawnOptions, ReadResult, SearchResult } from "./types";
+import type { PTYSession, PTYSessionInfo, ReadResult, SearchResult, SpawnOptions } from "./types";
 
 function generateId(): string {
   const hex = Array.from(crypto.getRandomValues(new Uint8Array(4)))

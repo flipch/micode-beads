@@ -1,4 +1,5 @@
 import { spawn, which } from "bun";
+
 import { tool } from "@opencode-ai/plugin/tool";
 
 /**

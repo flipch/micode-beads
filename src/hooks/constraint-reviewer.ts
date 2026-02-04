@@ -113,7 +113,8 @@ export function createConstraintReviewerHook(ctx: PluginInput, reviewFn: ReviewF
         .map((p) => p.text)
         .join(" ");
 
-      const overrideMatch = text.match(/^override:\s*(.+)$/im);
+      // Use \S.* instead of .+ to prevent ReDoS (polynomial backtracking with whitespace)
+      const overrideMatch = text.match(/^override:\s*(\S.*)$/im);
       if (overrideMatch) {
         const state = getSessionState(input.sessionID);
         state.overrideActive = true;

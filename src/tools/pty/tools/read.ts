@@ -1,5 +1,6 @@
 // src/tools/pty/tools/read.ts
 import { tool } from "@opencode-ai/plugin/tool";
+
 import type { PTYManager } from "../manager";
 
 const DESCRIPTION = `Reads output from a PTY session's buffer.

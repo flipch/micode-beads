@@ -3,7 +3,6 @@
 import type { Answer, QuestionType, SessionStore } from "../../octto/session";
 import { BRANCH_STATUSES, type BrainstormState, type StateStore } from "../../octto/state";
 import { log } from "../../utils/logger";
-
 import type { OpencodeClient } from "./types";
 
 // Agent name constant - matches the agent exported from src/agents/probe.ts
