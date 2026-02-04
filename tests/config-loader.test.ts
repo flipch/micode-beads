@@ -6,6 +6,9 @@ import { join } from "node:path";
 
 import { loadMicodeConfig, loadModelContextLimits, mergeAgentConfigs } from "../src/config-loader";
 
+const BEADS_CONFIG_FILENAME = "micode-beads.json";
+const LEGACY_CONFIG_FILENAME = "micode.json";
+
 describe("config-loader", () => {
   let testConfigDir: string;
 
@@ -19,13 +22,57 @@ describe("config-loader", () => {
     rmSync(testConfigDir, { recursive: true, force: true });
   });
 
-  it("should return null when micode.json does not exist", async () => {
+  it("should return null when no config exists", async () => {
     const config = await loadMicodeConfig(testConfigDir);
     expect(config).toBeNull();
   });
 
-  it("should load agent model overrides from micode.json", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+  it("should fall back to micode.json when micode-beads.json is missing", async () => {
+    const legacyPath = join(testConfigDir, LEGACY_CONFIG_FILENAME);
+    writeFileSync(
+      legacyPath,
+      JSON.stringify({
+        agents: {
+          commander: { model: "openai/gpt-4o" },
+        },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config).not.toBeNull();
+    expect(config?.agents?.commander?.model).toBe("openai/gpt-4o");
+  });
+
+  it("should prefer micode-beads.json over micode.json", async () => {
+    const beadsPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    const legacyPath = join(testConfigDir, LEGACY_CONFIG_FILENAME);
+
+    writeFileSync(
+      legacyPath,
+      JSON.stringify({
+        agents: {
+          commander: { model: "openai/gpt-4o" },
+        },
+      }),
+    );
+
+    writeFileSync(
+      beadsPath,
+      JSON.stringify({
+        agents: {
+          commander: { model: "anthropic/claude-opus-4-5" },
+        },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.agents?.commander?.model).toBe("anthropic/claude-opus-4-5");
+  });
+
+  it("should load agent model overrides from micode-beads.json", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -45,7 +92,7 @@ describe("config-loader", () => {
   });
 
   it("should return null for invalid JSON", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(configPath, "{ invalid json }");
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -53,7 +100,7 @@ describe("config-loader", () => {
   });
 
   it("should handle empty agents object", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(configPath, JSON.stringify({ agents: {} }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -63,7 +110,7 @@ describe("config-loader", () => {
   });
 
   it("should only allow safe properties (model, temperature, maxTokens)", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -91,7 +138,7 @@ describe("config-loader", () => {
   });
 
   it("should handle agents: null", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(configPath, JSON.stringify({ agents: null }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -101,7 +148,7 @@ describe("config-loader", () => {
   });
 
   it("should handle config with no agents key", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(configPath, JSON.stringify({ someOtherKey: "value" }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -111,7 +158,7 @@ describe("config-loader", () => {
   });
 
   it("should handle non-object agent entries", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -280,8 +327,8 @@ describe("loadMicodeConfig - compactionThreshold", () => {
     rmSync(testConfigDir, { recursive: true, force: true });
   });
 
-  it("should load compactionThreshold from micode.json", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+  it("should load compactionThreshold from micode-beads.json", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -296,7 +343,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should handle compactionThreshold with other config", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -314,7 +361,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should ignore invalid compactionThreshold values", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -328,7 +375,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should ignore compactionThreshold outside valid range (0-1)", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -342,7 +389,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should ignore negative compactionThreshold", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -472,8 +519,8 @@ describe("loadMicodeConfig - fragments", () => {
     rmSync(testConfigDir, { recursive: true, force: true });
   });
 
-  it("should load fragments from micode.json", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+  it("should load fragments from micode-beads.json", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -492,7 +539,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should handle empty fragments object", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(configPath, JSON.stringify({ fragments: {} }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -501,7 +548,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should filter out non-string values in fragment arrays", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -517,7 +564,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should filter out empty strings from fragments", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -533,7 +580,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should skip non-array fragment values", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(
       configPath,
       JSON.stringify({

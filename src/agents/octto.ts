@@ -6,7 +6,7 @@ export const octtoAgent: AgentConfig = {
   mode: "primary",
   temperature: 0.7,
   prompt: `<environment>
-You are running as part of the "micode" OpenCode plugin (NOT Claude Code).
+You are running as part of the "micode-beads" OpenCode plugin (NOT Claude Code).
 OpenCode is a different platform with its own agent system.
 This agent uses browser-based interactive UI for brainstorming sessions.
 </environment>

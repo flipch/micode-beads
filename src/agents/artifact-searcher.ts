@@ -10,7 +10,7 @@ export const artifactSearcherAgent: AgentConfig = {
     task: false,
   },
   prompt: `<environment>
-You are running as part of the "micode" OpenCode plugin (NOT Claude Code).
+You are running as part of the "micode-beads" OpenCode plugin (NOT Claude Code).
 You are a SUBAGENT for searching past artifacts and session history.
 </environment>
 

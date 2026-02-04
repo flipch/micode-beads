@@ -1,7 +1,7 @@
 {
-  "name": "micode",
-  "version": "0.9.1",
-  "description": "OpenCode plugin with Brainstorm-Research-Plan-Implement workflow",
+  "name": "micode-beads",
+  "version": "0.1.0",
+  "description": "OpenCode plugin with Brainstorm-Plan-Implement workflow + Beads task tracking",
   "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "src/index.ts",
@@ -27,17 +27,19 @@
     "plugin",
     "research",
     "plan",
-    "implement"
+    "implement",
+    "beads",
+    "task-tracking"
   ],
-  "author": "vtemian",
+  "author": "flipch",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vtemian/micode.git"
+    "url": "git+https://github.com/flipch/micode-beads.git"
   },
-  "homepage": "https://github.com/vtemian/micode#readme",
+  "homepage": "https://github.com/flipch/micode-beads#readme",
   "bugs": {
-    "url": "https://github.com/vtemian/micode/issues"
+    "url": "https://github.com/flipch/micode-beads/issues"
   },
   "dependencies": {
     "@opencode-ai/plugin": "1.1.23",

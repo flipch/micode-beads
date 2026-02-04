@@ -129,9 +129,9 @@ export function warnUnknownAgents(fragmentAgents: string[], knownAgents: Set<str
     if (!knownAgents.has(agent)) {
       const closest = findClosestAgent(agent, knownAgents);
       if (closest) {
-        warnings.push(`[micode] Unknown agent "${agent}" in fragments config. Did you mean "${closest}"?`);
+        warnings.push(`[micode-beads] Unknown agent "${agent}" in fragments config. Did you mean "${closest}"?`);
       } else {
-        warnings.push(`[micode] Unknown agent "${agent}" in fragments config.`);
+        warnings.push(`[micode-beads] Unknown agent "${agent}" in fragments config.`);
       }
     }
   }

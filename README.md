@@ -1,9 +1,9 @@
-# micode
+# micode-beads
 
-[![CI](https://github.com/vtemian/micode/actions/workflows/ci.yml/badge.svg)](https://github.com/vtemian/micode/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/micode.svg)](https://www.npmjs.com/package/micode)
+[![CI](https://github.com/flipch/micode-beads/actions/workflows/ci.yml/badge.svg)](https://github.com/flipch/micode-beads/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/micode-beads.svg)](https://www.npmjs.com/package/micode-beads)
 
-OpenCode plugin with structured Brainstorm → Plan → Implement workflow and session continuity.
+OpenCode plugin with structured Brainstorm → Plan → Implement workflow, Beads task tracking, and session continuity.
 
 https://github.com/user-attachments/assets/85236ad3-e78a-4ff7-a840-620f6ea2f512
 
@@ -12,10 +12,21 @@ https://github.com/user-attachments/assets/85236ad3-e78a-4ff7-a840-620f6ea2f512
 Add to `~/.config/opencode/opencode.json`:
 
 ```json
-{ "plugin": ["micode"] }
+{ "plugin": ["micode-beads"] }
 ```
 
 Then run `/init` to generate `ARCHITECTURE.md` and `CODE_STYLE.md`.
+
+### Beads Setup
+
+Install Beads and initialize it in your project so tasks can be tracked:
+
+```bash
+brew install beads
+bd init
+```
+
+Ensure `bd` is on your PATH. The planner will create Beads tasks and the implementer will close them after tests pass.
 
 ## Workflow
 
@@ -29,10 +40,10 @@ Brainstorm → Plan → Implement
 Refine ideas into designs through collaborative questioning. Fires research subagents in parallel. Output: `thoughts/shared/designs/YYYY-MM-DD-{topic}-design.md`
 
 ### Plan  
-Transform designs into implementation plans with bite-sized tasks (2-5 min each), exact file paths, and TDD workflow. Output: `thoughts/shared/plans/YYYY-MM-DD-{topic}.md`
+Transform designs into implementation plans with bite-sized tasks (2-5 min each), exact file paths, and TDD workflow. Syncs tasks into Beads (epic + subtasks) and embeds Beads IDs in the plan. Output: `thoughts/shared/plans/YYYY-MM-DD-{topic}.md`
 
 ### Implement
-Execute in git worktree for isolation. The **Executor** orchestrates implementer→reviewer cycles with parallel execution via fire-and-check pattern.
+Execute in git worktree for isolation. The **Executor** orchestrates implementer→reviewer cycles with parallel execution via fire-and-check pattern, using `bd ready` to pick tasks and `bd close` on success.
 
 ### Session Continuity
 Maintain context across sessions with structured compaction. Run `/ledger` to create/update `thoughts/ledgers/CONTINUITY_{session}.md`.
@@ -91,20 +102,20 @@ Maintain context across sessions with structured compaction. Run `/ledger` to cr
 
 ### Model Configuration
 
-micode reads your default model from `opencode.json`:
+micode-beads reads your default model from `opencode.json`:
 
 ```json
 {
   "model": "github-copilot/gpt-5-mini",
-  "plugin": ["micode"]
+  "plugin": ["micode-beads"]
 }
 ```
 
-All micode agents will use this model automatically.
+All micode-beads agents will use this model automatically.
 
-### micode.json
+### micode-beads.json
 
-Create `~/.config/opencode/micode.json` for micode-specific settings:
+Create `~/.config/opencode/micode-beads.json` for micode-beads-specific settings:
 
 ```json
 {
@@ -122,6 +133,8 @@ Create `~/.config/opencode/micode.json` for micode-specific settings:
 }
 ```
 
+If `micode-beads.json` is missing, the plugin falls back to `micode.json` for compatibility.
+
 #### Options
 
 | Option | Type | Description |
@@ -133,7 +146,7 @@ Create `~/.config/opencode/micode.json` for micode-specific settings:
 
 #### Model Resolution Priority
 
-1. Per-agent override in `micode.json` (highest)
+1. Per-agent override in `micode-beads.json` (highest)
 2. Default model from `opencode.json` `"model"` field
 3. Plugin default (fallback)
 
@@ -156,13 +169,13 @@ Use `"model": "github-copilot/gpt-5-mini"` (not `github/copilot:gpt-5-mini`).
 ## Development
 
 ```bash
-git clone git@github.com:vtemian/micode.git ~/.micode
-cd ~/.micode && bun install && bun run build
+git clone git@github.com:flipch/micode-beads.git ~/.micode-beads
+cd ~/.micode-beads && bun install && bun run build
 ```
 
 ```json
 // Use local path
-{ "plugin": ["~/.micode"] }
+{ "plugin": ["~/.micode-beads"] }
 ```
 
 ### Release
@@ -182,11 +195,11 @@ git push --follow-tags
 6. **Continuous verification** - Implementer + Reviewer per task
 7. **Session continuity** - Never lose context
 
-## micode vs oh-my-opencode
+## micode-beads vs oh-my-opencode
 
 Both are OpenCode plugins, but with different philosophies:
 
-| Aspect | micode | oh-my-opencode |
+| Aspect | micode-beads | oh-my-opencode |
 |--------|--------|----------------|
 | **Philosophy** | Opinionated workflow (brainstorm→plan→implement) | Batteries-included framework |
 | **Agent Design** | Role-based (Brainstormer, Planner, Executor) | Greek mythology theme (Sisyphus, Atlas, Prometheus) |
@@ -196,13 +209,14 @@ Both are OpenCode plugins, but with different philosophies:
 | **Workflow** | TDD-enforced with adaptation over escalation | Category-based delegation (visual-engineering, ultrabrain) |
 | **Configuration** | Focused options | Extensive (34 hooks, 11 agents, fallback chains) |
 
-### When to Choose micode
+### When to Choose micode-beads
 
 - You want a **structured brainstorm→plan→implement workflow**
 - You prefer **TDD-driven implementation** with test-first development
 - You need **project-specific pattern enforcement** via mindmodel
 - You want **high parallelism on granular tasks** (10-20 concurrent micro-tasks)
 - You value **session continuity** via structured ledgers
+- You want **Beads-backed task tracking** across long-running work
 
 ### When to Choose oh-my-opencode
 

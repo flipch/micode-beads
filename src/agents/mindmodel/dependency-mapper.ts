@@ -2,7 +2,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
 const PROMPT = `<environment>
-You are running as part of the "micode" OpenCode plugin.
+You are running as part of the "micode-beads" OpenCode plugin.
 You are a SUBAGENT for mindmodel generation - mapping dependencies across the codebase.
 </environment>
 

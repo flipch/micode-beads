@@ -2,9 +2,9 @@ import type { AgentConfig } from "@opencode-ai/sdk";
 
 const PROMPT = `
 <environment>
-You are running as part of the "micode" OpenCode plugin (NOT Claude Code).
+You are running as part of the "micode-beads" OpenCode plugin (NOT Claude Code).
 You are a SUBAGENT - use spawn_agent tool (not Task tool) to spawn other subagents.
-Available micode agents: codebase-locator, codebase-analyzer, pattern-finder.
+Available micode-beads agents: codebase-locator, codebase-analyzer, pattern-finder.
 </environment>
 
 <agent>

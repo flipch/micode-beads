@@ -90,16 +90,23 @@ export interface MicodeConfig {
 }
 
 /**
- * Load micode.json from ~/.config/opencode/micode.json
+ * Load micode-beads.json from ~/.config/opencode/micode-beads.json
+ * Falls back to micode.json for compatibility
  * Returns null if file doesn't exist or is invalid JSON
  * @param configDir - Optional override for config directory (for testing)
  */
 export async function loadMicodeConfig(configDir?: string): Promise<MicodeConfig | null> {
   const baseDir = configDir ?? join(homedir(), ".config", "opencode");
-  const configPath = join(baseDir, "micode.json");
+  const configPath = join(baseDir, "micode-beads.json");
+  const legacyPath = join(baseDir, "micode.json");
 
   try {
-    const content = await readFile(configPath, "utf-8");
+    let content: string;
+    try {
+      content = await readFile(configPath, "utf-8");
+    } catch {
+      content = await readFile(legacyPath, "utf-8");
+    }
     const parsed = JSON.parse(content) as Record<string, unknown>;
 
     const result: MicodeConfig = {};
@@ -205,7 +212,7 @@ export function loadModelContextLimits(configDir?: string): Map<string, number> 
  * Invalid models are logged and skipped (agent uses opencode default)
  *
  * Model resolution priority:
- * 1. Per-agent override in micode.json (highest)
+ * 1. Per-agent override in micode-beads.json (highest)
  * 2. Default model from opencode.json "model" field
  * 3. Plugin default (hardcoded in agent definitions)
  */
@@ -239,7 +246,7 @@ export function mergeAgentConfigs(
       finalConfig = { ...finalConfig, model: opencodeDefaultModel };
     }
 
-    // Apply user overrides from micode.json (highest priority)
+    // Apply user overrides from micode-beads.json (highest priority)
     if (userOverride) {
       if (userOverride.model) {
         if (isValidModel(userOverride.model)) {
@@ -248,9 +255,9 @@ export function mergeAgentConfigs(
         } else {
           // Model is invalid - log warning and apply other overrides only
           const fallbackModel = finalConfig.model || "plugin default";
-          console.warn(
-            `[micode] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
-          );
+            console.warn(
+              `[micode-beads] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
+            );
           const { model: _ignored, ...safeOverrides } = userOverride;
           finalConfig = { ...finalConfig, ...safeOverrides };
         }
@@ -299,7 +306,7 @@ export function validateAgentModels(userConfig: MicodeConfig, providers: Provide
     const trimmedModel = override.model.trim();
     if (!trimmedModel) {
       const { model: _removed, ...otherProps } = override;
-      console.warn(`[micode] Empty model for agent "${agentName}". Using default model.`);
+      console.warn(`[micode-beads] Empty model for agent "${agentName}". Using default model.`);
       if (Object.keys(otherProps).length > 0) {
         validatedAgents[agentName] = otherProps;
       }
@@ -324,7 +331,7 @@ export function validateAgentModels(userConfig: MicodeConfig, providers: Provide
     } else {
       // Remove invalid model but keep other properties
       const { model: _removed, ...otherProps } = override;
-      console.warn(`[micode] Model "${override.model}" not found for agent "${agentName}". Using default model.`);
+      console.warn(`[micode-beads] Model "${override.model}" not found for agent "${agentName}". Using default model.`);
       if (Object.keys(otherProps).length > 0) {
         validatedAgents[agentName] = otherProps;
       }

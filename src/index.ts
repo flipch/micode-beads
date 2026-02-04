@@ -71,12 +71,12 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
   // Validate external tool dependencies at startup
   const astGrepStatus = await checkAstGrepAvailable();
   if (!astGrepStatus.available) {
-    console.warn(`[micode] ${astGrepStatus.message}`);
+    console.warn(`[micode-beads] ${astGrepStatus.message}`);
   }
 
   const btcaStatus = await checkBtcaAvailable();
   if (!btcaStatus.available) {
-    console.warn(`[micode] ${btcaStatus.message}`);
+    console.warn(`[micode-beads] ${btcaStatus.message}`);
   }
 
   // Load user config for agent overrides and feature flags
@@ -119,7 +119,7 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
   const internalSessions = new Set<string>();
 
   // Mindmodel injector hook - matches tasks to patterns via keywords and injects them
-  // Feature-flagged: set features.mindmodelInjection=true in micode.json to enable
+  // Feature-flagged: set features.mindmodelInjection=true in micode-beads.json to enable
   const mindmodelInjectorHook = userConfig?.features?.mindmodelInjection ? createMindmodelInjectorHook(ctx) : null;
 
   // Mindmodel lookup tool - agents call this when they need coding patterns
