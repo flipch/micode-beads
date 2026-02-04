@@ -194,13 +194,14 @@ cd ~/.micode-beads && bun install && bun run build
 Release checklist:
 
 - Ensure npm Trusted Publishing is set for `flipch/micode-beads` and GitHub repo variable `NPM_PUBLISH_OIDC=true` exists.
+- Merge the Release Please PR when you want to cut a release (it bumps version + changelog + tag).
 - Run tests and build: `bin/bun test` and `bin/bun run build`.
 - Bump version (creates commit + tag): `bin/bun run version:patch` (or `version:minor`, `version:major`).
 - Push commit and tag: `git push origin main --follow-tags`.
 - Create a GitHub Release for the tag (this triggers npm publish via OIDC).
 - Verify the version appears on npm.
 
-Semver bump commands:
+Manual semver bump commands (optional):
 
 ```bash
 bin/bun run version:patch
