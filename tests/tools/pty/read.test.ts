@@ -1,5 +1,6 @@
 // tests/tools/pty/read.test.ts
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+
 import { PTYManager } from "../../../src/tools/pty/manager";
 import { createPtyReadTool } from "../../../src/tools/pty/tools/read";
 import { createPtySpawnTool } from "../../../src/tools/pty/tools/spawn";

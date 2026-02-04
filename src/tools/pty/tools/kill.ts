@@ -1,5 +1,6 @@
 // src/tools/pty/tools/kill.ts
 import { tool } from "@opencode-ai/plugin/tool";
+
 import type { PTYManager } from "../manager";
 
 const DESCRIPTION = `Terminates a PTY session and optionally cleans up its buffer.

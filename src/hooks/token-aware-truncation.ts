@@ -1,4 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin";
+
 import { config } from "../utils/config";
 
 // Tools that benefit from truncation

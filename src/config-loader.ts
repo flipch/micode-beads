@@ -255,9 +255,9 @@ export function mergeAgentConfigs(
         } else {
           // Model is invalid - log warning and apply other overrides only
           const fallbackModel = finalConfig.model || "plugin default";
-            console.warn(
-              `[micode-beads] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
-            );
+          console.warn(
+            `[micode-beads] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
+          );
           const { model: _ignored, ...safeOverrides } = userOverride;
           finalConfig = { ...finalConfig, ...safeOverrides };
         }

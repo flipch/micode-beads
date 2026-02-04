@@ -1,5 +1,6 @@
 // tests/tools/pty/kill.test.ts
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+
 import { PTYManager } from "../../../src/tools/pty/manager";
 import { createPtyKillTool } from "../../../src/tools/pty/tools/kill";
 import { createPtySpawnTool } from "../../../src/tools/pty/tools/spawn";
