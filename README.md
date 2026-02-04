@@ -7,6 +7,17 @@ OpenCode plugin with structured Brainstorm → Plan → Implement workflow, Bead
 
 https://github.com/user-attachments/assets/85236ad3-e78a-4ff7-a840-620f6ea2f512
 
+## Fork Notice
+
+This is a fork of https://github.com/vtemian/micode.
+
+Key differences from upstream:
+
+- Beads integration: planner creates epics/subtasks, executor uses `bd ready`, implementer closes tasks.
+- Config file name: `~/.config/opencode/micode-beads.json` (falls back to `micode.json`).
+- Hermit environment included with `bin/bun` and `bin/bd` for reproducible tooling.
+- Release flow: publish on GitHub Release using npm Trusted Publishing (OIDC).
+
 ## Quick Start
 
 Add to `~/.config/opencode/opencode.json`:
