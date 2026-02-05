@@ -195,6 +195,7 @@ Release checklist:
 
 - Ensure npm Trusted Publishing is set for `flipch/micode-beads` and GitHub repo variable `NPM_PUBLISH_OIDC=true` exists.
 - Ensure no repository/environment secret injects npm auth (`NPM_TOKEN` or `NODE_AUTH_TOKEN`), since publishing is OIDC-only.
+- Ensure the publish runner uses npm CLI `>=11.5.1` (required for npm trusted publishing with OIDC).
 - Merge the Release Please PR when you want to cut a release (it bumps version + changelog + tag).
 - Run tests and build: `bin/bun test` and `bin/bun run build`.
 - Bump version (creates commit + tag): `bin/bun run version:patch` (or `version:minor`, `version:major`).
