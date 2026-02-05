@@ -128,6 +128,24 @@ export const config = {
   },
 
   /**
+   * Preference system settings
+   */
+  preferences: {
+    /** Global preferences filename (relative to config dir) */
+    globalFile: "preferences.yaml",
+    /** Project preferences filename (relative to project .micode/) */
+    projectFile: "preferences.yaml",
+    /** Project preferences directory (relative to project root) */
+    projectDir: ".micode",
+    /** Maximum tokens for preference injection into system prompts */
+    maxInjectionTokens: 2000,
+    /** Cache TTL for loaded preferences (ms) */
+    cacheTtlMs: 30_000,
+    /** Default methodology when none configured */
+    defaultMethodology: "default",
+  },
+
+  /**
    * Mindmodel v2 settings
    */
   mindmodel: {
