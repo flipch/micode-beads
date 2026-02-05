@@ -1,8 +1,8 @@
 # Development Tasks: Preference System and Orchestration Enhancement
 
 **Feature ID**: preference-system-and-orchestration
-**Status**: Not Started
-**Progress**: 10% (2 of 19 tasks)
+**Status**: In Progress
+**Progress**: 15% (3 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -72,6 +72,18 @@ A unified preference system for micode-beads that enables developers to declare,
         - [comments] `tests/preferences/types.test.ts:1` has file path comment `// tests/preferences/types.test.ts` -- obvious narration. Remove it.
     - **Guidance**: Remove 4 comments: (1) delete line 1 of `src/preferences/types.ts` (file path comment), (2) in line 18 of `src/preferences/types.ts` change the JSDoc to `/** Category type: built-in or custom string for extensibility */`, (3) in line 32 change the JSDoc to `/** Core preference interface -- each preference belongs to exactly one category */`, (4) delete line 1 of `tests/preferences/types.test.ts` (file path comment). Then amend the existing commit.
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
+
 - [x] **T11**: Add preference configuration constants to config utility `[complexity:simple]`
 
     **Reference**: [design.md#311-config-constants-updates](design.md#311-config-constants-updates)
@@ -98,9 +110,21 @@ A unified preference system for micode-beads that enables developers to declare,
         - [comments] Issues found in T1 files (see T1 review feedback above). T11 code itself (`src/utils/config.ts`) has no comment violations -- JSDoc comments on config constants are appropriate.
     - **Guidance**: Fix T1 comment issues only. T11 implementation is correct and needs no changes. Both tasks share a single commit, so the fix requires amending the commit after correcting T1 files.
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | N/A |
+    | Commit | PASS |
+    | Comments | PASS |
+
 ### Group 2: Domain Modules (Depend on T1 Only)
 
-- [ ] **T2**: Implement preference store with YAML persistence and caching `[complexity:medium]`
+- [x] **T2**: Implement preference store with YAML persistence and caching `[complexity:medium]`
 
     **Reference**: [design.md#32-preference-storage](design.md#32-preference-storage)
 
@@ -108,19 +132,26 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/preferences/store.ts` exists with all exported functions: `loadGlobalPreferences`, `loadProjectPreferences`, `loadAllPreferences`, `saveGlobalPreferences`, `saveProjectPreferences`, `addPreference`, `updatePreference`, `deletePreference`
-    - [ ] Global preferences loaded from `~/.config/opencode/preferences.yaml` path
-    - [ ] Project preferences loaded from `{projectDir}/.micode/preferences.yaml` path
-    - [ ] YAML parsing uses the `yaml` package (existing dependency)
-    - [ ] Valibot validation applied at file load boundary using `PreferenceStoreSchema`
-    - [ ] Missing files handled gracefully -- returns empty array, no errors (BR-05)
-    - [ ] Invalid YAML files handled gracefully -- returns empty array with warning logged
-    - [ ] In-memory cache with TTL (30s default from config constants) invalidated on write operations
-    - [ ] `addPreference` generates IDs in format `pref-{8-char-uuid-slice}` using `crypto.randomUUID()`
-    - [ ] `addPreference` auto-sets `createdAt` and `updatedAt` timestamps
-    - [ ] `updatePreference` preserves `createdAt`, updates `updatedAt`
-    - [ ] `deletePreference` returns boolean indicating success
-    - [ ] Preference files are written in human-readable YAML format (NFR-04, NFR-06)
+    - [x] File `src/preferences/store.ts` exists with all exported functions: `loadGlobalPreferences`, `loadProjectPreferences`, `loadAllPreferences`, `saveGlobalPreferences`, `saveProjectPreferences`, `addPreference`, `updatePreference`, `deletePreference`
+    - [x] Global preferences loaded from `~/.config/opencode/preferences.yaml` path
+    - [x] Project preferences loaded from `{projectDir}/.micode/preferences.yaml` path
+    - [x] YAML parsing uses the `yaml` package (existing dependency)
+    - [x] Valibot validation applied at file load boundary using `PreferenceStoreSchema`
+    - [x] Missing files handled gracefully -- returns empty array, no errors (BR-05)
+    - [x] Invalid YAML files handled gracefully -- returns empty array with warning logged
+    - [x] In-memory cache with TTL (30s default from config constants) invalidated on write operations
+    - [x] `addPreference` generates IDs in format `pref-{8-char-uuid-slice}` using `crypto.randomUUID()`
+    - [x] `addPreference` auto-sets `createdAt` and `updatedAt` timestamps
+    - [x] `updatePreference` preserves `createdAt`, updates `updatedAt`
+    - [x] `deletePreference` returns boolean indicating success
+    - [x] Preference files are written in human-readable YAML format (NFR-04, NFR-06)
+
+    **Implementation Summary**:
+
+    - **Files**: `src/preferences/store.ts`
+    - **Approach**: YAML-based persistence with dual-file strategy (global ~/.config/opencode/ + project .micode/); in-memory Map cache with TTL validation and write-invalidation; Valibot schema validation at load boundary; graceful ENOENT handling with empty-array fallback; crypto.randomUUID-based ID generation
+    - **Deviations**: None
+    - **Tests**: 23/23 passing (tests/preferences/store.test.ts)
 
 - [ ] **T4**: Implement preference conflict detection `[complexity:simple]`
 
