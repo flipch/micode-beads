@@ -1,6 +1,7 @@
-// tests/preferences/types.test.ts
 import { describe, expect, it } from "bun:test";
+
 import * as v from "valibot";
+
 import { PREFERENCE_CATEGORIES, PreferenceSchema, PreferenceStoreSchema } from "../../src/preferences/types";
 
 describe("PREFERENCE_CATEGORIES", () => {

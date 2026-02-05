@@ -63,6 +63,15 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 14/14 passing (tests/preferences/types.test.ts)
 
+    **Review Feedback** (Attempt 1):
+    - **Status**: FAILURE
+    - **Issues**:
+        - [comments] `src/preferences/types.ts:1` has file path comment `// src/preferences/types.ts` -- this is obvious narration (the filename is already the file path). Remove it.
+        - [comments] `src/preferences/types.ts:18` JSDoc contains acceptance criteria ID `(AC-02c)` -- feature/task IDs must not appear in production code comments. Remove the `(AC-02c)` reference from the comment.
+        - [comments] `src/preferences/types.ts:32` JSDoc contains acceptance criteria ID `(AC-02b)` -- feature/task IDs must not appear in production code comments. Remove the `(AC-02b)` reference from the comment.
+        - [comments] `tests/preferences/types.test.ts:1` has file path comment `// tests/preferences/types.test.ts` -- obvious narration. Remove it.
+    - **Guidance**: Remove 4 comments: (1) delete line 1 of `src/preferences/types.ts` (file path comment), (2) in line 18 of `src/preferences/types.ts` change the JSDoc to `/** Category type: built-in or custom string for extensibility */`, (3) in line 32 change the JSDoc to `/** Core preference interface -- each preference belongs to exactly one category */`, (4) delete line 1 of `tests/preferences/types.test.ts` (file path comment). Then amend the existing commit.
+
 - [x] **T11**: Add preference configuration constants to config utility `[complexity:simple]`
 
     **Reference**: [design.md#311-config-constants-updates](design.md#311-config-constants-updates)
@@ -82,6 +91,12 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Approach**: Added `preferences` section before `mindmodel` section with all 6 constants matching design spec; follows existing pattern of JSDoc comments and numeric literals
     - **Deviations**: None
     - **Tests**: 363/363 passing (full suite, no regressions)
+
+    **Review Feedback** (Attempt 1):
+    - **Status**: FAILURE
+    - **Issues**:
+        - [comments] Issues found in T1 files (see T1 review feedback above). T11 code itself (`src/utils/config.ts`) has no comment violations -- JSDoc comments on config constants are appropriate.
+    - **Guidance**: Fix T1 comment issues only. T11 implementation is correct and needs no changes. Both tasks share a single commit, so the fix requires amending the commit after correcting T1 files.
 
 ### Group 2: Domain Modules (Depend on T1 Only)
 

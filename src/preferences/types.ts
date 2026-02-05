@@ -1,4 +1,3 @@
-// src/preferences/types.ts
 import * as v from "valibot";
 
 /** Built-in preference categories */
@@ -15,7 +14,7 @@ export const PREFERENCE_CATEGORIES = [
 
 export type BuiltinPreferenceCategory = (typeof PREFERENCE_CATEGORIES)[number];
 
-/** Category type: built-in or custom string for extensibility (AC-02c) */
+/** Category type: built-in or custom string for extensibility */
 export type PreferenceCategory = BuiltinPreferenceCategory | (string & {});
 
 /** Preference scope levels with inheritance: global < project < file-pattern */
@@ -29,7 +28,7 @@ export interface PreferenceProvenance {
   originalComment?: string;
 }
 
-/** Core preference interface -- each preference belongs to exactly one category (AC-02b) */
+/** Core preference interface -- each preference belongs to exactly one category */
 export interface Preference {
   id: string;
   category: PreferenceCategory;
