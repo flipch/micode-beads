@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/flipch/micode-beads/compare/v1.0.6...v1.1.0) (2026-02-05)
+
+
+### Features
+
+* **config:** add reasoning effort and extended thinking support ([#14](https://github.com/flipch/micode-beads/issues/14)) ([9d9978b](https://github.com/flipch/micode-beads/commit/9d9978b386d379047980de066d5a82ea0ba6e636))
+
+
+### Bug Fixes
+
+* **ci:** enforce tokenless npm OIDC publish ([a2e4b09](https://github.com/flipch/micode-beads/commit/a2e4b095ac21b430b6c67b5a09202e7ec037797b))
+* **ci:** require npm 11 for trusted publishing ([dd9e958](https://github.com/flipch/micode-beads/commit/dd9e9582405dc54e1131c828b7a770e7c5786178))
+
 ## [1.0.6](https://github.com/flipch/micode-beads/compare/v1.0.5...v1.0.6) (2026-02-05)
 
 
