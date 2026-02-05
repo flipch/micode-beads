@@ -4,7 +4,6 @@ on:
   release:
     types:
       - published
-  workflow_dispatch:
 
 jobs:
   publish:
@@ -23,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'  # npm OIDC works best with node 22+
+          node-version: '22'
 
       - name: Install dependencies
         run: bun install
@@ -34,46 +33,18 @@ jobs:
       - name: Test
         run: bun test
 
-      - name: Resolve package info
-        id: pkg
+      - name: Check if already published
+        id: check
         run: |
-          echo "name=$(node -p 'require("./package.json").name')" >> "$GITHUB_OUTPUT"
-          echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
-
-      - name: Check if version is already published
-        id: published
-        run: |
-          if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version > /dev/null 2>&1; then
-            echo "published=true" >> "$GITHUB_OUTPUT"
+          NAME=$(node -p 'require("./package.json").name')
+          VERSION=$(node -p 'require("./package.json").version')
+          if npm view "${NAME}@${VERSION}" version > /dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Already published ${NAME}@${VERSION}"
           else
-            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Check auth configuration
-        id: auth
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ "${{ vars.NPM_PUBLISH_OIDC }}" = "true" ]; then
-            echo "method=oidc" >> "$GITHUB_OUTPUT"
-          elif [ -n "$NPM_TOKEN" ]; then
-            echo "method=token" >> "$GITHUB_OUTPUT"
-          else
-            echo "method=none" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Publish to npm (OIDC trusted publishing)
-        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'oidc'
-        run: npm publish --provenance --access public --ignore-scripts
-
-      - name: Setup npm registry for token auth
-        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'token'
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-
-      - name: Publish to npm (token)
-        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'token'
-        run: npm publish --provenance --access public --ignore-scripts
-
-      - name: Publish skipped (no auth)
-        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'none'
-        run: echo "No publish auth configured. Set vars.NPM_PUBLISH_OIDC=true for OIDC or add NPM_TOKEN secret."
+      - name: Publish to npm
+        if: steps.check.outputs.skip != 'true'
+        run: npm publish --provenance --access public
