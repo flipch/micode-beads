@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/flipch/micode-beads/compare/v1.0.4...v1.0.5) (2026-02-05)
+
+
+### Bug Fixes
+
+* **ci:** add registry-url and clear NODE_AUTH_TOKEN for OIDC ([1b5bb4c](https://github.com/flipch/micode-beads/commit/1b5bb4c91d8f29288c37d27f4c24e07615651c8d))
+
 ## [1.0.4](https://github.com/flipch/micode-beads/compare/v1.0.3...v1.0.4) (2026-02-05)
 
 
