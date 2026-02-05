@@ -50,16 +50,29 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check auth configuration
+        id: auth
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ "${{ vars.NPM_PUBLISH_OIDC }}" = "true" ]; then
+            echo "method=oidc" >> "$GITHUB_OUTPUT"
+          elif [ -n "$NPM_TOKEN" ]; then
+            echo "method=token" >> "$GITHUB_OUTPUT"
+          else
+            echo "method=none" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to npm (OIDC trusted publishing)
-        if: steps.published.outputs.published != 'true' && vars.NPM_PUBLISH_OIDC == 'true'
+        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'oidc'
         run: npm publish --provenance --access public --ignore-scripts
 
       - name: Publish to npm (token)
-        if: steps.published.outputs.published != 'true' && vars.NPM_PUBLISH_OIDC != 'true' && secrets.NPM_TOKEN != ''
+        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'token'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public --ignore-scripts
 
       - name: Publish skipped (no auth)
-        if: steps.published.outputs.published != 'true' && vars.NPM_PUBLISH_OIDC != 'true' && secrets.NPM_TOKEN == ''
-        run: echo "No publish auth configured. Set vars.NPM_PUBLISH_OIDC=true for OIDC or add NPM_TOKEN."
+        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'none'
+        run: echo "No publish auth configured. Set vars.NPM_PUBLISH_OIDC=true for OIDC or add NPM_TOKEN secret."
