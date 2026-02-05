@@ -7,6 +7,7 @@ on:
 
 jobs:
   publish:
+    if: ${{ vars.NPM_PUBLISH_OIDC == 'true' }}
     runs-on: ubuntu-latest
 
     permissions:
@@ -23,7 +24,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: bun install
@@ -46,10 +46,12 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish to npm
+      - name: Publish to npm (OIDC)
         if: steps.check.outputs.skip != 'true'
+        env:
+          NODE_AUTH_TOKEN: ''
+          NPM_TOKEN: ''
+          NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/.npmrc
         run: |
-          # Remove .npmrc created by setup-node to allow OIDC
-          rm -f ~/.npmrc
-          rm -f .npmrc
+          printf "registry=https://registry.npmjs.org/\n" > "$NPM_CONFIG_USERCONFIG"
           npm publish --provenance --access public
