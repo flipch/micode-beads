@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/flipch/micode-beads/compare/v1.0.5...v1.0.6) (2026-02-05)
+
+
+### Bug Fixes
+
+* **ci:** remove .npmrc to force OIDC ([6a99857](https://github.com/flipch/micode-beads/commit/6a9985797e2398cb05cc8a7122720bec24aba119))
+
 ## [1.0.5](https://github.com/flipch/micode-beads/compare/v1.0.4...v1.0.5) (2026-02-05)
 
 
