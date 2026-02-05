@@ -23,8 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: '22'  # npm OIDC works best with node 22+
 
       - name: Install dependencies
         run: bun install
@@ -65,14 +64,14 @@ jobs:
 
       - name: Publish to npm (OIDC trusted publishing)
         if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'oidc'
-        env:
-          NODE_AUTH_TOKEN: ''  # Clear the default token set by setup-node to allow OIDC
         run: npm publish --provenance --access public --ignore-scripts
+
+      - name: Setup npm registry for token auth
+        if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'token'
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
 
       - name: Publish to npm (token)
         if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'token'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public --ignore-scripts
 
       - name: Publish skipped (no auth)
