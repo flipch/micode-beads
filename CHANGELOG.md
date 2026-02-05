@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/flipch/micode-beads/compare/v1.0.2...v1.0.3) (2026-02-05)
+
+
+### Bug Fixes
+
+* **ci:** add environment to release workflow for OIDC ([17ff677](https://github.com/flipch/micode-beads/commit/17ff67744fbf23eed9e7f86eb4039ab268a5c7ef))
+* **ci:** clear NODE_AUTH_TOKEN for OIDC publishing ([dc7eed4](https://github.com/flipch/micode-beads/commit/dc7eed41f414022253a22804d2df731d5a68677a))
+
 ## [1.0.2](https://github.com/flipch/micode-beads/compare/v1.0.1...v1.0.2) (2026-02-05)
 
 
