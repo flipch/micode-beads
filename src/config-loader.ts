@@ -67,15 +67,43 @@ export function loadDefaultModel(configDir?: string): string | null {
 }
 
 // Safe properties that users can override
-const SAFE_AGENT_PROPERTIES = ["model", "temperature", "maxTokens"] as const;
+const SAFE_AGENT_PROPERTIES = [
+  "model",
+  "temperature",
+  "maxTokens",
+  // Reasoning effort for OpenAI reasoning models (Codex 5.3+)
+  // Values: "low" | "medium" | "high" | "xhigh"
+  "reasoningEffort",
+  // Effort level for Anthropic models (Opus 4.6+)
+  // Values: "low" | "medium" | "high" | "max"
+  "effort",
+  // Extended thinking config for Anthropic models
+  // Values: { type: "adaptive" } | { type: "enabled", budgetTokens: number }
+  "thinking",
+] as const;
 
 // Built-in OpenCode models that don't require validation (always available)
 const BUILTIN_MODELS = new Set(["opencode/big-pickle"]);
+
+// Reasoning effort levels for OpenAI reasoning models (Codex 5.3+)
+export type OpenAIReasoningEffort = "low" | "medium" | "high" | "xhigh";
+
+// Effort levels for Anthropic models (Opus 4.6+)
+export type AnthropicEffort = "low" | "medium" | "high" | "max";
+
+// Extended thinking config for Anthropic models
+export type ThinkingConfig = { type: "adaptive" } | { type: "enabled"; budgetTokens: number };
 
 export interface AgentOverride {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  // OpenAI reasoning models (Codex 5.3+) - controls reasoning depth
+  reasoningEffort?: OpenAIReasoningEffort;
+  // Anthropic models (Opus 4.6+) - controls intelligence/speed tradeoff
+  effort?: AnthropicEffort;
+  // Anthropic extended thinking - let model decide when to think deeply
+  thinking?: ThinkingConfig;
 }
 
 export interface MicodeFeatures {
