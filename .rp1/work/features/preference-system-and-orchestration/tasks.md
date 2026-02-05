@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 15% (3 of 19 tasks)
+**Progress**: 31% (6 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -153,7 +153,19 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 23/23 passing (tests/preferences/store.test.ts)
 
-- [ ] **T4**: Implement preference conflict detection `[complexity:simple]`
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
+
+- [x] **T4**: Implement preference conflict detection `[complexity:simple]`
 
     **Reference**: [design.md#34-conflict-detection](design.md#34-conflict-detection)
 
@@ -161,15 +173,22 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/preferences/conflict.ts` exists with exported `PreferenceConflict` interface and `detectConflicts` function
-    - [ ] Conflicts detected when incoming preference has same category AND overlapping scope with existing preference (AC-07a)
-    - [ ] Scope overlap logic: same scope type matches; file-pattern scopes overlap when patterns could match the same files
-    - [ ] Each conflict includes: existing preference, incoming preference, and human-readable reason string (AC-07b)
-    - [ ] No false positives from different categories (different categories never conflict)
-    - [ ] No semantic text analysis of descriptions -- purely structural detection (category + scope heuristic per D7)
-    - [ ] Returns empty array when no conflicts found
+    - [x] File `src/preferences/conflict.ts` exists with exported `PreferenceConflict` interface and `detectConflicts` function
+    - [x] Conflicts detected when incoming preference has same category AND overlapping scope with existing preference (AC-07a)
+    - [x] Scope overlap logic: same scope type matches; file-pattern scopes overlap when patterns could match the same files
+    - [x] Each conflict includes: existing preference, incoming preference, and human-readable reason string (AC-07b)
+    - [x] No false positives from different categories (different categories never conflict)
+    - [x] No semantic text analysis of descriptions -- purely structural detection (category + scope heuristic per D7)
+    - [x] Returns empty array when no conflicts found
 
-- [ ] **T5**: Implement preference XML formatter with token budget `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `src/preferences/conflict.ts`
+    - **Approach**: Structural conflict detection via category + scope overlap heuristic; conservative file-pattern overlap using literal prefix extraction (disjoint prefixes = no overlap); skips disabled and self-referencing preferences
+    - **Deviations**: None
+    - **Tests**: 11/11 passing (tests/preferences/conflict.test.ts)
+
+- [x] **T5**: Implement preference XML formatter with token budget `[complexity:simple]`
 
     **Reference**: [design.md#35-preference-formatting](design.md#35-preference-formatting)
 
@@ -177,16 +196,23 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/preferences/formatter.ts` exists with exported functions: `formatPreferencesBlock`, `formatMethodologyBlock`, `formatEffectivePreferencesReport`
-    - [ ] `formatPreferencesBlock` produces XML in `<coding-preferences><category name="...">` structure matching design spec format (AC-04b)
-    - [ ] Preferences grouped by category within the XML block
-    - [ ] Token budget enforcement: total output measured against `maxInjectionTokens` (2000 default) using `config.tokens.charsPerToken` estimation
-    - [ ] When budget exceeded, preferences prioritized by: (1) category relevance to current agent, (2) recency (AC-04c)
-    - [ ] `formatMethodologyBlock` produces methodology-specific XML block
-    - [ ] `formatEffectivePreferencesReport` produces human-readable report showing scope origin and overrides (AC-08c)
-    - [ ] Empty preferences input returns empty string (no empty XML tags)
+    - [x] File `src/preferences/formatter.ts` exists with exported functions: `formatPreferencesBlock`, `formatMethodologyBlock`, `formatEffectivePreferencesReport`
+    - [x] `formatPreferencesBlock` produces XML in `<coding-preferences><category name="...">` structure matching design spec format (AC-04b)
+    - [x] Preferences grouped by category within the XML block
+    - [x] Token budget enforcement: total output measured against `maxInjectionTokens` (2000 default) using `config.tokens.charsPerToken` estimation
+    - [x] When budget exceeded, preferences prioritized by: (1) category relevance to current agent, (2) recency (AC-04c)
+    - [x] `formatMethodologyBlock` produces methodology-specific XML block
+    - [x] `formatEffectivePreferencesReport` produces human-readable report showing scope origin and overrides (AC-08c)
+    - [x] Empty preferences input returns empty string (no empty XML tags)
 
-- [ ] **T6**: Implement methodology profiles and resolution `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `src/preferences/formatter.ts`
+    - **Approach**: XML block formatting with `<coding-preferences>/<category>` structure; recency-first sorting for budget prioritization; per-category truncation when budget exceeded; methodology block uses `<active-methodology>` XML; effective report uses markdown with strikethrough for overridden entries
+    - **Deviations**: None
+    - **Tests**: 9/9 passing (tests/preferences/formatter.test.ts)
+
+- [x] **T6**: Implement methodology profiles and resolution `[complexity:simple]`
 
     **Reference**: [design.md#36-methodology-system](design.md#36-methodology-system)
 
@@ -194,14 +220,21 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/preferences/methodology.ts` exists with exported types: `MethodologyProfile`, `MethodologyTaskOrdering`, `MethodologyPromptModifiers`
-    - [ ] `BUILTIN_METHODOLOGIES` record contains "default" and "tdd" profiles matching design spec
-    - [ ] "default" profile: `separateTestTasks: false`, `testFirst: false`, empty prompt modifiers
-    - [ ] "tdd" profile: `separateTestTasks: true`, `testFirst: true`, with planner/executor/implementer prompt modifiers containing TDD instructions (BR-07)
-    - [ ] TDD planner instructions enforce separate test and implementation micro-tasks with dependency ordering
-    - [ ] `getMethodology` returns profile by name or null for unknown names
-    - [ ] `getActiveMethodology` resolves from config, falling back to "default" when no methodology configured
-    - [ ] Interface designed for extensibility to custom methodology profiles (FR-09 placeholder)
+    - [x] File `src/preferences/methodology.ts` exists with exported types: `MethodologyProfile`, `MethodologyTaskOrdering`, `MethodologyPromptModifiers`
+    - [x] `BUILTIN_METHODOLOGIES` record contains "default" and "tdd" profiles matching design spec
+    - [x] "default" profile: `separateTestTasks: false`, `testFirst: false`, empty prompt modifiers
+    - [x] "tdd" profile: `separateTestTasks: true`, `testFirst: true`, with planner/executor/implementer prompt modifiers containing TDD instructions (BR-07)
+    - [x] TDD planner instructions enforce separate test and implementation micro-tasks with dependency ordering
+    - [x] `getMethodology` returns profile by name or null for unknown names
+    - [x] `getActiveMethodology` resolves from config, falling back to "default" when no methodology configured
+    - [x] Interface designed for extensibility to custom methodology profiles (FR-09 placeholder)
+
+    **Implementation Summary**:
+
+    - **Files**: `src/preferences/methodology.ts`
+    - **Approach**: Interfaces for MethodologyProfile/TaskOrdering/PromptModifiers; BUILTIN_METHODOLOGIES record with "default" (no-op) and "tdd" (test-first with XML prompt modifiers for planner/executor/implementer); getActiveMethodology accepts generic config object with optional methodology field for T12 independence
+    - **Deviations**: None
+    - **Tests**: 16/16 passing (tests/preferences/methodology.test.ts)
 
 - [ ] **T10**: Implement preference manager agent definition `[complexity:medium]`
 
