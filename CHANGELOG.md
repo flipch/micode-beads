@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.1](https://github.com/flipch/micode-beads/compare/v1.0.0...v1.0.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* **ci:** remove duplicate permissions block ([#5](https://github.com/flipch/micode-beads/issues/5)) ([343d82f](https://github.com/flipch/micode-beads/commit/343d82fe089fd87e549a6e114bffbbd3220cef12))
+* **ci:** use step output instead of secrets in if conditions ([#6](https://github.com/flipch/micode-beads/issues/6)) ([5bb973b](https://github.com/flipch/micode-beads/commit/5bb973bfc6e76362a57e805f6f7b31244fe9c3a4))
+* **security:** resolve CodeQL security alerts ([5df3d02](https://github.com/flipch/micode-beads/commit/5df3d02b6a38006d914ce86d2000153ffecc0067))
+* **security:** resolve CodeQL security alerts ([5af391f](https://github.com/flipch/micode-beads/commit/5af391f5e85fb0d04e7cae78fe6a673a6dee5c63))
+
 ## 1.0.0 (2026-02-04)
 
 
