@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4](https://github.com/flipch/micode-beads/compare/v1.0.3...v1.0.4) (2026-02-05)
+
+
+### Bug Fixes
+
+* **ci:** remove registry-url to fix OIDC publishing ([b688cfb](https://github.com/flipch/micode-beads/commit/b688cfbb0d4f9b9b5623d11c62028e8d13a90f35))
+* **ci:** simplify release workflow to OIDC-only ([fff8de4](https://github.com/flipch/micode-beads/commit/fff8de4d3bfc7616a60f5e948203a41d34905c83))
+
 ## [1.0.3](https://github.com/flipch/micode-beads/compare/v1.0.2...v1.0.3) (2026-02-05)
 
 
