@@ -9,7 +9,6 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: release
 
     permissions:
       contents: read
@@ -66,6 +65,8 @@ jobs:
 
       - name: Publish to npm (OIDC trusted publishing)
         if: steps.published.outputs.published != 'true' && steps.auth.outputs.method == 'oidc'
+        env:
+          NODE_AUTH_TOKEN: ''  # Clear the default token set by setup-node to allow OIDC
         run: npm publish --provenance --access public --ignore-scripts
 
       - name: Publish to npm (token)
