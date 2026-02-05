@@ -48,6 +48,8 @@ jobs:
 
       - name: Publish to npm
         if: steps.check.outputs.skip != 'true'
-        env:
-          NODE_AUTH_TOKEN: ''  # Clear dummy token from setup-node to enable OIDC
-        run: npm publish --provenance --access public
+        run: |
+          # Remove .npmrc created by setup-node to allow OIDC
+          rm -f ~/.npmrc
+          rm -f .npmrc
+          npm publish --provenance --access public
