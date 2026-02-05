@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/flipch/micode-beads/compare/v1.0.1...v1.0.2) (2026-02-05)
+
+
+### Bug Fixes
+
+* **ci:** fix shell syntax in release workflow ([#7](https://github.com/flipch/micode-beads/issues/7)) ([562bfe1](https://github.com/flipch/micode-beads/commit/562bfe1e137477bf3748495919fd340a0ba1b4e9))
+
 ## [1.0.1](https://github.com/flipch/micode-beads/compare/v1.0.0...v1.0.1) (2026-02-05)
 
 
