@@ -25,6 +25,7 @@ import {
 import { octtoAgent } from "./octto";
 import { patternFinderAgent } from "./pattern-finder";
 import { plannerAgent } from "./planner";
+import { preferenceManagerAgent } from "./preference-manager";
 import { probeAgent } from "./probe";
 import { projectInitializerAgent } from "./project-initializer";
 import { reviewerAgent } from "./reviewer";
@@ -43,6 +44,7 @@ export const agents: Record<string, AgentConfig> = {
   "ledger-creator": { ...ledgerCreatorAgent, model: "openai/gpt-5.2-codex" },
   "artifact-searcher": { ...artifactSearcherAgent, model: "openai/gpt-5.2-codex" },
   "project-initializer": { ...projectInitializerAgent, model: "openai/gpt-5.2-codex" },
+  "preference-manager": { ...preferenceManagerAgent, model: "openai/gpt-5.2-codex" },
   octto: { ...octtoAgent, model: "openai/gpt-5.2-codex" },
   probe: { ...probeAgent, model: "openai/gpt-5.2-codex" },
   // Mindmodel generation agents
@@ -74,6 +76,7 @@ export {
   executorAgent,
   ledgerCreatorAgent,
   artifactSearcherAgent,
+  preferenceManagerAgent,
   octtoAgent,
   probeAgent,
 };

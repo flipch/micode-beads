@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 47% (9 of 19 tasks)
+**Progress**: 58% (11 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -368,7 +368,19 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 21/21 passing (tests/preferences/resolver.test.ts)
 
-- [ ] **T7**: Create barrel export for preferences module `[complexity:simple]`
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
+
+- [x] **T7**: Create barrel export for preferences module `[complexity:simple]`
 
     **Reference**: [design.md#5-implementation-plan](design.md#5-implementation-plan) (T7)
 
@@ -376,13 +388,20 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/preferences/index.ts` exists
-    - [ ] Re-exports all public types from `types.ts`
-    - [ ] Re-exports all public functions from `store.ts`, `resolver.ts`, `conflict.ts`, `formatter.ts`, `methodology.ts`
-    - [ ] Importing from `../preferences` or `../preferences/index` provides access to all public API surface
-    - [ ] No circular dependency issues
+    - [x] File `src/preferences/index.ts` exists
+    - [x] Re-exports all public types from `types.ts`
+    - [x] Re-exports all public functions from `store.ts`, `resolver.ts`, `conflict.ts`, `formatter.ts`, `methodology.ts`
+    - [x] Importing from `../preferences` or `../preferences/index` provides access to all public API surface
+    - [x] No circular dependency issues
 
-- [ ] **T13**: Register preference manager agent in agents index `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `src/preferences/index.ts`
+    - **Approach**: Explicit named re-exports from all 5 domain modules (conflict, formatter, methodology, resolver, store) plus types; follows mindmodel/index.ts barrel pattern with type-only exports using `type` keyword; 24 total exports verified
+    - **Deviations**: None
+    - **Tests**: 443/443 passing (full suite, no regressions)
+
+- [x] **T13**: Register preference manager agent in agents index `[complexity:simple]`
 
     **Reference**: [design.md#5-implementation-plan](design.md#5-implementation-plan) (T13)
 
@@ -390,10 +409,17 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] `src/agents/index.ts` modified to import `preferenceManagerAgent` from `./preference-manager`
-    - [ ] Agent registered in the agents record with key matching the agent name used by the `/preference` command
-    - [ ] Follows the same registration pattern as existing agents (project-initializer, ledger-creator)
-    - [ ] Existing agent registrations are not affected
+    - [x] `src/agents/index.ts` modified to import `preferenceManagerAgent` from `./preference-manager`
+    - [x] Agent registered in the agents record with key matching the agent name used by the `/preference` command
+    - [x] Follows the same registration pattern as existing agents (project-initializer, ledger-creator)
+    - [x] Existing agent registrations are not affected
+
+    **Implementation Summary**:
+
+    - **Files**: `src/agents/index.ts`
+    - **Approach**: Added import of `preferenceManagerAgent` from `./preference-manager`; registered in agents record as `"preference-manager"` with spread + model override pattern matching project-initializer/ledger-creator; added to named exports block
+    - **Deviations**: None
+    - **Tests**: 443/443 passing (full suite, no regressions)
 
 ### Group 4: Pipeline Integration (Hook and Tool)
 
