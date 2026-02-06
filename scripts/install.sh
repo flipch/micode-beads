@@ -190,8 +190,6 @@ install_via_npm() {
 
 install_via_tarball() {
   version="$1"
-  os="$2"
-  arch="$3"
 
   info "No package manager available. Downloading tarball from GitHub Releases..."
 
@@ -291,7 +289,7 @@ main() {
   fi
 
   if [ "$installed" = false ]; then
-    install_via_tarball "$version" "$os" "$arch"
+    install_via_tarball "$version"
     installed=true
   fi
 
