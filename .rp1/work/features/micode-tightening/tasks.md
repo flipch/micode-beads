@@ -2,7 +2,7 @@
 
 **Feature ID**: micode-tightening
 **Status**: In Progress
-**Progress**: 7% (1 of 15 tasks)
+**Progress**: 13% (2 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-05
 
@@ -59,6 +59,18 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
     - **Deviations**: None
     - **Tests**: 20/20 passing (new); 50/51 total (1 pre-existing failure unrelated to this task)
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | ✅ PASS |
+    | Accuracy | ✅ PASS |
+    | Completeness | ✅ PASS |
+    | Quality | ✅ PASS |
+    | Testing | ✅ PASS |
+    | Commit | ✅ PASS |
+    | Comments | ✅ PASS |
+
 - [ ] **T2**: Create CLI module with init command `[complexity:medium]`
 
     **Reference**: [design.md#32-new-module-srccli](design.md#32-new-module-srccli)
@@ -75,7 +87,7 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
     - [ ] Build script updated to include CLI build target: `bun build src/cli/index.ts --outdir dist --target bun --outfile dist/cli.js`
     - [ ] Clear success/failure output with next-step instructions printed to stdout
 
-- [ ] **T4**: Create installer script `[complexity:medium]`
+- [x] **T4**: Create installer script `[complexity:medium]`
 
     **Reference**: [design.md#33-installer-script-scriptsinstallsh](design.md#33-installer-script-scriptsinstallsh)
 
@@ -83,16 +95,23 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
     **Acceptance Criteria**:
 
-    - [ ] `scripts/install.sh` is a POSIX-compatible shell script
-    - [ ] Script detects OS (macOS, Linux) and architecture (x64, arm64)
-    - [ ] Script checks for npm/bun availability and installs via `npm install -g micode-beads@latest`
-    - [ ] Script falls back to downloading tarball from GitHub Releases if npm unavailable
-    - [ ] Script verifies installation via `micode-beads --version`
-    - [ ] Script includes checksum verification for downloaded artifacts
-    - [ ] Script uses HTTPS for all downloads
-    - [ ] Script provides clear error messages for unsupported platforms or network failures
-    - [ ] Script is pipeable from curl: `curl -fsSL https://... | sh`
-    - [ ] Script does not require sudo for default installation path
+    - [x] `scripts/install.sh` is a POSIX-compatible shell script
+    - [x] Script detects OS (macOS, Linux) and architecture (x64, arm64)
+    - [x] Script checks for npm/bun availability and installs via `npm install -g micode-beads@latest`
+    - [x] Script falls back to downloading tarball from GitHub Releases if npm unavailable
+    - [x] Script verifies installation via `micode-beads --version`
+    - [x] Script includes checksum verification for downloaded artifacts
+    - [x] Script uses HTTPS for all downloads
+    - [x] Script provides clear error messages for unsupported platforms or network failures
+    - [x] Script is pipeable from curl: `curl -fsSL https://... | sh`
+    - [x] Script does not require sudo for default installation path
+
+    **Implementation Summary**:
+
+    - **Files**: `scripts/install.sh`
+    - **Approach**: Created a POSIX-compatible (`#!/bin/sh`) installer script with platform detection (macOS/Linux, x64/arm64), cascading installation strategy (bun -> npm -> GitHub Releases tarball fallback), SHA-256 checksum verification, HTTPS-only downloads (`--proto '=https'` / `--https-only`), post-install verification via `micode-beads --version`, and clear error messages with next-step instructions. Supports `MICODE_VERSION` env var for pinned versions and `INSTALL_DIR` for custom install paths. Colors are conditionally applied only for TTY output.
+    - **Deviations**: None
+    - **Tests**: N/A (shell script; per design: "Do NOT test shell installer script in unit tests")
 
 - [ ] **T5**: Create verifier agent `[complexity:medium]`
 
