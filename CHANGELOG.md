@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/flipch/micode-beads/compare/v1.1.0...v1.2.0) (2026-02-06)
+
+
+### Features
+
+* add preference system and methodology-configurable orchestration ([#15](https://github.com/flipch/micode-beads/issues/15)) ([baf452f](https://github.com/flipch/micode-beads/commit/baf452fa5f0877724cc645de59db4ade0f34acd1))
+
 ## [1.1.0](https://github.com/flipch/micode-beads/compare/v1.0.6...v1.1.0) (2026-02-05)
 
 
