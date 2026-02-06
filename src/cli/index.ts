@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 
+import pkg from "../../package.json";
 import { runInit } from "./init";
 
-const VERSION = "1.1.0";
+const VERSION = pkg.version;
 
 function printVersion(): void {
   console.log(`micode-beads v${VERSION}`);
