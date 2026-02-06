@@ -2,7 +2,7 @@
 
 **Feature ID**: cli-overhaul
 **Status**: In Progress
-**Progress**: 67% (10 of 15 tasks)
+**Progress**: 73% (11 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-06
 
@@ -163,6 +163,18 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
     - **Approach**: Created a decision record evaluating four options: (A) Bun --compile standalone binary, (B) Go CLI, (C) Rust CLI, (D) current Bun runtime approach. Included measured metrics from this project (58 MB binary, 20 ms startup on Bun 1.3.8) alongside estimated metrics for Go and Rust. Provided a comparison matrix across all six assessment dimensions plus migration cost, type sharing, CI impact, and contributor accessibility. Recommended Option A (Bun --compile) based on zero migration cost, single-language maintenance, acceptable binary size, and exceeded performance targets.
     - **Deviations**: None
     - **Tests**: N/A (documentation deliverable)
+
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | N/A |
+    | Commit | PASS |
+    | Comments | N/A |
 
 ### Dependent Implementations (Parallel Group 2)
 
@@ -348,7 +360,7 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
     | Commit | PASS |
     | Comments | PASS |
 
-- [ ] **T11**: Implement non-interactive and JSON output mode for doctor command `[complexity:medium]`
+- [x] **T11**: Implement non-interactive and JSON output mode for doctor command `[complexity:medium]`
 
     **Reference**: [design.md#310-non-interactive-mode](design.md#310-non-interactive-mode)
 
@@ -356,13 +368,20 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
 
     **Acceptance Criteria**:
 
-    - [ ] Detect non-interactive mode via `process.stdin.isTTY === true && process.stdout.isTTY === true`
-    - [ ] In non-interactive mode: no color output, no interactive prompts, fixes requiring confirmation are skipped
-    - [ ] Implement `DoctorJsonOutput` schema for `doctor --json`: includes `version`, `timestamp`, `overall` (pass/fail), `checks[]` with all fields, optional `fixes[]`
-    - [ ] `doctor --json` produces valid parseable JSON to stdout with no extraneous output
-    - [ ] Exit codes are deterministic: 0 = all checks pass, 1 = any check fails, 2 = usage error
-    - [ ] Create `src/cli/doctor.ts` orchestrator that ties together check runner, fix runner, and output formatting based on mode
-    - [ ] Integration tests in `tests/cli/doctor.test.ts` cover full run (all pass), full run (some fail), --fix flow, --json output schema validation, and re-run after fix
+    - [x] Detect non-interactive mode via `process.stdin.isTTY === true && process.stdout.isTTY === true`
+    - [x] In non-interactive mode: no color output, no interactive prompts, fixes requiring confirmation are skipped
+    - [x] Implement `DoctorJsonOutput` schema for `doctor --json`: includes `version`, `timestamp`, `overall` (pass/fail), `checks[]` with all fields, optional `fixes[]`
+    - [x] `doctor --json` produces valid parseable JSON to stdout with no extraneous output
+    - [x] Exit codes are deterministic: 0 = all checks pass, 1 = any check fails, 2 = usage error
+    - [x] Create `src/cli/doctor.ts` orchestrator that ties together check runner, fix runner, and output formatting based on mode
+    - [x] Integration tests in `tests/cli/doctor.test.ts` cover full run (all pass), full run (some fail), --fix flow, --json output schema validation, and re-run after fix
+
+    **Implementation Summary**:
+
+    - **Files**: `src/cli/doctor.ts`, `tests/cli/doctor.test.ts`
+    - **Approach**: Enhanced doctor.ts orchestrator with exported `DoctorFlags` and `DoctorOptions` interfaces. Added optional `projectDir` and `stdout` parameters for testability. Non-interactive mode detected via `!flags.json && process.stdin.isTTY && process.stdout.isTTY`; when JSON mode is active, interactive is always false (destructive fixes skipped, no color). Output uses injected `stdout` writer (defaults to `process.stdout.write`). Created comprehensive integration tests covering: exit codes (0 for all pass, 1 for any fail, 0 for warnings-only), JSON output schema validation (version, timestamp, overall, checks array with all fields, optional fixes), --fix flow (run fixes then re-verify, fix results in JSON, WARN fixes, no-fix guard), non-interactive mode (destructive fixes skipped, plain text without ANSI codes), text output format (header, check names, failure summary, all-pass message, fix results section), and 7 CLI binary integration tests using Bun.spawn (valid JSON, exit code matching, extraneous output check, --fix with re-verify, all 11 checks present, plain text fallback).
+    - **Deviations**: Added `DoctorOptions` interface with optional `projectDir` and `stdout` for testability beyond the design spec. DoctorJsonOutput schema was already implemented in T1's output.ts; T11 validates it end-to-end.
+    - **Tests**: 27/27 passing
 
 ### Build and Distribution (Parallel Group 4)
 

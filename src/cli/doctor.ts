@@ -4,16 +4,22 @@ import type { FixResult } from "./doctor-fixes";
 import { runFixes } from "./doctor-fixes";
 import { detectOutputOptions, formatDoctorReport } from "./output";
 
-interface DoctorFlags {
+export interface DoctorFlags {
   fix: boolean;
   json: boolean;
   verbose: boolean;
 }
 
-export async function runDoctor(flags: DoctorFlags, version: string): Promise<number> {
-  const projectDir = process.cwd();
+export interface DoctorOptions {
+  projectDir?: string;
+  stdout?: (data: string) => void;
+}
+
+export async function runDoctor(flags: DoctorFlags, version: string, options?: DoctorOptions): Promise<number> {
+  const projectDir = options?.projectDir || process.cwd();
+  const write = options?.stdout || ((data: string) => process.stdout.write(data));
   const outputOptions = detectOutputOptions(flags);
-  const isInteractive = process.stdin.isTTY === true && process.stdout.isTTY === true;
+  const isInteractive = !flags.json && process.stdin.isTTY === true && process.stdout.isTTY === true;
 
   let results: CheckResult[] = await runAllChecks(projectDir);
 
@@ -25,7 +31,7 @@ export async function runDoctor(flags: DoctorFlags, version: string): Promise<nu
   }
 
   const report = formatDoctorReport(results, fixResults, outputOptions, version);
-  console.log(report);
+  write(`${report}\n`);
 
   const hasFail = results.some((r) => r.status === "FAIL");
   return hasFail ? 1 : 0;
