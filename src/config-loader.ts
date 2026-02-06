@@ -115,6 +115,7 @@ export interface MicodeConfig {
   features?: MicodeFeatures;
   compactionThreshold?: number;
   fragments?: Record<string, string[]>;
+  methodology?: string;
 }
 
 /**
@@ -192,6 +193,14 @@ export async function loadMicodeConfig(configDir?: string): Promise<MicodeConfig
       }
 
       result.fragments = sanitizedFragments;
+    }
+
+    // Parse methodology (any non-empty string; resolved to profile downstream)
+    if (typeof parsed.methodology === "string") {
+      const trimmed = parsed.methodology.trim();
+      if (trimmed.length > 0) {
+        result.methodology = trimmed;
+      }
     }
 
     return result;
