@@ -19,4 +19,6 @@ yarn.lock
 
 # Worktrees
 .worktrees/
-.rp1/work/worktrees/
+
+# rp1 working directory (local artifacts, archives, KB cache)
+.rp1/
