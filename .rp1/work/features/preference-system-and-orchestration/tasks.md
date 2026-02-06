@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 68% (13 of 19 tasks)
+**Progress**: 74% (14 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -510,9 +510,21 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 10/10 passing (tests/tools/preference-lookup.test.ts)
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
+
 ### Group 5: Final Wiring
 
-- [ ] **T14**: Wire all preference components into plugin entry point `[complexity:medium]`
+- [x] **T14**: Wire all preference components into plugin entry point `[complexity:medium]`
 
     **Reference**: [design.md#312-plugin-wiring-srcindexts](design.md#312-plugin-wiring-srcindexts)
 
@@ -520,15 +532,22 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] `src/index.ts` modified with imports for preference-injector hook, preference-lookup tool, and preference-manager agent
-    - [ ] `createPreferenceInjectorHook` called with plugin context and config, result stored
-    - [ ] `preference_lookup` tool added to the plugin tools registry
-    - [ ] `preference-manager` agent added to the plugin agents registry
-    - [ ] `/preference` command added to `config.command` mapping to the preference-manager agent
-    - [ ] Preference injector hook inserted in `chat.params` pipeline after fragment-injector and before ledger-loader
-    - [ ] Injection pipeline order verified: Fragments -> Preferences -> Ledger -> Project context -> Context window warnings
-    - [ ] Plugin loads and initializes without errors when no preference files exist (backward compatibility)
-    - [ ] All existing hooks, tools, agents, and commands continue to function
+    - [x] `src/index.ts` modified with imports for preference-injector hook, preference-lookup tool, and preference-manager agent
+    - [x] `createPreferenceInjectorHook` called with plugin context and config, result stored
+    - [x] `preference_lookup` tool added to the plugin tools registry
+    - [x] `preference-manager` agent added to the plugin agents registry
+    - [x] `/preference` command added to `config.command` mapping to the preference-manager agent
+    - [x] Preference injector hook inserted in `chat.params` pipeline after fragment-injector and before ledger-loader
+    - [x] Injection pipeline order verified: Fragments -> Preferences -> Ledger -> Project context -> Context window warnings
+    - [x] Plugin loads and initializes without errors when no preference files exist (backward compatibility)
+    - [x] All existing hooks, tools, agents, and commands continue to function
+
+    **Implementation Summary**:
+
+    - **Files**: `src/index.ts`
+    - **Approach**: Added imports for createPreferenceInjectorHook and createPreferenceLookupTool; instantiated both after their sibling components (fragment-injector hook and mindmodel-lookup tool respectively); spread preferenceLookupTool into tools registry alongside mindmodelLookupTool; added /preference command mapped to preference-manager agent; inserted preferenceInjectorHook in chat.params pipeline between fragment-injector and ledger-loader maintaining design-specified ordering
+    - **Deviations**: None
+    - **Tests**: 467/467 passing (full suite, no regressions)
 
 ### User Docs
 

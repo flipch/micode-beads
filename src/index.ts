@@ -16,6 +16,7 @@ import { createFileOpsTrackerHook, getFileOps } from "./hooks/file-ops-tracker";
 import { createFragmentInjectorHook, warnUnknownAgents } from "./hooks/fragment-injector";
 import { createLedgerLoaderHook } from "./hooks/ledger-loader";
 import { createMindmodelInjectorHook } from "./hooks/mindmodel-injector";
+import { createPreferenceInjectorHook } from "./hooks/preference-injector";
 import { createSessionRecoveryHook } from "./hooks/session-recovery";
 import { createTokenAwareTruncationHook } from "./hooks/token-aware-truncation";
 import { artifact_search } from "./tools/artifact-search";
@@ -27,6 +28,7 @@ import { look_at } from "./tools/look-at";
 import { milestone_artifact_search } from "./tools/milestone-artifact-search";
 import { createMindmodelLookupTool } from "./tools/mindmodel-lookup";
 import { createOcttoTools, createSessionStore } from "./tools/octto";
+import { createPreferenceLookupTool } from "./tools/preference-lookup";
 // PTY System
 import { createPtyTools, PTYManager } from "./tools/pty";
 import { createSpawnAgentTool } from "./tools/spawn-agent";
@@ -105,6 +107,9 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
   // Fragment injector hook - injects user-defined prompt fragments
   const fragmentInjectorHook = createFragmentInjectorHook(ctx, userConfig);
 
+  // Preference injector hook - injects coding preferences and methodology blocks
+  const preferenceInjectorHook = createPreferenceInjectorHook(ctx, userConfig);
+
   // Warn about unknown agent names in fragments config
   if (userConfig?.fragments) {
     const knownAgentNames = new Set(Object.keys(agents));
@@ -124,6 +129,9 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
 
   // Mindmodel lookup tool - agents call this when they need coding patterns
   const mindmodelLookupTool = createMindmodelLookupTool(ctx);
+
+  // Preference lookup tool - agents query active coding preferences
+  const preferenceLookupTool = createPreferenceLookupTool(ctx);
 
   // Constraint reviewer hook - reviews generated code against .mindmodel/ constraints
   const constraintReviewerHook = createConstraintReviewerHook(ctx, async (reviewPrompt) => {
@@ -218,6 +226,7 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
       spawn_agent,
       batch_read,
       ...mindmodelLookupTool,
+      ...preferenceLookupTool,
       ...ptyTools,
       ...octtoTools,
     },
@@ -277,6 +286,11 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
           agent: "artifact-searcher",
           template: `Search for: $ARGUMENTS`,
         },
+        preference: {
+          description: "Manage coding preferences - declare, capture PR feedback, list, edit, disable, delete",
+          agent: "preference-manager",
+          template: `Manage preferences: $ARGUMENTS`,
+        },
       };
     },
 
@@ -297,6 +311,9 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
     "chat.params": async (input, output) => {
       // Inject user-defined fragments FIRST (highest priority, beginning of prompt)
       await fragmentInjectorHook["chat.params"](input, output);
+
+      // Inject coding preferences and methodology blocks (after fragments, before ledger)
+      await preferenceInjectorHook["chat.params"](input, output);
 
       // Inject ledger context (high priority)
       await ledgerLoaderHook["chat.params"](input, output);
