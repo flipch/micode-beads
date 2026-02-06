@@ -2,131 +2,99 @@
 
 [![CI](https://github.com/flipch/micode-beads/actions/workflows/ci.yml/badge.svg)](https://github.com/flipch/micode-beads/actions/workflows/ci.yml)
 [![npm version](https://badge.fury.io/js/micode-beads.svg)](https://www.npmjs.com/package/micode-beads)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-OpenCode plugin with structured Brainstorm → Plan → Implement workflow, Beads task tracking, and session continuity.
+An [OpenCode](https://opencode.ai) plugin that turns AI coding into a structured **Brainstorm, Plan, Implement** workflow. Ships 26 specialized agents, 12 lifecycle hooks, project-aware constraint enforcement via `.mindmodel/`, and browser-based interactive brainstorming.
 
-https://github.com/user-attachments/assets/85236ad3-e78a-4ff7-a840-620f6ea2f512
+## Install
 
-## Fork Notice
+```bash
+npm install -g micode-beads
+```
 
-This is a fork of https://github.com/vtemian/micode.
+Or use the installer script:
 
-Key differences from upstream:
-
-- Beads integration: planner creates epics/subtasks, executor uses `bd ready`, implementer closes tasks.
-- Config file name: `~/.config/opencode/micode-beads.json` (falls back to `micode.json`).
-- Hermit environment included with `bin/bun` and `bin/bd` for reproducible tooling.
-- Release flow: publish on GitHub Release using npm Trusted Publishing (OIDC).
+```bash
+curl -fsSL https://raw.githubusercontent.com/flipch/micode-beads/main/scripts/install.sh | sh
+```
 
 ## Quick Start
 
-Add to `~/.config/opencode/opencode.json`:
+1. Add the plugin to your OpenCode configuration (`~/.config/opencode/opencode.json`):
 
-```json
-{ "plugin": ["micode-beads"] }
-```
+    ```json
+    { "plugin": ["micode-beads"] }
+    ```
 
-Then run `/init` to generate `ARCHITECTURE.md` and `CODE_STYLE.md`.
+2. Launch OpenCode in your project directory and run `/init` to scaffold project docs.
 
-### Beads Setup
+3. Describe your task and the commander agent takes over -- brainstorming designs, creating a plan, and implementing in parallel.
 
-Install Beads and initialize it in your project so tasks can be tracked:
+## Usage
 
-```bash
-brew install beads
-bd init
-```
-
-Ensure `bd` is on your PATH. The planner will create Beads tasks and the implementer will close them after tests pass.
-
-## Workflow
+### Workflow Overview
 
 ```
-Brainstorm → Plan → Implement
-     ↓         ↓        ↓
-  research  research  executor
+Brainstorm --> Plan --> Implement --> Verify
 ```
 
-### Brainstorm
-Refine ideas into designs through collaborative questioning. Fires research subagents in parallel. Output: `thoughts/shared/designs/YYYY-MM-DD-{topic}-design.md`
+**Brainstorm** -- Explore ideas through collaborative questioning. Spawns research subagents in parallel. Optionally opens a browser-based interactive session (Octto). Produces a design document in `thoughts/shared/designs/`.
 
-### Plan  
-Transform designs into implementation plans with bite-sized tasks (2-5 min each), exact file paths, and TDD workflow. Syncs tasks into Beads (epic + subtasks) and embeds Beads IDs in the plan. Output: `thoughts/shared/plans/YYYY-MM-DD-{topic}.md`
+**Plan** -- Converts the design into a set of micro-tasks (2-5 min each) with exact file paths, dependencies, and TDD workflow. Outputs a plan to `thoughts/shared/plans/`.
 
-### Implement
-Execute in git worktree for isolation. The **Executor** orchestrates implementer→reviewer cycles with parallel execution via fire-and-check pattern, using `bd ready` to pick tasks and `bd close` on success.
+**Implement** -- The executor orchestrates parallel implementer and reviewer agents across a git worktree. Each task follows test-first development, and completed work is verified against the plan.
 
-### Session Continuity
-Maintain context across sessions with structured compaction. Run `/ledger` to create/update `thoughts/ledgers/CONTINUITY_{session}.md`.
+**Verify** -- Cross-references the plan against actual implementation: completeness, test coverage, plan adherence, and passing tests. Failures produce actionable error messages.
 
-## Commands
+### Commands
 
 | Command | Description |
 |---------|-------------|
-| `/init` | Initialize project docs |
-| `/ledger` | Create/update continuity ledger |
-| `/search` | Search past plans and ledgers |
+| `/init` | Scaffold project documentation (ARCHITECTURE.md, CODE_STYLE.md) |
+| `/mindmodel` | Generate `.mindmodel/` coding constraints from your codebase |
+| `/ledger` | Create or update a continuity ledger for session state |
+| `/search` | Full-text search across past plans, ledgers, and artifacts |
+| `/review-feedback` | Ingest GitHub PR review comments and generate corrective fixes |
 
-## Agents
+### AFK Mode
 
-| Agent | Purpose |
-|-------|---------|
-| commander | Orchestrator |
-| brainstormer | Design exploration |
-| planner | Implementation plans |
-| executor | Orchestrate implement→review |
-| implementer | Execute tasks |
-| reviewer | Check correctness |
-| codebase-locator | Find file locations |
-| codebase-analyzer | Deep code analysis |
-| pattern-finder | Find existing patterns |
-| project-initializer | Generate project docs |
-| ledger-creator | Continuity ledgers |
-| artifact-searcher | Search past work |
+Run the entire workflow without human prompts. Useful for CI pipelines or overnight runs.
 
-## Tools
+AFK mode is activated via any of (highest priority first):
 
-| Tool | Description |
-|------|-------------|
-| `ast_grep_search` | AST-aware code pattern search |
-| `ast_grep_replace` | AST-aware code pattern replacement |
-| `look_at` | Extract file structure |
-| `artifact_search` | Search past plans/ledgers |
-| `btca_ask` | Query library source code |
-| `pty_spawn` | Start background terminal session |
-| `pty_write` | Send input to PTY |
-| `pty_read` | Read PTY output |
-| `pty_list` | List PTY sessions |
-| `pty_kill` | Terminate PTY |
+1. Command argument: include `--afk` in your task message
+2. Environment variable: `MICODE_AFK=1`
+3. Config flag: `"afk": true` in `micode-beads.json`
 
-## Hooks
+Combine with `--git-pr` to automatically create a draft pull request when the workflow completes.
 
-- **Think Mode** - Keywords like "think hard" enable 32k token thinking budget
-- **Ledger Loader** - Injects continuity ledger into system prompt
-- **Auto-Compact** - At 50% context usage, automatically summarizes session to reduce context
-- **File Ops Tracker** - Tracks read/write/edit for deterministic logging
-- **Artifact Auto-Index** - Indexes artifacts in thoughts/ directories
-- **Context Injector** - Injects ARCHITECTURE.md, CODE_STYLE.md
-- **Token-Aware Truncation** - Truncates large tool outputs
+### Stage Resumption
+
+Resume a workflow from any previously completed stage without re-running earlier work:
+
+- `--resume-from=plan` -- skip brainstorm, re-run plan and everything after it
+- `--correct "use JWT instead of sessions"` -- provide a correction when resuming
+
+Stage outputs are persisted to `thoughts/workflow/` so they can be reloaded on resume. Each stage is versioned, letting you compare the original run against corrected runs.
 
 ## Configuration
 
-### Model Configuration
+### opencode.json
 
-micode-beads reads your default model from `opencode.json`:
+Set your default model and register the plugin:
 
 ```json
 {
-  "model": "github-copilot/gpt-5-mini",
+  "model": "provider/model-name",
   "plugin": ["micode-beads"]
 }
 ```
 
-All micode-beads agents will use this model automatically.
+All agents inherit the default model unless overridden.
 
 ### micode-beads.json
 
-Create `~/.config/opencode/micode-beads.json` for micode-beads-specific settings:
+Create `~/.config/opencode/micode-beads.json` for per-agent overrides and feature flags:
 
 ```json
 {
@@ -134,127 +102,147 @@ Create `~/.config/opencode/micode-beads.json` for micode-beads-specific settings
     "brainstormer": { "model": "openai/gpt-4o", "temperature": 0.8 },
     "commander": { "maxTokens": 8192 }
   },
-  "features": {
-    "mindmodelInjection": true
-  },
+  "features": { "mindmodelInjection": true },
   "compactionThreshold": 0.5,
-  "fragments": {
-    "commander": ["custom-instructions.md"]
-  }
+  "fragments": { "commander": ["custom-instructions.md"] },
+  "researchDirs": ["docs"],
+  "afk": false,
+  "gitPr": { "draftByDefault": true }
 }
 ```
 
-If `micode-beads.json` is missing, the plugin falls back to `micode.json` for compatibility.
+Falls back to `micode.json` if `micode-beads.json` is not found.
 
-#### Options
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `agents` | object | -- | Per-agent overrides: `model`, `temperature`, `maxTokens`, `reasoningEffort`, `effort`, `thinking` |
+| `features.mindmodelInjection` | boolean | `false` | Auto-inject `.mindmodel/` patterns into every message |
+| `compactionThreshold` | number | `0.5` | Context usage ratio (0-1) that triggers auto-compaction |
+| `fragments` | object | -- | Additional prompt fragment files per agent |
+| `researchDirs` | string[] | `["thoughts/shared/designs/"]` | Directories scanned for existing research/design documents |
+| `afk` | boolean | `false` | Enable autonomous mode by default |
+| `gitPr.draftByDefault` | boolean | `true` | Create PRs as drafts when using `--git-pr` |
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `agents` | object | Per-agent overrides (model, temperature, maxTokens) |
-| `features.mindmodelInjection` | boolean | Enable mindmodel context injection |
-| `compactionThreshold` | number | Context usage threshold (0-1) for auto-compaction. Default: 0.5 |
-| `fragments` | object | Additional prompt fragments per agent |
+Model resolution order: per-agent override > `opencode.json` default model > plugin default.
 
-#### Model Resolution Priority
+### Research Directories
 
-1. Per-agent override in `micode-beads.json` (highest)
-2. Default model from `opencode.json` `"model"` field
-3. Plugin default (fallback)
+The brainstormer and planner agents read existing documentation from configured directories. Point `researchDirs` at your project's docs folder to incorporate existing knowledge into the workflow. Missing or empty directories produce a warning, not an error.
 
-#### Model Syntax
+## Agents
 
-Models use `provider/model` format. The provider must match exactly what's in your `opencode.json`:
+| Agent | Role |
+|-------|------|
+| commander | Primary orchestrator -- classifies tasks, routes to specialists |
+| brainstormer | Design exploration via research subagents and Octto browser UI |
+| planner | Converts designs into parallel micro-task plans |
+| executor | Batch-spawns implementers and reviewers, orchestrates the implement phase |
+| implementer | Executes a single micro-task with test-first development |
+| reviewer | Reviews a single task for correctness, completeness, and style |
+| verifier | Post-implementation cross-reference against the plan |
+| pr-feedback | Ingests GitHub PR review comments and generates fixes |
+| bootstrapper | Bootstraps new project scaffolding |
+| probe | Lightweight investigation agent |
+| octto | Manages interactive brainstorming sessions |
+| codebase-locator | Finds relevant files for a given task |
+| codebase-analyzer | Deep structural analysis of code |
+| pattern-finder | Discovers existing code patterns |
+| project-initializer | Generates ARCHITECTURE.md and CODE_STYLE.md |
+| ledger-creator | Creates and updates continuity ledgers |
+| artifact-searcher | Full-text search over indexed artifacts |
+| mm-orchestrator | Coordinates the mindmodel generation pipeline |
+| mm-stack-detector | Detects tech stack and frameworks |
+| mm-pattern-discoverer | Discovers coding patterns in the codebase |
+| mm-example-extractor | Extracts representative code examples |
+| mm-constraint-writer | Assembles `.mindmodel/` constraint files |
+| mm-constraint-reviewer | Reviews generated code against constraints |
+| mm-dependency-mapper | Maps module dependencies |
+| mm-convention-extractor | Extracts naming and style conventions |
+| mm-domain-extractor | Identifies domain concepts |
+| mm-code-clusterer | Clusters related code modules |
+| mm-anti-pattern-detector | Flags anti-patterns in the codebase |
 
-```json
-{
-  "provider": {
-    "github-copilot": {
-      "models": { "gpt-5-mini": {} }
-    }
-  }
-}
-```
+## Tools
 
-Use `"model": "github-copilot/gpt-5-mini"` (not `github/copilot:gpt-5-mini`).
+| Tool | Description |
+|------|-------------|
+| `ast_grep_search` | AST-aware code pattern search |
+| `ast_grep_replace` | AST-aware code pattern replacement |
+| `look_at` | Extract file structure overview |
+| `artifact_search` | Full-text search across indexed artifacts |
+| `milestone_artifact_search` | Search milestone-specific artifacts |
+| `btca_ask` | Query library source code |
+| `mindmodel_lookup` | Query `.mindmodel/` patterns by keyword |
+| `spawn_agent` | Spawn subagents in parallel |
+| `batch_read` | Read multiple files in parallel |
+| `pty_spawn` | Start a background terminal session |
+| `pty_write` | Send input to a PTY session |
+| `pty_read` | Read output from a PTY session |
+| `pty_list` | List active PTY sessions |
+| `pty_kill` | Terminate a PTY session |
+| Octto tools | Create, await, and manage browser brainstorm sessions |
+
+## Hooks
+
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| Fragment Injector | `chat.params` | Injects user-defined prompt fragments (highest priority) |
+| Ledger Loader | `chat.params` | Injects continuity ledger into system prompt |
+| Context Injector | `chat.params` + `tool.execute.after` | Loads project context files and directory READMEs |
+| Context Window Monitor | `chat.params` | Warns at 70% and 85% context usage thresholds |
+| Mindmodel Injector | `chat.messages.transform` + `chat.system.transform` | Auto-injects matching `.mindmodel/` patterns (feature-flagged) |
+| Auto-Compact | event | Summarizes session at configurable context threshold |
+| Session Recovery | event | Recovers session state after interruptions |
+| Token-Aware Truncation | `tool.execute.after` | Caps large tool outputs based on context limits |
+| Comment Checker | `tool.execute.after` | Validates Edit tool output for placeholder comments |
+| Artifact Auto-Index | `tool.execute.after` | Indexes artifacts written to `thoughts/` into SQLite FTS5 |
+| File Ops Tracker | `tool.execute.after` | Records read/modified files for session ledger |
+| Constraint Reviewer | `tool.execute.after` | Validates generated code against `.mindmodel/` constraints |
 
 ## Development
 
 ```bash
-git clone git@github.com:flipch/micode-beads.git ~/.micode-beads
-cd ~/.micode-beads && bun install && bun run build
+git clone git@github.com:flipch/micode-beads.git && cd micode-beads
+bun install
 ```
 
+Point OpenCode at your local clone for development:
+
 ```json
-// Use local path
-{ "plugin": ["~/.micode-beads"] }
+{ "plugin": ["~/path/to/micode-beads"] }
+```
+
+### Build
+
+```bash
+bun run build
+```
+
+### Test
+
+```bash
+bun test
+```
+
+### Lint and Format
+
+```bash
+bun run lint
+bun run format
 ```
 
 ### Release
 
-Release checklist:
+Releases are managed by [release-please](https://github.com/googleapis/release-please). Merge the release PR to cut a new version. The CI workflow publishes to npm via OIDC trusted publishing.
 
-- Ensure npm Trusted Publishing is set for `flipch/micode-beads` and GitHub repo variable `NPM_PUBLISH_OIDC=true` exists.
-- Ensure no repository/environment secret injects npm auth (`NPM_TOKEN` or `NODE_AUTH_TOKEN`), since publishing is OIDC-only.
-- Ensure the publish runner uses npm CLI `>=11.5.1` (required for npm trusted publishing with OIDC).
-- Merge the Release Please PR when you want to cut a release (it bumps version + changelog + tag).
-- Run tests and build: `bin/bun test` and `bin/bun run build`.
-- Bump version (creates commit + tag): `bin/bun run version:patch` (or `version:minor`, `version:major`).
-- Push commit and tag: `git push origin main --follow-tags`.
-- Create a GitHub Release for the tag (this triggers npm publish via OIDC).
-- Verify the version appears on npm.
+## Contributing
 
-Manual semver bump commands (optional):
+Contributions are welcome. Please open an issue to discuss significant changes before submitting a pull request. Run `bun test` and `bun run lint` before pushing.
 
-```bash
-bin/bun run version:patch
-bin/bun run version:minor
-bin/bun run version:major
-bin/bun run version:prerelease
-```
+## Attribution
 
-## Philosophy
+Forked from [micode](https://github.com/vtemian/micode) by vtemian.
 
-1. **Brainstorm first** - Refine ideas before coding
-2. **Research before implementing** - Understand the codebase
-3. **Plan with human buy-in** - Get approval before coding
-4. **Parallel investigation** - Spawn multiple subagents
-5. **Isolated implementation** - Use git worktrees
-6. **Continuous verification** - Implementer + Reviewer per task
-7. **Session continuity** - Never lose context
+## License
 
-## micode-beads vs oh-my-opencode
-
-Both are OpenCode plugins, but with different philosophies:
-
-| Aspect | micode-beads | oh-my-opencode |
-|--------|--------|----------------|
-| **Philosophy** | Opinionated workflow (brainstorm→plan→implement) | Batteries-included framework |
-| **Agent Design** | Role-based (Brainstormer, Planner, Executor) | Greek mythology theme (Sisyphus, Atlas, Prometheus) |
-| **Parallelism** | Batch-first: 10-20 concurrent micro-tasks (2-5 min each) | Background tasks with tmux visual monitoring |
-| **Code Guidance** | Mindmodel system with project-specific patterns | Comment checker, keyword modes (ultrawork) |
-| **Context Recovery** | Ledger system (CONTINUITY files) | AGENTS.md hierarchy, preemptive compaction |
-| **Workflow** | TDD-enforced with adaptation over escalation | Category-based delegation (visual-engineering, ultrabrain) |
-| **Configuration** | Focused options | Extensive (34 hooks, 11 agents, fallback chains) |
-
-### When to Choose micode-beads
-
-- You want a **structured brainstorm→plan→implement workflow**
-- You prefer **TDD-driven implementation** with test-first development
-- You need **project-specific pattern enforcement** via mindmodel
-- You want **high parallelism on granular tasks** (10-20 concurrent micro-tasks)
-- You value **session continuity** via structured ledgers
-- You want **Beads-backed task tracking** across long-running work
-
-### When to Choose oh-my-opencode
-
-- You want **maximum flexibility** and configuration options
-- You prefer **keyword-driven modes** (e.g., "ultrawork", "analyze")
-- You need **extensive model fallback chains** with subscription detection
-- You like **category-based task delegation** (visual-engineering, infrastructure)
-- You want **visual monitoring** via tmux integration
-
-## Inspiration
-
-- [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) - Plugin architecture
-- [HumanLayer ACE-FCA](https://github.com/humanlayer/12-factor-agents) - Structured workflows
-- [Factory.ai](https://factory.ai/blog/context-compression) - Structured compaction research
+[MIT](LICENSE)
