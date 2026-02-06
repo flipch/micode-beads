@@ -599,3 +599,361 @@ describe("loadMicodeConfig - fragments", () => {
     expect(config?.fragments?.implementer).toBeUndefined();
   });
 });
+
+describe("loadMicodeConfig - researchDirs", () => {
+  let testConfigDir: string;
+
+  beforeEach(() => {
+    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    mkdirSync(testConfigDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testConfigDir, { recursive: true, force: true });
+  });
+
+  it("should load researchDirs from micode-beads.json", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        researchDirs: ["docs", "design/specs"],
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config).not.toBeNull();
+    expect(config?.researchDirs).toEqual(["docs", "design/specs"]);
+  });
+
+  it("should filter out non-string values in researchDirs", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        researchDirs: ["docs", 123, null, "wiki"],
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.researchDirs).toEqual(["docs", "wiki"]);
+  });
+
+  it("should filter out empty strings from researchDirs", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        researchDirs: ["docs", "", "  ", "wiki"],
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.researchDirs).toEqual(["docs", "wiki"]);
+  });
+
+  it("should not set researchDirs when all entries are invalid", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        researchDirs: ["", 123, null],
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.researchDirs).toBeUndefined();
+  });
+
+  it("should ignore researchDirs when not an array", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        researchDirs: "not-an-array",
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.researchDirs).toBeUndefined();
+  });
+
+  it("should ignore researchDirs when it is an object", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        researchDirs: { path: "docs" },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.researchDirs).toBeUndefined();
+  });
+});
+
+describe("loadMicodeConfig - afk", () => {
+  let testConfigDir: string;
+
+  beforeEach(() => {
+    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    mkdirSync(testConfigDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testConfigDir, { recursive: true, force: true });
+  });
+
+  it("should load afk: true from micode-beads.json", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        afk: true,
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config).not.toBeNull();
+    expect(config?.afk).toBe(true);
+  });
+
+  it("should load afk: false from micode-beads.json", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        afk: false,
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.afk).toBe(false);
+  });
+
+  it("should ignore afk when not a boolean", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        afk: "yes",
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.afk).toBeUndefined();
+  });
+
+  it("should ignore afk when it is a number", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        afk: 1,
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.afk).toBeUndefined();
+  });
+
+  it("should not set afk when not present in config", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        agents: {},
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.afk).toBeUndefined();
+  });
+});
+
+describe("loadMicodeConfig - gitPr", () => {
+  let testConfigDir: string;
+
+  beforeEach(() => {
+    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    mkdirSync(testConfigDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testConfigDir, { recursive: true, force: true });
+  });
+
+  it("should load gitPr with draftByDefault: true", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        gitPr: { draftByDefault: true },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config).not.toBeNull();
+    expect(config?.gitPr?.draftByDefault).toBe(true);
+  });
+
+  it("should load gitPr with draftByDefault: false", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        gitPr: { draftByDefault: false },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.gitPr?.draftByDefault).toBe(false);
+  });
+
+  it("should load gitPr as empty object when draftByDefault is not a boolean", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        gitPr: { draftByDefault: "yes" },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.gitPr).toEqual({});
+  });
+
+  it("should load gitPr as empty object when it has no recognized fields", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        gitPr: { unknownField: "value" },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.gitPr).toEqual({});
+  });
+
+  it("should ignore gitPr when not an object", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        gitPr: "not-an-object",
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.gitPr).toBeUndefined();
+  });
+
+  it("should ignore gitPr when it is an array", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        gitPr: [1, 2, 3],
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.gitPr).toBeUndefined();
+  });
+
+  it("should ignore gitPr when it is null", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        gitPr: null,
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config?.gitPr).toBeUndefined();
+  });
+});
+
+describe("loadMicodeConfig - backward compatibility with new fields", () => {
+  let testConfigDir: string;
+
+  beforeEach(() => {
+    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    mkdirSync(testConfigDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testConfigDir, { recursive: true, force: true });
+  });
+
+  it("should load all new fields alongside existing fields", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        agents: {
+          commander: { model: "openai/gpt-4o" },
+        },
+        compactionThreshold: 0.5,
+        fragments: {
+          brainstormer: ["test fragment"],
+        },
+        researchDirs: ["docs", "design"],
+        afk: true,
+        gitPr: { draftByDefault: false },
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config).not.toBeNull();
+    expect(config?.agents?.commander?.model).toBe("openai/gpt-4o");
+    expect(config?.compactionThreshold).toBe(0.5);
+    expect(config?.fragments?.brainstormer).toEqual(["test fragment"]);
+    expect(config?.researchDirs).toEqual(["docs", "design"]);
+    expect(config?.afk).toBe(true);
+    expect(config?.gitPr?.draftByDefault).toBe(false);
+  });
+
+  it("should work with existing config that has no new fields", async () => {
+    const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        agents: {
+          commander: { model: "openai/gpt-4o" },
+        },
+        compactionThreshold: 0.3,
+      }),
+    );
+
+    const config = await loadMicodeConfig(testConfigDir);
+
+    expect(config).not.toBeNull();
+    expect(config?.agents?.commander?.model).toBe("openai/gpt-4o");
+    expect(config?.compactionThreshold).toBe(0.3);
+    expect(config?.researchDirs).toBeUndefined();
+    expect(config?.afk).toBeUndefined();
+    expect(config?.gitPr).toBeUndefined();
+  });
+});
