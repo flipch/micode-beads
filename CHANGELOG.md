@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/flipch/micode-beads/compare/v1.3.0...v1.3.1) (2026-02-06)
+
+
+### Bug Fixes
+
+* **ci:** inline release jobs into release-please workflow ([59b499a](https://github.com/flipch/micode-beads/commit/59b499afebeb8f99519305382800ed9dbb885c5f))
+* **ci:** inline release jobs into release-please workflow ([#21](https://github.com/flipch/micode-beads/issues/21)) ([59b499a](https://github.com/flipch/micode-beads/commit/59b499afebeb8f99519305382800ed9dbb885c5f))
+
 ## [1.3.0](https://github.com/flipch/micode-beads/compare/v1.2.0...v1.3.0) (2026-02-06)
 
 
