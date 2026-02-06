@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/flipch/micode-beads/compare/v1.3.1...v1.3.2) (2026-02-06)
+
+
+### Bug Fixes
+
+* **ci:** add id-token permission for npm OIDC publish ([#23](https://github.com/flipch/micode-beads/issues/23)) ([a37f834](https://github.com/flipch/micode-beads/commit/a37f834429bba99563edcc195430a635a67b9d4f))
+
 ## [1.3.1](https://github.com/flipch/micode-beads/compare/v1.3.0...v1.3.1) (2026-02-06)
 
 
