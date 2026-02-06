@@ -2,7 +2,7 @@
 
 **Feature ID**: cli-overhaul
 **Status**: In Progress
-**Progress**: 47% (7 of 15 tasks)
+**Progress**: 53% (8 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-06
 
@@ -200,7 +200,7 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
     | Commit | PASS |
     | Comments | PASS |
 
-- [ ] **T8**: Implement async update checker with cache and non-blocking notice `[complexity:medium]`
+- [x] **T8**: Implement async update checker with cache and non-blocking notice `[complexity:medium]`
 
     **Reference**: [design.md#35-update-checker](design.md#35-update-checker)
 
@@ -208,14 +208,21 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
 
     **Acceptance Criteria**:
 
-    - [ ] Create `src/cli/update-checker.ts` with `UpdateCheckCache` interface, `checkForUpdates`, `shouldCheck`, `fetchLatestVersion`, and `displayUpdateNotice` functions
-    - [ ] Cache stored at `~/.cache/micode-beads/update-check.json` with `lastCheck` timestamp, `latestVersion`, and `currentVersion`
-    - [ ] Cache staleness threshold is 24 hours
-    - [ ] When cache is stale or missing, spawn a detached background process to fetch latest version from GitHub API and write cache
-    - [ ] If cached version is newer than current, display non-blocking upgrade notice after primary command output
-    - [ ] Never delay command execution for the update check
-    - [ ] Skip all update logic when `MICODE_NO_UPDATE_CHECK=1` is set
-    - [ ] Unit tests in `tests/cli/update-checker.test.ts` cover cache read/write, staleness detection, version comparison, and disabled-via-env behavior
+    - [x] Create `src/cli/update-checker.ts` with `UpdateCheckCache` interface, `checkForUpdates`, `shouldCheck`, `fetchLatestVersion`, and `displayUpdateNotice` functions
+    - [x] Cache stored at `~/.cache/micode-beads/update-check.json` with `lastCheck` timestamp, `latestVersion`, and `currentVersion`
+    - [x] Cache staleness threshold is 24 hours
+    - [x] When cache is stale or missing, spawn a detached background process to fetch latest version from GitHub API and write cache
+    - [x] If cached version is newer than current, display non-blocking upgrade notice after primary command output
+    - [x] Never delay command execution for the update check
+    - [x] Skip all update logic when `MICODE_NO_UPDATE_CHECK=1` is set
+    - [x] Unit tests in `tests/cli/update-checker.test.ts` cover cache read/write, staleness detection, version comparison, and disabled-via-env behavior
+
+    **Implementation Summary**:
+
+    - **Files**: `src/cli/update-checker.ts`, `tests/cli/update-checker.test.ts`
+    - **Approach**: Replaced no-op stub with full implementation. Exports `UpdateCheckCache` interface, `readCache`/`writeCache` (with configurable path for testability), `shouldCheck` (24-hour staleness threshold), `isNewerVersion` (semver comparison), `fetchLatestVersion` (GitHub API with 5s timeout), `displayUpdateNotice` (stderr output respecting NO_COLOR and TTY). `checkForUpdates` reads cache synchronously, registers a `process.on('exit')` handler to display update notice after primary command output if a newer version is cached, and spawns a detached background process via `child_process.spawn` with `unref()` to fetch and write cache when stale. The background process uses an inline script with `fetch()` and `AbortSignal.timeout(10s)`.
+    - **Deviations**: Added `readCache`, `writeCache`, and `isNewerVersion` as additional exported helpers beyond the design spec for testability and reuse. Uses `process.on('exit')` instead of `process.on('beforeExit')` to ensure notice displays even when `process.exit()` is called explicitly.
+    - **Tests**: 30/30 passing
 
 ### Integration Layer (Parallel Group 3)
 
@@ -309,6 +316,18 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
     - **Approach**: Enhanced `runInit` to import and use `runAllChecks` from doctor-checks and `detectOutputOptions`/`formatCheckResult` from output module. After existing initialization (opencode.json, thoughts dirs, optional .mindmodel), runs all 11 diagnostic checks and displays a condensed summary: non-passing checks shown with verbose details, passing checks summarized as a count. Dependency output refactored to use color-aware `[OK]`/`[MISSING]` indicators. Added `buildNextSteps` function that inspects check results to produce environment-specific guidance (suggests installing OpenCode/git if missing, suggests `--mindmodel` if not scaffolded). Displays `doctor --fix` suggestion when any checks fail.
     - **Deviations**: None
     - **Tests**: 21/21 passing (10 existing + 11 new: 5 post-init health check tests + 6 environment-specific next steps tests)
+
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
 
 - [ ] **T11**: Implement non-interactive and JSON output mode for doctor command `[complexity:medium]`
 
