@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 58% (11 of 19 tasks)
+**Progress**: 63% (12 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -401,6 +401,18 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 443/443 passing (full suite, no regressions)
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | N/A |
+    | Commit | PASS |
+    | Comments | PASS |
+
 - [x] **T13**: Register preference manager agent in agents index `[complexity:simple]`
 
     **Reference**: [design.md#5-implementation-plan](design.md#5-implementation-plan) (T13)
@@ -421,9 +433,21 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 443/443 passing (full suite, no regressions)
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | N/A |
+    | Commit | PASS |
+    | Comments | PASS |
+
 ### Group 4: Pipeline Integration (Hook and Tool)
 
-- [ ] **T8**: Implement preference injector hook for agent pipeline `[complexity:medium]`
+- [x] **T8**: Implement preference injector hook for agent pipeline `[complexity:medium]`
 
     **Reference**: [design.md#37-preference-injector-hook](design.md#37-preference-injector-hook)
 
@@ -431,16 +455,23 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/hooks/preference-injector.ts` exists with exported `createPreferenceInjectorHook` factory function
-    - [ ] Factory follows the exact pattern of `createFragmentInjectorHook` -- receives plugin context and config, returns `chat.params` handler
-    - [ ] Handler loads all preferences (cached with TTL), determines current agent, resolves effective preferences
-    - [ ] Agent-category relevance filtering applied per design mapping (e.g., implementer gets naming/style/patterns, executor gets methodology only) (D10)
-    - [ ] Token budget limit applied with prioritization (category relevance, then recency)
-    - [ ] Preferences formatted as XML block via `formatPreferencesBlock`
-    - [ ] If methodology is active (not "default"), methodology block appended for planner/executor/implementer agents
-    - [ ] Injection positioned in pipeline: after fragment-injector, before ledger-loader (D4)
-    - [ ] No-op when no preferences exist -- zero overhead for projects without preferences (BR-05)
-    - [ ] Caching uses same TTL pattern as context-injector
+    - [x] File `src/hooks/preference-injector.ts` exists with exported `createPreferenceInjectorHook` factory function
+    - [x] Factory follows the exact pattern of `createFragmentInjectorHook` -- receives plugin context and config, returns `chat.params` handler
+    - [x] Handler loads all preferences (cached with TTL), determines current agent, resolves effective preferences
+    - [x] Agent-category relevance filtering applied per design mapping (e.g., implementer gets naming/style/patterns, executor gets methodology only) (D10)
+    - [x] Token budget limit applied with prioritization (category relevance, then recency)
+    - [x] Preferences formatted as XML block via `formatPreferencesBlock`
+    - [x] If methodology is active (not "default"), methodology block appended for planner/executor/implementer agents
+    - [x] Injection positioned in pipeline: after fragment-injector, before ledger-loader (D4)
+    - [x] No-op when no preferences exist -- zero overhead for projects without preferences (BR-05)
+    - [x] Caching uses same TTL pattern as context-injector
+
+    **Implementation Summary**:
+
+    - **Files**: `src/hooks/preference-injector.ts`
+    - **Approach**: Factory hook following createFragmentInjectorHook pattern; in-memory TTL cache for loaded preferences; agent-category relevance filtering via static mapping (6 agents with specific categories, fallback to all categories for unknown agents); methodology block injection for planner/executor/implementer when non-default; delegates to formatPreferencesBlock for XML formatting and token budget enforcement
+    - **Deviations**: None
+    - **Tests**: 14/14 passing (tests/hooks/preference-injector.test.ts)
 
 - [ ] **T9**: Implement preference lookup tool for agent queries `[complexity:simple]`
 
