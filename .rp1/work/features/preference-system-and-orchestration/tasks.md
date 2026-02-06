@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 42% (8 of 19 tasks)
+**Progress**: 47% (9 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -329,9 +329,21 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 422/422 passing (full suite, no regressions)
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | N/A |
+    | Commit | PASS |
+    | Comments | PASS |
+
 ### Group 3: Integration Modules (Mixed Dependencies)
 
-- [ ] **T3**: Implement preference scope resolver with glob matching `[complexity:medium]`
+- [x] **T3**: Implement preference scope resolver with glob matching `[complexity:medium]`
 
     **Reference**: [design.md#33-scope-resolution](design.md#33-scope-resolution)
 
@@ -339,15 +351,22 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/preferences/resolver.ts` exists with exported functions: `resolvePreferences`, `getEffectivePreferences`
-    - [ ] Scope precedence enforced: file-pattern > project > global (BR-02, AC-08b)
-    - [ ] Within same scope level, most recently created preference takes precedence (BR-02)
-    - [ ] `resolvePreferences` filters by enabled status and resolves for given context (file path, agent name)
-    - [ ] `getEffectivePreferences` returns preferences annotated with `effectiveScope` and optional `overriddenBy` fields (AC-08c)
-    - [ ] Custom glob matcher implemented supporting `*` (single segment) and `**` (recursive) patterns -- no new dependency added (D8)
-    - [ ] Glob matcher handles common patterns: `*.ts`, `src/**/*.ts`, `tests/**`, `*.test.ts`
-    - [ ] File-pattern scope preferences only apply when file path matches the pattern (AC-08a)
-    - [ ] Disabled preferences (enabled: false) are excluded from resolution
+    - [x] File `src/preferences/resolver.ts` exists with exported functions: `resolvePreferences`, `getEffectivePreferences`
+    - [x] Scope precedence enforced: file-pattern > project > global (BR-02, AC-08b)
+    - [x] Within same scope level, most recently created preference takes precedence (BR-02)
+    - [x] `resolvePreferences` filters by enabled status and resolves for given context (file path, agent name)
+    - [x] `getEffectivePreferences` returns preferences annotated with `effectiveScope` and optional `overriddenBy` fields (AC-08c)
+    - [x] Custom glob matcher implemented supporting `*` (single segment) and `**` (recursive) patterns -- no new dependency added (D8)
+    - [x] Glob matcher handles common patterns: `*.ts`, `src/**/*.ts`, `tests/**`, `*.test.ts`
+    - [x] File-pattern scope preferences only apply when file path matches the pattern (AC-08a)
+    - [x] Disabled preferences (enabled: false) are excluded from resolution
+
+    **Implementation Summary**:
+
+    - **Files**: `src/preferences/resolver.ts`
+    - **Approach**: Scope resolution with SCOPE_PRIORITY map (global=0, project=1, file-pattern=2) for sorting; custom glob-to-regex converter supporting *, **, and ? wildcards; getEffectivePreferences tracks per-category winners and annotates overridden entries; no external dependencies added
+    - **Deviations**: None
+    - **Tests**: 21/21 passing (tests/preferences/resolver.test.ts)
 
 - [ ] **T7**: Create barrel export for preferences module `[complexity:simple]`
 
