@@ -286,7 +286,8 @@ export function mergeAgentConfigs(
 ): Record<string, AgentConfig> {
   const models = availableModels ?? loadAvailableModels();
   const shouldValidateModels = models.size > 0;
-  const opencodeDefaultModel = defaultModel ?? loadDefaultModel();
+  const opencodeDefaultModel =
+    defaultModel === null ? null : (defaultModel ?? loadDefaultModel());
 
   // Helper to validate a model string
   const isValidModel = (model: string): boolean => {

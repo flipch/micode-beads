@@ -251,15 +251,15 @@ describe("mergeAgentConfigs", () => {
     const pluginAgents = {
       commander: {
         description: "Main agent",
-        model: "openai/gpt-5.2-codex",
+        model: "openai/gpt-5.3-codex",
       },
       brainstormer: {
         description: "Design agent",
-        model: "openai/gpt-5.2-codex",
+        model: "openai/gpt-5.3-codex",
       },
     };
 
-    const availableModels = new Set(["openai/gpt-5.2-codex", "github-copilot/gpt-5-mini"]);
+    const availableModels = new Set(["openai/gpt-5.3-codex", "github-copilot/gpt-5-mini"]);
     const defaultModel = "github-copilot/gpt-5-mini";
 
     const merged = mergeAgentConfigs(pluginAgents, null, availableModels, defaultModel);
@@ -273,11 +273,11 @@ describe("mergeAgentConfigs", () => {
     const pluginAgents = {
       commander: {
         description: "Main agent",
-        model: "openai/gpt-5.2-codex",
+        model: "openai/gpt-5.3-codex",
       },
       brainstormer: {
         description: "Design agent",
-        model: "openai/gpt-5.2-codex",
+        model: "openai/gpt-5.3-codex",
       },
     };
 
@@ -286,7 +286,7 @@ describe("mergeAgentConfigs", () => {
         commander: { model: "openai/gpt-4o" },
       },
     };
-    const availableModels = new Set(["openai/gpt-5.2-codex", "github-copilot/gpt-5-mini", "openai/gpt-4o"]);
+    const availableModels = new Set(["openai/gpt-5.3-codex", "github-copilot/gpt-5-mini", "openai/gpt-4o"]);
     const defaultModel = "github-copilot/gpt-5-mini";
 
     const merged = mergeAgentConfigs(pluginAgents, userConfig, availableModels, defaultModel);
@@ -301,17 +301,17 @@ describe("mergeAgentConfigs", () => {
     const pluginAgents = {
       commander: {
         description: "Main agent",
-        model: "openai/gpt-5.2-codex",
+        model: "openai/gpt-5.3-codex",
       },
     };
 
-    const availableModels = new Set(["openai/gpt-5.2-codex"]);
+    const availableModels = new Set(["openai/gpt-5.3-codex"]);
     const defaultModel = "invalid/nonexistent-model";
 
     const merged = mergeAgentConfigs(pluginAgents, null, availableModels, defaultModel);
 
     // Invalid default should be skipped - keep plugin default
-    expect(merged.commander.model).toBe("openai/gpt-5.2-codex");
+    expect(merged.commander.model).toBe("openai/gpt-5.3-codex");
   });
 });
 

@@ -36,7 +36,7 @@ describe("config-loader integration", () => {
       },
     };
 
-    const availableModels = new Set(["openai/gpt-4o", "openai/gpt-5.2-codex"]);
+    const availableModels = new Set(["openai/gpt-4o", "openai/gpt-5.3-codex"]);
 
     const merged = mergeAgentConfigs(agents, userConfig, availableModels);
 
@@ -47,7 +47,7 @@ describe("config-loader integration", () => {
     expect(merged["mm-orchestrator"].prompt).toBeDefined();
 
     // Check other agents still have defaults
-    expect(merged.commander.model).toBe("openai/gpt-5.2-codex");
+    expect(merged.commander.model).toBe("openai/gpt-5.3-codex");
   });
 
   it("should preserve all agent properties when merging", () => {
@@ -57,7 +57,7 @@ describe("config-loader integration", () => {
       },
     };
 
-    const availableModels = new Set(["openai/gpt-4o", "openai/gpt-5.2-codex"]);
+    const availableModels = new Set(["openai/gpt-4o", "openai/gpt-5.3-codex"]);
 
     const merged = mergeAgentConfigs(agents, userConfig, availableModels);
 
