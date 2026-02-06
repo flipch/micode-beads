@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4](https://github.com/flipch/micode-beads/compare/v1.3.3...v1.3.4) (2026-02-06)
+
+
+### Bug Fixes
+
+* **ci:** add id-token write permission at workflow level for OIDC ([#27](https://github.com/flipch/micode-beads/issues/27)) ([ee3632d](https://github.com/flipch/micode-beads/commit/ee3632dc2b80e019de030452f544f71a54b21098))
+
 ## [1.3.3](https://github.com/flipch/micode-beads/compare/v1.3.2...v1.3.3) (2026-02-06)
 
 
