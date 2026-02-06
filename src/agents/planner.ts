@@ -214,6 +214,41 @@ CRITICAL: Each micro-task = ONE file creation/modification + its test.
 - Utility/helper files get their own micro-task
 </granularity>
 
+<enriched-descriptions priority="HIGH">
+Every micro-task MUST include these structured fields:
+
+<required-fields>
+<field name="Purpose">What this task does and WHY it exists. One sentence linking to the design goal.</field>
+<field name="File">Exact path with action: create (new file) or modify (existing file)</field>
+<field name="Test">Exact test file path, or "none" for configs/types with no logic</field>
+<field name="Depends">Task IDs this task depends on, with rationale (e.g., "1.2 - imports types defined there")</field>
+<field name="Done-Criteria">Measurable conditions that prove the task is complete. Must be verifiable by the verifier agent.</field>
+<field name="Design-Ref">Reference to relevant section in design doc or research docs (e.g., "design.md section 3.2")</field>
+</required-fields>
+
+<good-example>
+### Task 2.3: Workflow State Manager
+**Purpose**: Implement the WorkflowManager class that persists stage state to JSON, enabling stage resumption and correction (design requirement FR-07).
+**File**: \`src/workflow/manager.ts\` (create)
+**Test**: \`tests/workflow/manager.test.ts\` (create)
+**Depends**: 1.1 (imports WorkflowState types), 1.3 (reads MicodeConfig for researchDirs)
+**Done-Criteria**:
+- WorkflowManager.loadState() reads and returns parsed JSON from thoughts/workflow/{id}/state.json
+- WorkflowManager.saveState() writes JSON atomically
+- Stage transitions enforce valid state changes (pending -> running -> completed/failed)
+- snapshotStage() copies artifacts to versioned snapshot directory
+**Design-Ref**: design.md section 3.1 (WorkflowManager API)
+</good-example>
+
+<bad-example>
+### Task 2.3: Create manager.ts
+**File**: src/workflow/manager.ts
+**Test**: tests/workflow/manager.test.ts
+**Depends**: 1.1, 1.3
+(Missing: purpose, done-criteria, design-ref, create/modify annotation, dependency rationale)
+</bad-example>
+</enriched-descriptions>
+
 <batching>
 Group micro-tasks into PARALLEL BATCHES based on dependencies:
 - Batch 1: Foundation (configs, types, schemas) - all independent
@@ -228,9 +263,22 @@ Target: 5-15 micro-tasks per batch for maximum parallelism.
 <dependencies>
 Explicit dependency annotation for each micro-task:
 - "depends: none" - can run immediately
-- "depends: 1.2, 1.3" - must wait for those tasks
+- "depends: 1.2 (imports types), 1.3 (reads config)" - must wait, with rationale
 - Dependencies are ONLY for files that import/use other files
 </dependencies>
+
+<quality-validation priority="HIGH" description="Validate bead quality before output">
+Before writing the final plan, check EVERY micro-task against this checklist:
+<checklist>
+<item>Purpose field exists and explains WHAT and WHY (not just file name)</item>
+<item>File field has exact path with create/modify annotation</item>
+<item>Done-criteria are measurable and verifiable (not vague like "works correctly")</item>
+<item>Dependencies include rationale (not just task IDs)</item>
+<item>Design-ref points to a specific section (not just "see design")</item>
+</checklist>
+<rule>If any task fails the checklist, fix it before outputting the plan</rule>
+<rule>A plan with sparse bead descriptions WILL cause implementer failures and reviewer rejections</rule>
+</quality-validation>
 </micro-task-design>
 
 <output-format path="thoughts/shared/plans/YYYY-MM-DD-{topic}.md">
@@ -263,9 +311,14 @@ Batch 4 (parallel): 4.1, 4.2 [integration - depends on batch 3]
 All tasks in this batch have NO dependencies and run simultaneously.
 
 ### Task 1.1: [Config/Type/Schema Name]
-**File:** \`exact/path/to/file.ts\`
+**Purpose:** [What this task does and WHY - link to design goal]
+**File:** \`exact/path/to/file.ts\` (create | modify)
 **Test:** \`tests/exact/path/to/file.test.ts\` (or "none" for configs)
 **Depends:** none
+**Done-Criteria:**
+- [Measurable condition 1]
+- [Measurable condition 2]
+**Design-Ref:** [design.md section X.Y]
 **Beads:** \`[bd-XXXX.1]\`
 
 \`\`\`typescript
@@ -289,9 +342,14 @@ All tasks in this batch have NO dependencies and run simultaneously.
 All tasks in this batch depend on Batch 1 completing.
 
 ### Task 2.1: [Module Name]
-**File:** \`exact/path/to/module.ts\`
-**Test:** \`tests/exact/path/to/module.test.ts\`
-**Depends:** 1.1, 1.2 (imports types from these)
+**Purpose:** [What this module does and WHY - link to design goal]
+**File:** \`exact/path/to/module.ts\` (create | modify)
+**Test:** \`tests/exact/path/to/module.test.ts\` (create | modify)
+**Depends:** 1.1 (imports types defined there), 1.2 (reads config schema)
+**Done-Criteria:**
+- [Measurable condition 1]
+- [Measurable condition 2]
+**Design-Ref:** [design.md section X.Y]
 **Beads:** \`[bd-XXXX.N]\` blocks on \`[bd-XXXX.1, bd-XXXX.2]\`
 
 \`\`\`typescript

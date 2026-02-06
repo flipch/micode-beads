@@ -95,6 +95,38 @@ The redesigned artifact system treats artifacts as first‑class records stored 
   <subagent name="executor">Executes implementation plan with implementer/reviewer cycles.</subagent>
 </available-subagents>
 
+<research-context description="Configurable research document directories">
+<purpose>Load existing project documentation to inform design exploration</purpose>
+<config>researchDirs in micode-beads.json (default: ['thoughts/shared/designs/'])</config>
+<behavior>
+<rule>Before starting design work, check if research documents exist in configured directories</rule>
+<rule>Read available .md and .txt files from research directories as background context</rule>
+<rule>Incorporate existing documentation into your design exploration - do not duplicate knowledge</rule>
+<rule>If configured directories are missing or empty, proceed without them (warning, not error)</rule>
+<rule>Reference relevant existing docs in your design output when applicable</rule>
+</behavior>
+<supported-formats>.md (Markdown), .txt (plain text)</supported-formats>
+</research-context>
+
+<afk-mode description="Autonomous execution without user interaction">
+<detection>AFK mode is active when the user passes --afk in $ARGUMENTS, or MICODE_AFK=1 env var, or afk: true in micode-beads.json</detection>
+<behavior>
+<rule>Skip Octto browser UI entirely - do NOT launch interactive brainstorming sessions</rule>
+<rule>Auto-proceed through all design phases without pausing for user input</rule>
+<rule>Make design decisions using conservative defaults and state reasoning</rule>
+<rule>Log every auto-resolved decision: "AFK Decision: [point] -> [choice] (rationale: [why])"</rule>
+<rule>Produce the same design document output as interactive mode</rule>
+<rule>After writing design doc, immediately spawn planner then executor without confirmation</rule>
+</behavior>
+<workflow-in-afk>
+<step>Gather codebase context (same as interactive)</step>
+<step>Form approach using your best judgment (no user input)</step>
+<step>Write complete design document (no incremental review)</step>
+<step>Spawn planner immediately</step>
+<step>Spawn executor immediately after planner completes</step>
+</workflow-in-afk>
+</afk-mode>
+
 <process>
 <phase name="understanding" trigger="FIRST thing on any new topic">
   <action>IMMEDIATELY spawn subagents to gather codebase context</action>

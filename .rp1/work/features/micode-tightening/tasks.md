@@ -2,7 +2,7 @@
 
 **Feature ID**: micode-tightening
 **Status**: In Progress
-**Progress**: 47% (7 of 15 tasks)
+**Progress**: 53% (8 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-05
 
@@ -278,7 +278,19 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
     - **Deviations**: None
     - **Tests**: 368/369 passing (1 pre-existing failure unrelated to this task)
 
-- [ ] **T7**: Update agent prompts for AFK mode, stage resumption, enriched beads, research dirs, and verification `[complexity:complex]`
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | ✅ PASS |
+    | Accuracy | ✅ PASS |
+    | Completeness | ✅ PASS |
+    | Quality | ✅ PASS |
+    | Testing | ⏭️ N/A |
+    | Commit | ✅ PASS |
+    | Comments | ✅ PASS |
+
+- [x] **T7**: Update agent prompts for AFK mode, stage resumption, enriched beads, research dirs, and verification `[complexity:complex]`
 
     **Reference**: [design.md#38-agent-prompt-updates](design.md#38-agent-prompt-updates)
 
@@ -286,12 +298,19 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
     **Acceptance Criteria**:
 
-    - [ ] Commander (`src/agents/commander.ts`): add `<afk-mode>` section (skip confirmations, auto-resolve, log choices), `<stage-resumption>` section (`--resume-from`, `--correct` flags), `<workflow-state>` section (state persistence), update `<workflow>` to include verify stage
-    - [ ] Brainstormer (`src/agents/brainstormer.ts`): add `<research-context>` section (configurable research dirs), add `<afk-mode>` section (skip Octto browser UI, auto-proceed)
-    - [ ] Planner (`src/agents/planner.ts`): update `<micro-task-design>` to require enriched bead descriptions (purpose statement, affected files with create/modify, dependencies with rationale, measurable done-criteria, reference to design/research docs), add bead quality validation step
-    - [ ] Executor (`src/agents/executor.ts`): add `<verification-phase>` after all batches (spawn verifier agent), add AFK mode awareness (no confirmation pauses), add workflow state updates (mark stages complete), add `<afk-git-pr>` section for automatic PR creation
-    - [ ] All prompt updates follow existing XML-structured agent prompt patterns
-    - [ ] Agent prompt updates reference new config fields from T1 and workflow state API from T3
+    - [x] Commander (`src/agents/commander.ts`): add `<afk-mode>` section (skip confirmations, auto-resolve, log choices), `<stage-resumption>` section (`--resume-from`, `--correct` flags), `<workflow-state>` section (state persistence), update `<workflow>` to include verify stage
+    - [x] Brainstormer (`src/agents/brainstormer.ts`): add `<research-context>` section (configurable research dirs), add `<afk-mode>` section (skip Octto browser UI, auto-proceed)
+    - [x] Planner (`src/agents/planner.ts`): update `<micro-task-design>` to require enriched bead descriptions (purpose statement, affected files with create/modify, dependencies with rationale, measurable done-criteria, reference to design/research docs), add bead quality validation step
+    - [x] Executor (`src/agents/executor.ts`): add `<verification-phase>` after all batches (spawn verifier agent), add AFK mode awareness (no confirmation pauses), add workflow state updates (mark stages complete), add `<afk-git-pr>` section for automatic PR creation
+    - [x] All prompt updates follow existing XML-structured agent prompt patterns
+    - [x] Agent prompt updates reference new config fields from T1 and workflow state API from T3
+
+    **Implementation Summary**:
+
+    - **Files**: `src/agents/commander.ts`, `src/agents/brainstormer.ts`, `src/agents/planner.ts`, `src/agents/executor.ts`
+    - **Approach**: Added XML-structured prompt sections to all four agents following existing patterns. Commander: `<workflow-state>`, `<stage-resumption>`, `<afk-mode>` sections plus verify phase in workflow and verifier/pr-feedback in agents list. Brainstormer: `<research-context>` for configurable research dirs and `<afk-mode>` for autonomous design. Planner: `<enriched-descriptions>` with required fields (Purpose, File, Depends, Done-Criteria, Design-Ref), good/bad examples, and `<quality-validation>` checklist; updated output templates. Executor: `<verification-phase>` with verifier spawning, `<afk-mode>`, `<workflow-state>`, `<afk-git-pr>` sections; added verifier to available-subagents and environment; updated output template with verification section.
+    - **Deviations**: None
+    - **Tests**: 368/369 passing (1 pre-existing failure unrelated to this task)
 
 ### Integration (Parallel Group 3)
 
