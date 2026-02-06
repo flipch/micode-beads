@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 63% (12 of 19 tasks)
+**Progress**: 68% (13 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -473,7 +473,19 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 14/14 passing (tests/hooks/preference-injector.test.ts)
 
-- [ ] **T9**: Implement preference lookup tool for agent queries `[complexity:simple]`
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
+
+- [x] **T9**: Implement preference lookup tool for agent queries `[complexity:simple]`
 
     **Reference**: [design.md#38-preference-lookup-tool](design.md#38-preference-lookup-tool)
 
@@ -481,15 +493,22 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/tools/preference-lookup.ts` exists with exported `createPreferenceLookupTool` factory function
-    - [ ] Follows the pattern of `createMindmodelLookupTool` and `createBatchReadTool`
-    - [ ] Tool accepts query parameters: `query` (keyword/category string) and optional `scope` (file path for context)
-    - [ ] Returns formatted preference list matching the query criteria
-    - [ ] Category filter matches preferences by category name
-    - [ ] Scope filter resolves effective preferences for the given file path
-    - [ ] Keyword matching searches preference descriptions
-    - [ ] Returns useful message when no preferences match
-    - [ ] Tool definition includes proper name, description, and input schema
+    - [x] File `src/tools/preference-lookup.ts` exists with exported `createPreferenceLookupTool` factory function
+    - [x] Follows the pattern of `createMindmodelLookupTool` and `createBatchReadTool`
+    - [x] Tool accepts query parameters: `query` (keyword/category string) and optional `scope` (file path for context)
+    - [x] Returns formatted preference list matching the query criteria
+    - [x] Category filter matches preferences by category name
+    - [x] Scope filter resolves effective preferences for the given file path
+    - [x] Keyword matching searches preference descriptions
+    - [x] Returns useful message when no preferences match
+    - [x] Tool definition includes proper name, description, and input schema
+
+    **Implementation Summary**:
+
+    - **Files**: `src/tools/preference-lookup.ts`
+    - **Approach**: Factory function following createMindmodelLookupTool pattern; accepts query (category or keyword) and optional scope (file path); category queries use exact match against PREFERENCE_CATEGORIES with case-insensitive fallback; keyword queries search descriptions and category names; scope parameter triggers getEffectivePreferences for context-sensitive resolution with formatEffectivePreferencesReport output; no-scope queries use resolvePreferences with formatPreferencesBlock output; graceful error handling with try/catch and informative fallback messages
+    - **Deviations**: None
+    - **Tests**: 10/10 passing (tests/tools/preference-lookup.test.ts)
 
 ### Group 5: Final Wiring
 
