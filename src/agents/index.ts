@@ -25,9 +25,11 @@ import {
 import { octtoAgent } from "./octto";
 import { patternFinderAgent } from "./pattern-finder";
 import { plannerAgent } from "./planner";
+import { prFeedbackAgent } from "./pr-feedback";
 import { probeAgent } from "./probe";
 import { projectInitializerAgent } from "./project-initializer";
 import { reviewerAgent } from "./reviewer";
+import { verifierAgent } from "./verifier";
 
 export const agents: Record<string, AgentConfig> = {
   [PRIMARY_AGENT_NAME]: { ...primaryAgent, model: "openai/gpt-5.2-codex" },
@@ -45,6 +47,8 @@ export const agents: Record<string, AgentConfig> = {
   "project-initializer": { ...projectInitializerAgent, model: "openai/gpt-5.2-codex" },
   octto: { ...octtoAgent, model: "openai/gpt-5.2-codex" },
   probe: { ...probeAgent, model: "openai/gpt-5.2-codex" },
+  verifier: { ...verifierAgent, model: "openai/gpt-5.2-codex" },
+  "pr-feedback": { ...prFeedbackAgent, model: "openai/gpt-5.2-codex" },
   // Mindmodel generation agents
   "mm-stack-detector": { ...stackDetectorAgent, model: "openai/gpt-5.2-codex" },
   "mm-pattern-discoverer": { ...mindmodelPatternDiscovererAgent, model: "openai/gpt-5.2-codex" },
@@ -76,4 +80,6 @@ export {
   artifactSearcherAgent,
   octtoAgent,
   probeAgent,
+  verifierAgent,
+  prFeedbackAgent,
 };
