@@ -1,9 +1,12 @@
 name: Release
 
 on:
-  release:
-    types:
-      - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v1.3.0)'
+        required: true
+        type: string
 
 jobs:
   build-standalone:
@@ -14,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -29,7 +34,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release upload "${{ inputs.tag }}" \
             dist/micode-beads-darwin-arm64 \
             dist/micode-beads-darwin-arm64.sha256 \
             dist/micode-beads-darwin-x64 \
@@ -49,6 +54,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
 
       - uses: oven-sh/setup-bun@v2
         with:
