@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/flipch/micode-beads/compare/v1.3.2...v1.3.3) (2026-02-06)
+
+
+### Bug Fixes
+
+* **ci:** use workflow_call for npm publish OIDC compatibility ([#25](https://github.com/flipch/micode-beads/issues/25)) ([52346b6](https://github.com/flipch/micode-beads/commit/52346b6687c272ccc708df9547f883a4355eb280))
+
 ## [1.3.2](https://github.com/flipch/micode-beads/compare/v1.3.1...v1.3.2) (2026-02-06)
 
 
