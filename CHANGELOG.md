@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/flipch/micode-beads/compare/v1.2.0...v1.3.0) (2026-02-06)
+
+
+### Features
+
+* CLI overhaul with doctor diagnostics, auto-fix, and standalone binary support ([#20](https://github.com/flipch/micode-beads/issues/20)) ([419c2ce](https://github.com/flipch/micode-beads/commit/419c2ce98020c7f7ffa8b4fe0c0129b4e0dc6b20))
+* tighten micode-beads workflow with CLI, installer, AFK mode, and stage resumption ([#17](https://github.com/flipch/micode-beads/issues/17)) ([8b32b61](https://github.com/flipch/micode-beads/commit/8b32b6170f2c38a754d0e87ef2b53663ba04bd13))
+
 ## [1.2.0](https://github.com/flipch/micode-beads/compare/v1.1.0...v1.2.0) (2026-02-06)
 
 
