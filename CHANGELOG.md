@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.5](https://github.com/flipch/micode-beads/compare/v1.3.4...v1.3.5) (2026-02-06)
+
+
+### Bug Fixes
+
+* **ci:** use workflow_dispatch instead of workflow_call for release ([#29](https://github.com/flipch/micode-beads/issues/29)) ([40650ab](https://github.com/flipch/micode-beads/commit/40650abbc19967111dcc628aec8e062747cbeb99))
+
 ## [1.3.4](https://github.com/flipch/micode-beads/compare/v1.3.3...v1.3.4) (2026-02-06)
 
 
