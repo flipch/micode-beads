@@ -1,0 +1,402 @@
+# Development Tasks: micode-beads Tightening
+
+**Feature ID**: micode-tightening
+**Status**: In Progress
+**Progress**: 7% (1 of 15 tasks)
+**Estimated Effort**: 8 days
+**Started**: 2026-02-05
+
+## Overview
+
+Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI init), workflow lifecycle (stage resumption, post-final correction, AFK mode), quality (tightened verification, enriched bead descriptions, configurable research dirs), and feedback loops (PR review feedback, AFK+PR combined mode). Introduces new modules (`src/workflow/`, `src/cli/`), two new agents (verifier, pr-feedback), and significant prompt updates across existing agents.
+
+## Implementation DAG
+
+**Parallel Groups** (tasks with no inter-dependencies):
+
+1. [T1, T2, T4, T5, T6, T9] - Config extension, installer script, verifier agent, PR feedback agent, and README are all independent of each other
+2. [T3, T7] - Workflow state module depends on T1 config schema; agent prompt updates depend on T1 config schema
+3. [T8] - Command registration and index wiring depends on T3, T5, T6, T7
+4. [T10] - Test suite depends on T1, T3, T4, T5, T6, T7
+
+**Dependencies**:
+
+- T3 -> T1 (data: workflow state reads config schema for researchDirs, afk)
+- T7 -> T1 (data: agent prompts reference new config fields)
+- T7 -> T3 (interface: agents interact with workflow state module API)
+- T8 -> T3 (build: index.ts imports workflow module)
+- T8 -> T5 (build: index.ts imports verifier agent)
+- T8 -> T6 (build: index.ts imports PR feedback agent)
+- T8 -> T7 (interface: wiring depends on final agent definitions)
+- T10 -> [T1, T3, T4, T5, T6, T7] (sequential: tests validate all new modules)
+
+**Critical Path**: T1 -> T3 -> T7 -> T8 -> T10
+
+## Task Breakdown
+
+### Independent Foundation (Parallel Group 1)
+
+- [x] **T1**: Extend MicodeConfig with researchDirs, afk, and gitPr fields `[complexity:medium]`
+
+    **Reference**: [design.md#36-config-extension](design.md#36-config-extension)
+
+    **Effort**: 4 hours
+
+    **Acceptance Criteria**:
+
+    - [x] `MicodeConfig` interface in `src/config-loader.ts` includes `researchDirs?: string[]`, `afk?: boolean`, and `gitPr?: { draftByDefault?: boolean }` fields
+    - [x] Parsing logic follows existing manual `typeof` checks and property allowlisting patterns
+    - [x] `researchDirs` defaults to `['thoughts/shared/designs/']` when not specified
+    - [x] `afk` defaults to `false` when not specified
+    - [x] `gitPr.draftByDefault` defaults to `true` when not specified
+    - [x] Invalid values for new fields are gracefully ignored with fallback to defaults
+    - [x] Existing `micode-beads.json` configurations continue to work without modification
+
+    **Implementation Summary**:
+
+    - **Files**: `src/config-loader.ts`, `tests/config-loader.test.ts`
+    - **Approach**: Added `GitPrConfig` interface and three new fields to `MicodeConfig`. Parsing follows existing patterns: `Array.isArray` with string filtering for `researchDirs`, `typeof === "boolean"` for `afk`, object check with boolean property extraction for `gitPr`. Added 20 tests covering valid values, invalid types, edge cases, and backward compatibility.
+    - **Deviations**: None
+    - **Tests**: 20/20 passing (new); 50/51 total (1 pre-existing failure unrelated to this task)
+
+- [ ] **T2**: Create CLI module with init command `[complexity:medium]`
+
+    **Reference**: [design.md#32-new-module-srccli](design.md#32-new-module-srccli)
+
+    **Effort**: 6 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] `src/cli/index.ts` provides a minimal CLI entry point with `init`, `--help`, `--version` commands
+    - [ ] `src/cli/init.ts` implements the init command: dependency checks (bun, opencode, git), `opencode.json` creation/update, optional `.mindmodel/` scaffolding, `thoughts/` directory creation
+    - [ ] Init command is idempotent -- running twice does not corrupt existing configuration
+    - [ ] Init command reads existing config before writing (merge, not overwrite)
+    - [ ] `package.json` updated with `"bin": { "micode-beads": "dist/cli.js" }`
+    - [ ] Build script updated to include CLI build target: `bun build src/cli/index.ts --outdir dist --target bun --outfile dist/cli.js`
+    - [ ] Clear success/failure output with next-step instructions printed to stdout
+
+- [ ] **T4**: Create installer script `[complexity:medium]`
+
+    **Reference**: [design.md#33-installer-script-scriptsinstallsh](design.md#33-installer-script-scriptsinstallsh)
+
+    **Effort**: 4 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] `scripts/install.sh` is a POSIX-compatible shell script
+    - [ ] Script detects OS (macOS, Linux) and architecture (x64, arm64)
+    - [ ] Script checks for npm/bun availability and installs via `npm install -g micode-beads@latest`
+    - [ ] Script falls back to downloading tarball from GitHub Releases if npm unavailable
+    - [ ] Script verifies installation via `micode-beads --version`
+    - [ ] Script includes checksum verification for downloaded artifacts
+    - [ ] Script uses HTTPS for all downloads
+    - [ ] Script provides clear error messages for unsupported platforms or network failures
+    - [ ] Script is pipeable from curl: `curl -fsSL https://... | sh`
+    - [ ] Script does not require sudo for default installation path
+
+- [ ] **T5**: Create verifier agent `[complexity:medium]`
+
+    **Reference**: [design.md#34-new-agent-srcagentsverifierts](design.md#34-new-agent-srcagentsverifierts)
+
+    **Effort**: 6 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] `src/agents/verifier.ts` implements a new agent following the existing agent factory pattern
+    - [ ] Agent performs completeness check: every task in the plan has been addressed
+    - [ ] Agent performs test coverage check: every new/modified file has a corresponding test file
+    - [ ] Agent performs plan adherence check: files modified match the paths specified in the plan
+    - [ ] Agent performs test pass check: all tests pass via `bun test`
+    - [ ] Output follows the verification report markdown format specified in design (status, completeness table, coverage table, adherence table, test results, issues list)
+    - [ ] Verification failures produce actionable error messages identifying the specific gap
+
+- [ ] **T6**: Create PR feedback agent `[complexity:medium]`
+
+    **Reference**: [design.md#35-new-agent-srcagentspr-feedbackts](design.md#35-new-agent-srcagentspr-feedbackts)
+
+    **Effort**: 6 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] `src/agents/pr-feedback.ts` implements a new agent following the existing agent factory pattern
+    - [ ] Agent uses `gh pr view <number> --json reviews,comments,reviewRequests` to fetch PR data via bash tool
+    - [ ] Agent parses review comments and maps them to file paths and line numbers
+    - [ ] Agent groups comments by file and generates correction tasks
+    - [ ] Agent spawns implementer agents in parallel to apply corrections
+    - [ ] Agent commits and pushes fixes to the existing PR branch (no force-push or history rewriting)
+    - [ ] Agent produces a summary of addressed vs. unaddressed review items
+
+- [ ] **T9**: Rewrite README following Standard Readme specification `[complexity:medium]`
+
+    **Reference**: [design.md#310-readme-structure](design.md#310-readme-structure)
+
+    **Effort**: 4 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] README.md contains all required sections: project description, badges (CI, npm, license), quickstart (under 3 steps), installation, configuration, workflow overview, commands, AFK mode, stage resumption, agents table, tools table, hooks table, development (build/test/release), contributing, attribution, and license
+    - [ ] No text is copied verbatim from the upstream micode README
+    - [ ] Fork notice is reduced to a single attribution line under "Attribution"
+    - [ ] README is under 300 lines for the main content (excluding auto-generated tables)
+    - [ ] README follows the Standard Readme specification
+    - [ ] README is understandable by a developer with no prior knowledge of micode-beads
+
+### Config-Dependent (Parallel Group 2)
+
+- [ ] **T3**: Create workflow state module with state machine, manager, and research-loader `[complexity:complex]`
+
+    **Reference**: [design.md#31-new-module-srcworkflow](design.md#31-new-module-srcworkflow)
+
+    **Effort**: 8 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] `src/workflow/state.ts` defines `WorkflowState`, `StageRecord`, and `CorrectionRecord` interfaces
+    - [ ] `src/workflow/manager.ts` implements `WorkflowManager` class with: `loadState`, `saveState`, `createState`, `startStage`, `completeStage`, `resetStage`, `getResumePoint`, `addCorrection`, `snapshotStage`, and static `detectAfkMode`
+    - [ ] `src/workflow/research-loader.ts` implements `loadResearchDocuments(dirs: string[])` returning `ResearchDocument[]` with path, content, and format
+    - [ ] `src/workflow/index.ts` provides barrel exports for all public APIs
+    - [ ] State persisted as JSON at `thoughts/workflow/{feature-slug}/state.json`
+    - [ ] Stage snapshots stored at `thoughts/workflow/{feature-slug}/snapshots/{stage}-v{N}/`
+    - [ ] Stage lifecycle transitions enforce valid state changes (pending -> running -> completed/failed)
+    - [ ] Stage versioning increments on each completion (version field in StageRecord)
+    - [ ] AFK detection resolves priority: command arg > env var (`MICODE_AFK`) > config flag
+    - [ ] Research-loader handles missing directories (warning, not error) and empty directories gracefully
+    - [ ] Research-loader supports `.md` and `.txt` file formats
+    - [ ] Reads `researchDirs` from config (requires T1 config schema)
+
+- [ ] **T7**: Update agent prompts for AFK mode, stage resumption, enriched beads, research dirs, and verification `[complexity:complex]`
+
+    **Reference**: [design.md#38-agent-prompt-updates](design.md#38-agent-prompt-updates)
+
+    **Effort**: 8 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] Commander (`src/agents/commander.ts`): add `<afk-mode>` section (skip confirmations, auto-resolve, log choices), `<stage-resumption>` section (`--resume-from`, `--correct` flags), `<workflow-state>` section (state persistence), update `<workflow>` to include verify stage
+    - [ ] Brainstormer (`src/agents/brainstormer.ts`): add `<research-context>` section (configurable research dirs), add `<afk-mode>` section (skip Octto browser UI, auto-proceed)
+    - [ ] Planner (`src/agents/planner.ts`): update `<micro-task-design>` to require enriched bead descriptions (purpose statement, affected files with create/modify, dependencies with rationale, measurable done-criteria, reference to design/research docs), add bead quality validation step
+    - [ ] Executor (`src/agents/executor.ts`): add `<verification-phase>` after all batches (spawn verifier agent), add AFK mode awareness (no confirmation pauses), add workflow state updates (mark stages complete), add `<afk-git-pr>` section for automatic PR creation
+    - [ ] All prompt updates follow existing XML-structured agent prompt patterns
+    - [ ] Agent prompt updates reference new config fields from T1 and workflow state API from T3
+
+### Integration (Parallel Group 3)
+
+- [ ] **T8**: Wire all new agents, commands, and hooks into src/index.ts `[complexity:medium]`
+
+    **Reference**: [design.md#39-command-registration](design.md#39-command-registration)
+
+    **Effort**: 4 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] `src/index.ts` imports and registers the verifier agent from T5
+    - [ ] `src/index.ts` imports and registers the PR feedback agent from T6
+    - [ ] `src/index.ts` registers the `/review-feedback` command with description "Address PR review feedback" and template "Process review feedback for PR $ARGUMENTS"
+    - [ ] `src/index.ts` imports the workflow module from T3
+    - [ ] AFK detection integrated into plugin initialization using `WorkflowManager.detectAfkMode()`
+    - [ ] `--afk`, `--resume-from`, and `--correct` flags parsed from `$ARGUMENTS` within agent prompts (not at CLI level)
+    - [ ] All new imports resolve correctly and the project builds without errors
+
+### Validation (Parallel Group 4)
+
+- [ ] **T10**: Add comprehensive test suite for all new modules `[complexity:complex]`
+
+    **Reference**: [design.md#7-testing-strategy](design.md#7-testing-strategy)
+
+    **Effort**: 8 hours
+
+    **Acceptance Criteria**:
+
+    - [ ] `tests/config-loader.test.ts` extended: parse researchDirs, afk, gitPr; backward compat with existing configs; invalid value handling
+    - [ ] `tests/workflow/state.test.ts` created: create, load, save state; stage transitions; version increment; correction records
+    - [ ] `tests/workflow/manager.test.ts` created: resume logic; snapshot creation; affected stage detection
+    - [ ] `tests/workflow/research-loader.test.ts` created: load .md/.txt files; missing dir warning; empty dir handling
+    - [ ] `tests/cli/init.test.ts` created: dependency checks; config creation; idempotency; existing config merge
+    - [ ] `tests/agents/verifier.test.ts` created: agent config validation; prompt structure verification
+    - [ ] `tests/agents/pr-feedback.test.ts` created: agent config validation; prompt structure verification
+    - [ ] `tests/workflow/afk.test.ts` created: env var detection, config flag, command arg detection; priority resolution
+    - [ ] All tests pass with `bun test`
+    - [ ] No tests written for: `gh` CLI behavior, OpenCode plugin SDK internals, shell installer, or Bun filesystem APIs
+
+### User Docs
+
+- [ ] **TD1**: Update .rp1/context/index.md - Project Structure `[complexity:simple]`
+
+    **Reference**: [design.md#documentation-impact](design.md#9-documentation-impact)
+
+    **Type**: edit
+
+    **Target**: .rp1/context/index.md
+
+    **Section**: Project Structure
+
+    **KB Source**: index.md:project-structure
+
+    **Effort**: 30 minutes
+
+    **Acceptance Criteria**:
+
+    - [ ] Project Structure section reflects the addition of `src/cli/` and `src/workflow/` directories
+
+- [ ] **TD2**: Update .rp1/context/architecture.md - Data Flows `[complexity:simple]`
+
+    **Reference**: [design.md#documentation-impact](design.md#9-documentation-impact)
+
+    **Type**: edit
+
+    **Target**: .rp1/context/architecture.md
+
+    **Section**: Data Flows
+
+    **KB Source**: architecture.md:data-flows
+
+    **Effort**: 30 minutes
+
+    **Acceptance Criteria**:
+
+    - [ ] Data Flows section includes the workflow state flow and PR feedback flow
+
+- [ ] **TD3**: Update .rp1/context/modules.md - Core Modules `[complexity:simple]`
+
+    **Reference**: [design.md#documentation-impact](design.md#9-documentation-impact)
+
+    **Type**: edit
+
+    **Target**: .rp1/context/modules.md
+
+    **Section**: Core Modules
+
+    **KB Source**: modules.md:core-modules
+
+    **Effort**: 30 minutes
+
+    **Acceptance Criteria**:
+
+    - [ ] Core Modules section documents the workflow module and CLI module
+
+- [ ] **TD4**: Update .rp1/context/patterns.md - Extension Mechanisms `[complexity:simple]`
+
+    **Reference**: [design.md#documentation-impact](design.md#9-documentation-impact)
+
+    **Type**: edit
+
+    **Target**: .rp1/context/patterns.md
+
+    **Section**: Extension Mechanisms
+
+    **KB Source**: patterns.md:extension-mechanisms
+
+    **Effort**: 30 minutes
+
+    **Acceptance Criteria**:
+
+    - [ ] Extension Mechanisms section documents the AFK mode pattern and workflow state pattern
+
+- [ ] **TD5**: Update .rp1/context/concept_map.md - Core Business Concepts `[complexity:simple]`
+
+    **Reference**: [design.md#documentation-impact](design.md#9-documentation-impact)
+
+    **Type**: edit
+
+    **Target**: .rp1/context/concept_map.md
+
+    **Section**: Core Business Concepts
+
+    **KB Source**: concept_map.md:core-business-concepts
+
+    **Effort**: 30 minutes
+
+    **Acceptance Criteria**:
+
+    - [ ] Core Business Concepts section includes WorkflowState, AFK Mode, and Stage Resumption concepts
+
+## Acceptance Criteria Checklist
+
+### FR-01: README Rewrite
+- [ ] AC-01.1: README contains all required sections (description, badges, quickstart, install, config, workflow, commands, agents, tools, hooks, contributing, license)
+- [ ] AC-01.2: No text copied verbatim from upstream micode README
+- [ ] AC-01.3: Fork notice reduced to single attribution line
+- [ ] AC-01.4: README under 300 lines for main content
+- [ ] AC-01.5: README follows Standard Readme specification
+
+### FR-02: CLI Onboarding/Init Tool
+- [ ] AC-02.1: CLI command available and documented
+- [ ] AC-02.2: Init checks for required dependencies (bun, opencode, git) and reports missing
+- [ ] AC-02.3: Init creates or updates opencode.json to include plugin
+- [ ] AC-02.4: Init optionally scaffolds .mindmodel/ directory
+- [ ] AC-02.5: Init provides clear success/failure output with next steps
+- [ ] AC-02.6: Init is idempotent
+
+### FR-03: Installer Script
+- [ ] AC-03.1: Single shell file hosted in repository
+- [ ] AC-03.2: Detects OS and architecture
+- [ ] AC-03.3: Fetches latest release from GitHub Releases API
+- [ ] AC-03.4: Verifies downloaded artifact (checksum)
+- [ ] AC-03.5: Places binary in standard PATH location
+- [ ] AC-03.6: Clear error messages for unsupported platforms or network failures
+- [ ] AC-03.7: Pipeable from curl
+
+### FR-04: Bead Description Enrichment
+- [ ] AC-04.1: Each bead includes purpose, file list, dependencies, done-criteria
+- [ ] AC-04.2: Beads reference relevant research/design docs
+- [ ] AC-04.3: Beads validated against quality threshold before implement
+
+### FR-05: Configurable Research Document Source
+- [ ] AC-05.1: Config option in micode-beads.json for research directories
+- [ ] AC-05.2: Default directory is thoughts/shared/designs/
+- [ ] AC-05.3: Custom directory contents provided as context to brainstormer and planner
+- [ ] AC-05.4: Missing/empty directories handled gracefully (warning, not error)
+- [ ] AC-05.5: Supports .md and .txt formats
+
+### FR-06: Tightened Verification Stages
+- [ ] AC-06.1: Completeness check (all bead tasks addressed)
+- [ ] AC-06.2: Test coverage check (tests exist for new/modified code)
+- [ ] AC-06.3: Plan adherence check (output matches plan file paths)
+- [ ] AC-06.4: Actionable error messages for verification failures
+- [ ] AC-06.5: Verification results logged to session ledger
+
+### FR-07: Stage Resumption and Correction
+- [ ] AC-07.1: Each stage persists outputs to durable filesystem location
+- [ ] AC-07.2: --resume-from flag allows specifying target stage
+- [ ] AC-07.3: Prior stages skipped and outputs loaded on resume
+- [ ] AC-07.4: Correction message can be provided when resuming
+- [ ] AC-07.5: Downstream stages re-executed with corrected inputs
+- [ ] AC-07.6: Stage state versioned for change tracking
+
+### FR-08: Post-PR-Review Feedback Workflow
+- [ ] AC-08.1: Command accepts PR number or URL as input
+- [ ] AC-08.2: Fetches review comments from GitHub API
+- [ ] AC-08.3: Maps comments to specific files and lines
+- [ ] AC-08.4: Generates corrective implementations
+- [ ] AC-08.5: Commits and pushes to existing PR branch
+- [ ] AC-08.6: Produces summary of addressed vs unaddressed items
+
+### FR-09: Post-Final Correction Capability
+- [ ] AC-09.1: --correct flag allows post-completion corrections
+- [ ] AC-09.2: System determines affected stages
+- [ ] AC-09.3: Only affected stages re-executed
+- [ ] AC-09.4: Research docs amended, not rebuilt from scratch
+- [ ] AC-09.5: Corrected plan includes diff/changelog
+- [ ] AC-09.6: Corrections logged with timestamps and rationale
+
+### FR-10: AFK (Autonomous) Mode
+- [ ] AC-10.1: --afk flag accepted on main workflow command
+- [ ] AC-10.2: All user prompts auto-resolved with conservative defaults
+- [ ] AC-10.3: Auto-resolved decisions logged with rationale
+- [ ] AC-10.4: Workflow completes without stdin reads or interactive pauses
+- [ ] AC-10.5: Same artifact types produced as interactive mode
+- [ ] AC-10.6: --afk combinable with other flags (e.g., --git-pr)
+
+### FR-11: AFK + Git PR Combined Mode
+- [ ] AC-11.1: --afk --git-pr creates branch, commits, pushes, opens PR
+- [ ] AC-11.2: PR title and description auto-generated from plan
+- [ ] AC-11.3: PR description includes design document summary
+- [ ] AC-11.4: Existing PR updated rather than duplicated
+- [ ] AC-11.5: PR created in draft status by default (configurable)
+
+## Definition of Done
+
+- [ ] All tasks completed
+- [ ] All AC verified
+- [ ] Code reviewed
+- [ ] Docs updated
