@@ -14,7 +14,7 @@ interface ConfigResult {
 }
 
 interface OpencodeJson {
-  plugin?: Record<string, unknown>;
+  plugin?: Record<string, unknown> | string[];
   [key: string]: unknown;
 }
 
@@ -45,24 +45,36 @@ function loadExistingConfig(configPath: string): OpencodeJson | null {
   }
 }
 
+function pluginContainsMicodeBeads(plugin: unknown): boolean {
+  if (Array.isArray(plugin)) {
+    return plugin.includes("micode-beads");
+  }
+  if (typeof plugin === "object" && plugin !== null) {
+    return "micode-beads" in plugin;
+  }
+  return false;
+}
+
 function createOrUpdateOpencodeJson(projectDir: string): ConfigResult {
   const configPath = join(projectDir, "opencode.json");
   const existing = loadExistingConfig(configPath);
 
   if (existing) {
-    if (existing.plugin && typeof existing.plugin === "object") {
-      if ("micode-beads" in existing.plugin) {
-        return { created: false, updated: false, path: configPath };
-      }
+    if (pluginContainsMicodeBeads(existing.plugin)) {
+      return { created: false, updated: false, path: configPath };
     }
 
-    const updated: OpencodeJson = {
-      ...existing,
-      plugin: {
+    let updatedPlugin: Record<string, unknown> | string[];
+    if (Array.isArray(existing.plugin)) {
+      updatedPlugin = [...existing.plugin, "micode-beads"];
+    } else {
+      updatedPlugin = {
         ...(typeof existing.plugin === "object" && existing.plugin !== null ? existing.plugin : {}),
         "micode-beads": {},
-      },
-    };
+      };
+    }
+
+    const updated: OpencodeJson = { ...existing, plugin: updatedPlugin };
     writeFileSync(configPath, `${JSON.stringify(updated, null, 2)}\n`);
     return { created: false, updated: true, path: configPath };
   }

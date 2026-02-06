@@ -120,4 +120,27 @@ describe("runInit", () => {
 
     expect(existsSync(join(tmpDir, "thoughts", "ledgers"))).toBe(true);
   });
+
+  it("should handle plugin as array and append micode-beads", async () => {
+    const configPath = join(tmpDir, "opencode.json");
+    writeFileSync(configPath, JSON.stringify({ plugin: ["some-other-plugin"] }));
+
+    await runInit([]);
+
+    const config = JSON.parse(readFileSync(configPath, "utf-8"));
+    expect(Array.isArray(config.plugin)).toBe(true);
+    expect(config.plugin).toContain("micode-beads");
+    expect(config.plugin).toContain("some-other-plugin");
+  });
+
+  it("should not duplicate micode-beads in plugin array", async () => {
+    const configPath = join(tmpDir, "opencode.json");
+    writeFileSync(configPath, JSON.stringify({ plugin: ["micode-beads"] }));
+
+    await runInit([]);
+
+    const config = JSON.parse(readFileSync(configPath, "utf-8"));
+    expect(Array.isArray(config.plugin)).toBe(true);
+    expect(config.plugin.filter((p: string) => p === "micode-beads")).toHaveLength(1);
+  });
 });
