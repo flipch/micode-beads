@@ -105,22 +105,22 @@ function spawnBackgroundFetch(currentVersion: string): void {
   const cachePath = CACHE_PATH;
   const cacheDir = dirname(cachePath);
 
+  const url = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
   const script = [
-    `const r = ${JSON.stringify(GITHUB_REPO)};`,
-    `const p = ${JSON.stringify(cachePath)};`,
-    `const d = ${JSON.stringify(cacheDir)};`,
-    `const c = ${JSON.stringify(currentVersion)};`,
-    "fetch(`https://api.github.com/repos/${r}/releases/latest`,",
+    `var p=${JSON.stringify(cachePath)};`,
+    `var d=${JSON.stringify(cacheDir)};`,
+    `var c=${JSON.stringify(currentVersion)};`,
+    `fetch(${JSON.stringify(url)},`,
     '  {headers:{"User-Agent":"micode-beads-update-check"},signal:AbortSignal.timeout(10000)})',
-    "  .then(r=>r.ok?r.json():null)",
-    "  .then(data=>{",
+    "  .then(function(r){return r.ok?r.json():null})",
+    "  .then(function(data){",
     "    if(!data||!data.tag_name)process.exit(0);",
-    '    const v=data.tag_name.replace(/^v/,"");',
-    "    const fs=require('fs');",
+    '    var v=data.tag_name.replace(/^v/,"");',
+    "    var fs=require('fs');",
     "    fs.mkdirSync(d,{recursive:true});",
     "    fs.writeFileSync(p,JSON.stringify({lastCheck:Date.now(),latestVersion:v,currentVersion:c}));",
     "  })",
-    "  .catch(()=>{});",
+    "  .catch(function(){});",
   ].join("");
 
   try {
