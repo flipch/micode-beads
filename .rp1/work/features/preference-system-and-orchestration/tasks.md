@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 31% (6 of 19 tasks)
+**Progress**: 36% (7 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -188,6 +188,18 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: 11/11 passing (tests/preferences/conflict.test.ts)
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
+
 - [x] **T5**: Implement preference XML formatter with token budget `[complexity:simple]`
 
     **Reference**: [design.md#35-preference-formatting](design.md#35-preference-formatting)
@@ -210,7 +222,19 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Files**: `src/preferences/formatter.ts`
     - **Approach**: XML block formatting with `<coding-preferences>/<category>` structure; recency-first sorting for budget prioritization; per-category truncation when budget exceeded; methodology block uses `<active-methodology>` XML; effective report uses markdown with strikethrough for overridden entries
     - **Deviations**: None
-    - **Tests**: 9/9 passing (tests/preferences/formatter.test.ts)
+    - **Tests**: 11/11 passing (tests/preferences/formatter.test.ts)
+
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
 
 - [x] **T6**: Implement methodology profiles and resolution `[complexity:simple]`
 
@@ -234,9 +258,21 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Files**: `src/preferences/methodology.ts`
     - **Approach**: Interfaces for MethodologyProfile/TaskOrdering/PromptModifiers; BUILTIN_METHODOLOGIES record with "default" (no-op) and "tdd" (test-first with XML prompt modifiers for planner/executor/implementer); getActiveMethodology accepts generic config object with optional methodology field for T12 independence
     - **Deviations**: None
-    - **Tests**: 16/16 passing (tests/preferences/methodology.test.ts)
+    - **Tests**: 14/14 passing (tests/preferences/methodology.test.ts)
 
-- [ ] **T10**: Implement preference manager agent definition `[complexity:medium]`
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | PASS |
+    | Commit | PASS |
+    | Comments | PASS |
+
+- [x] **T10**: Implement preference manager agent definition `[complexity:medium]`
 
     **Reference**: [design.md#39-preference-manager-agent](design.md#39-preference-manager-agent)
 
@@ -244,13 +280,20 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] File `src/agents/preference-manager.ts` exists with exported `preferenceManagerAgent` conforming to `AgentConfig`
-    - [ ] Agent configured as `mode: "subagent"` with `temperature: 0.2`
-    - [ ] Agent prompt covers all operations: declare preference, capture PR feedback, list/search, edit, disable, delete, view effective preferences, export/import
-    - [ ] PR feedback capture flow: accepts free text comment, extracts preference rule, category, scope, and stores provenance metadata (AC-03a, AC-03b, AC-03c)
-    - [ ] Provenance metadata for PR-sourced preferences includes: source ("pr-feedback"), reviewer name, date, original comment text (BR-04)
-    - [ ] Agent follows the pattern established by `project-initializer` and `ledger-creator` agents
-    - [ ] Agent has access to `preference_lookup` tool for querying existing preferences
+    - [x] File `src/agents/preference-manager.ts` exists with exported `preferenceManagerAgent` conforming to `AgentConfig`
+    - [x] Agent configured as `mode: "subagent"` with `temperature: 0.2`
+    - [x] Agent prompt covers all operations: declare preference, capture PR feedback, list/search, edit, disable, delete, view effective preferences, export/import
+    - [x] PR feedback capture flow: accepts free text comment, extracts preference rule, category, scope, and stores provenance metadata (AC-03a, AC-03b, AC-03c)
+    - [x] Provenance metadata for PR-sourced preferences includes: source ("pr-feedback"), reviewer name, date, original comment text (BR-04)
+    - [x] Agent follows the pattern established by `project-initializer` and `ledger-creator` agents
+    - [x] Agent has access to `preference_lookup` tool for querying existing preferences
+
+    **Implementation Summary**:
+
+    - **Files**: `src/agents/preference-manager.ts`
+    - **Approach**: XML-structured prompt covering 11 operations (declare, capture-pr-feedback, list, search, edit, disable, enable, delete, effective, export, import); follows project-initializer/ledger-creator pattern with AgentConfig export, mode subagent, temperature 0.2, edit/task tools disabled; includes YAML format spec, scope precedence rules, conflict resolution guidance, and provenance preservation rules
+    - **Deviations**: None
+    - **Tests**: N/A (static agent configuration -- type safety validated by tsc, no testable logic)
 
 - [ ] **T12**: Update config loader to parse methodology setting `[complexity:simple]`
 
