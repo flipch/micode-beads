@@ -4,7 +4,7 @@ import type { MicodeConfig } from "../config-loader";
 import { formatMethodologyBlock, formatPreferencesBlock } from "../preferences/formatter";
 import { getActiveMethodology } from "../preferences/methodology";
 import { resolvePreferences } from "../preferences/resolver";
-import { clearCache, loadAllPreferences } from "../preferences/store";
+import { loadAllPreferences } from "../preferences/store";
 import type { Preference } from "../preferences/types";
 import { log } from "../utils/logger";
 
@@ -49,7 +49,6 @@ export function createPreferenceInjectorHook(ctx: PluginInput, userConfig: Micod
     }
 
     try {
-      clearCache();
       const preferences = await loadAllPreferences(ctx.directory);
       cached = { data: preferences, timestamp: now };
       return preferences;

@@ -3,19 +3,20 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import type { PluginInput } from "@opencode-ai/plugin";
 import { stringify as stringifyYaml } from "yaml";
 
 import type { MicodeConfig } from "../../src/config-loader";
 import type { Preference, PreferenceStore } from "../../src/preferences/types";
 
-function createMockCtx(directory: string) {
+function createMockCtx(directory: string): PluginInput {
   return {
     directory,
     client: {
       session: {},
       tui: {},
     },
-  };
+  } as unknown as PluginInput;
 }
 
 function makePreference(overrides: Partial<Preference> = {}): Preference {
@@ -60,7 +61,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output = { system: "Original prompt", options: { agent: "implementer" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -75,7 +76,7 @@ describe("preference-injector", () => {
     it("should be no-op when no preferences exist and methodology is default", async () => {
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output = { system: "Original prompt", options: { agent: "implementer" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -89,7 +90,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output = { system: "Original prompt", options: {} };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -107,7 +108,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output = { system: "Base prompt", options: { agent: "implementer" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -126,7 +127,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output = { system: "Base prompt", options: { agent: "reviewer" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -145,7 +146,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output = { system: "Base prompt", options: { agent: "some-custom-agent" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -160,7 +161,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, userConfig);
+      const hooks = createPreferenceInjectorHook(ctx, userConfig);
 
       const output = { system: "Planner prompt", options: { agent: "planner" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -175,7 +176,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, userConfig);
+      const hooks = createPreferenceInjectorHook(ctx, userConfig);
 
       const output = { system: "Executor prompt", options: { agent: "executor" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -189,7 +190,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, userConfig);
+      const hooks = createPreferenceInjectorHook(ctx, userConfig);
 
       const output = { system: "Impl prompt", options: { agent: "implementer" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -203,7 +204,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, userConfig);
+      const hooks = createPreferenceInjectorHook(ctx, userConfig);
 
       const output = { system: "Reviewer prompt", options: { agent: "reviewer" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -220,7 +221,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, userConfig);
+      const hooks = createPreferenceInjectorHook(ctx, userConfig);
 
       const output = { system: "Planner prompt", options: { agent: "planner" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -236,7 +237,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, userConfig);
+      const hooks = createPreferenceInjectorHook(ctx, userConfig);
 
       const output = { system: "Planner prompt", options: { agent: "planner" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -257,7 +258,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output = { system: "Base", options: { agent: "implementer" } };
       await hooks["chat.params"]({ sessionID: "test" }, output);
@@ -272,7 +273,7 @@ describe("preference-injector", () => {
 
       const { createPreferenceInjectorHook } = await import("../../src/hooks/preference-injector");
       const ctx = createMockCtx(testDir);
-      const hooks = createPreferenceInjectorHook(ctx as any, null);
+      const hooks = createPreferenceInjectorHook(ctx, null);
 
       const output: { system?: string; options: Record<string, unknown> } = {
         options: { agent: "implementer" },
