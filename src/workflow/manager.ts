@@ -3,7 +3,7 @@
 // Follows octto/state/persistence.ts patterns for filesystem persistence
 
 import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 import type { MicodeConfig } from "../config-loader";
 import { log } from "../utils/logger";
@@ -22,6 +22,14 @@ import {
 const MODULE = "workflow";
 const STATE_FILE = "state.json";
 const SNAPSHOTS_DIR = "snapshots";
+const SAFE_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+
+function sanitizeFeatureId(featureId: string): string {
+  if (!SAFE_ID_PATTERN.test(featureId)) {
+    throw new Error(`Invalid featureId: must contain only alphanumeric characters, hyphens, and underscores`);
+  }
+  return featureId;
+}
 
 export class WorkflowManager {
   private readonly baseDir: string;
@@ -31,7 +39,8 @@ export class WorkflowManager {
   }
 
   private getFeatureDir(featureId: string): string {
-    return join(this.baseDir, "thoughts", "workflow", featureId);
+    const safeId = sanitizeFeatureId(featureId);
+    return join(this.baseDir, "thoughts", "workflow", safeId);
   }
 
   private getStatePath(featureId: string): string {
@@ -65,9 +74,12 @@ export class WorkflowManager {
   async saveState(state: WorkflowState): Promise<void> {
     const featureDir = this.getFeatureDir(state.featureId);
     this.ensureDir(featureDir);
-    state.updatedAt = new Date().toISOString();
+    const stateToSave: WorkflowState = {
+      ...state,
+      updatedAt: new Date().toISOString(),
+    };
     const statePath = this.getStatePath(state.featureId);
-    await Bun.write(statePath, JSON.stringify(state, null, 2));
+    await Bun.write(statePath, JSON.stringify(stateToSave, null, 2));
   }
 
   async createState(featureId: string, afkMode: boolean): Promise<WorkflowState> {
@@ -83,13 +95,16 @@ export class WorkflowManager {
       throw new Error(`Invalid stage transition: ${stage} cannot move from "${record.status}" to "running"`);
     }
 
-    record.status = STAGE_STATUSES.RUNNING;
-    record.startedAt = new Date().toISOString();
+    const updatedRecord = {
+      ...record,
+      status: STAGE_STATUSES.RUNNING as const,
+      startedAt: new Date().toISOString(),
+    };
 
     return {
       ...state,
       currentStage: stage,
-      stages: { ...state.stages, [stage]: record },
+      stages: { ...state.stages, [stage]: updatedRecord },
     };
   }
 
@@ -99,10 +114,13 @@ export class WorkflowManager {
       throw new Error(`Cannot complete stage "${stage}": stage is not running (status: ${record?.status ?? "none"})`);
     }
 
-    record.status = STAGE_STATUSES.COMPLETED;
-    record.completedAt = new Date().toISOString();
-    record.version += 1;
-    record.artifactPaths = artifacts;
+    const updatedRecord = {
+      ...record,
+      status: STAGE_STATUSES.COMPLETED as const,
+      completedAt: new Date().toISOString(),
+      version: record.version + 1,
+      artifactPaths: artifacts,
+    };
 
     const stageIndex = STAGE_NAMES.indexOf(stage);
     const nextStage = stageIndex < STAGE_NAMES.length - 1 ? STAGE_NAMES[stageIndex + 1] : "complete";
@@ -110,7 +128,7 @@ export class WorkflowManager {
     return {
       ...state,
       currentStage: nextStage as StageName | "complete",
-      stages: { ...state.stages, [stage]: record },
+      stages: { ...state.stages, [stage]: updatedRecord },
     };
   }
 
@@ -120,9 +138,7 @@ export class WorkflowManager {
       return state;
     }
 
-    const resetRecord = createStageRecord();
-    resetRecord.version = record.version;
-
+    const resetRecord = { ...createStageRecord(), version: record.version };
     const updatedStages = { ...state.stages, [stage]: resetRecord };
 
     const stageIndex = STAGE_NAMES.indexOf(stage);
@@ -130,9 +146,7 @@ export class WorkflowManager {
       const downstreamStage = STAGE_NAMES[i];
       const downstreamRecord = updatedStages[downstreamStage];
       if (downstreamRecord) {
-        const resetDownstream = createStageRecord();
-        resetDownstream.version = downstreamRecord.version;
-        updatedStages[downstreamStage] = resetDownstream;
+        updatedStages[downstreamStage] = { ...createStageRecord(), version: downstreamRecord.version };
       }
     }
 
@@ -174,7 +188,7 @@ export class WorkflowManager {
 
   addCorrection(state: WorkflowState, message: string, affectedStages: StageName[]): WorkflowState {
     const correction: CorrectionRecord = {
-      id: `corr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      id: `corr-${crypto.randomUUID()}`,
       timestamp: new Date().toISOString(),
       message,
       affectedStages,
@@ -205,7 +219,7 @@ export class WorkflowManager {
 
     for (const artifactPath of record.artifactPaths) {
       if (existsSync(artifactPath)) {
-        const fileName = artifactPath.split("/").pop() ?? artifactPath;
+        const fileName = basename(artifactPath);
         const destPath = join(snapshotDir, fileName);
         try {
           cpSync(artifactPath, destPath);

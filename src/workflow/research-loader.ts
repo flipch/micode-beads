@@ -3,7 +3,7 @@
 // Supports .md and .txt files with graceful handling of missing/empty directories
 
 import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { log } from "../utils/logger";
 import type { ResearchDocument } from "./state";
@@ -18,20 +18,30 @@ function getFormat(fileName: string): "md" | "txt" | null {
   return null;
 }
 
-export async function loadResearchDocuments(dirs: string[]): Promise<ResearchDocument[]> {
+export async function loadResearchDocuments(dirs: string[], projectRoot?: string): Promise<ResearchDocument[]> {
   const documents: ResearchDocument[] = [];
+  const root = projectRoot ? resolve(projectRoot) : resolve(process.cwd());
 
   for (const dir of dirs) {
-    if (!existsSync(dir)) {
-      log.warn(MODULE, `Research directory not found: ${dir}`);
+    const resolvedDir = resolve(root, dir);
+    if (!resolvedDir.startsWith(root)) {
+      log.warn(MODULE, `Research directory escapes project root, skipping: ${dir}`);
+      continue;
+    }
+
+    if (!existsSync(resolvedDir)) {
+      log.warn(MODULE, `Research directory not found: ${resolvedDir}`);
       continue;
     }
 
     let entries: string[];
     try {
-      entries = readdirSync(dir);
+      entries = readdirSync(resolvedDir);
     } catch (e) {
-      log.warn(MODULE, `Failed to read research directory ${dir}: ${e instanceof Error ? e.message : String(e)}`);
+      log.warn(
+        MODULE,
+        `Failed to read research directory ${resolvedDir}: ${e instanceof Error ? e.message : String(e)}`,
+      );
       continue;
     }
 
@@ -41,12 +51,12 @@ export async function loadResearchDocuments(dirs: string[]): Promise<ResearchDoc
     });
 
     if (files.length === 0) {
-      log.debug(MODULE, `No research documents found in ${dir}`);
+      log.debug(MODULE, `No research documents found in ${resolvedDir}`);
       continue;
     }
 
     for (const file of files) {
-      const filePath = join(dir, file);
+      const filePath = join(resolvedDir, file);
       const format = getFormat(file);
       if (!format) continue;
 
