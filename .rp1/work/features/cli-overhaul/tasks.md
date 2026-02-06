@@ -2,7 +2,7 @@
 
 **Feature ID**: cli-overhaul
 **Status**: In Progress
-**Progress**: 60% (9 of 15 tasks)
+**Progress**: 67% (10 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-06
 
@@ -143,7 +143,7 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
     | Commit | PASS |
     | Comments | PASS |
 
-- [ ] **T10**: Write CLI language/framework evaluation decision record `[complexity:medium]`
+- [x] **T10**: Write CLI language/framework evaluation decision record `[complexity:medium]`
 
     **Reference**: [design.md#implementation-plan](design.md#implementation-plan)
 
@@ -151,11 +151,18 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
 
     **Acceptance Criteria**:
 
-    - [ ] Create `docs/decisions/cli-language-evaluation.md` as a decision record
-    - [ ] Evaluate at least four options: (a) Bun `--compile` standalone binary, (b) Go CLI, (c) Rust CLI, (d) keeping current approach with improved bundling
-    - [ ] Each option assessed on: binary size, cross-platform build complexity, startup time, maintenance burden (single vs dual language codebase), dependency elimination, and user experience
-    - [ ] Include a clear recommendation with rationale
-    - [ ] Document is accessible to contributors and follows project documentation conventions
+    - [x] Create `docs/decisions/cli-language-evaluation.md` as a decision record
+    - [x] Evaluate at least four options: (a) Bun `--compile` standalone binary, (b) Go CLI, (c) Rust CLI, (d) keeping current approach with improved bundling
+    - [x] Each option assessed on: binary size, cross-platform build complexity, startup time, maintenance burden (single vs dual language codebase), dependency elimination, and user experience
+    - [x] Include a clear recommendation with rationale
+    - [x] Document is accessible to contributors and follows project documentation conventions
+
+    **Implementation Summary**:
+
+    - **Files**: `docs/decisions/cli-language-evaluation.md`
+    - **Approach**: Created a decision record evaluating four options: (A) Bun --compile standalone binary, (B) Go CLI, (C) Rust CLI, (D) current Bun runtime approach. Included measured metrics from this project (58 MB binary, 20 ms startup on Bun 1.3.8) alongside estimated metrics for Go and Rust. Provided a comparison matrix across all six assessment dimensions plus migration cost, type sharing, CI impact, and contributor accessibility. Recommended Option A (Bun --compile) based on zero migration cost, single-language maintenance, acceptable binary size, and exceeded performance targets.
+    - **Deviations**: None
+    - **Tests**: N/A (documentation deliverable)
 
 ### Dependent Implementations (Parallel Group 2)
 
@@ -381,6 +388,18 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
     - **Approach**: Created POSIX sh build script that iterates all four platform targets (darwin-arm64, darwin-x64, linux-arm64, linux-x64), runs `bun build --compile --minify` for each, generates SHA-256 checksums via sha256sum/shasum, and reports binary sizes with a 25MB warning threshold. Added `build-standalone` job to release.yml that runs on `release: published`, builds all standalone binaries, and uploads them plus checksums to the GitHub Release via `gh release upload`. The build-standalone job runs in parallel with the existing npm publish job.
     - **Deviations**: Binary size check is a warning rather than a hard failure because `bun build --compile` bundles the full Bun runtime (~50-60MB), making the 25MB target aspirational. Added `--minify` flag to reduce JS bundle size within the compiled binary.
     - **Tests**: N/A (shell script + CI workflow; validated via `sh -n` syntax check, YAML parse validation, and native-platform build verification)
+
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | N/A |
+    | Commit | PASS |
+    | Comments | PASS |
 
 ### User Docs
 
