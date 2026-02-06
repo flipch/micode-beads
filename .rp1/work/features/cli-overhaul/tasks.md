@@ -283,6 +283,12 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
     - **Deviations**: Created functional `doctor.ts` stub rather than a pure type stub, since the CLI integration tests exercise the `doctor --json` path end-to-end. The stub is minimal and T11 will enhance it with full non-interactive mode support, re-verification after fixes, and integration tests.
     - **Tests**: 25/25 passing (19 parseArgs unit tests + 6 CLI binary integration tests)
 
+    **Review Feedback** (Attempt 1):
+    - **Status**: FAILURE
+    - **Issues**:
+        - [comments] `src/cli/update-checker.ts:2-3` contains task ID reference ("T8") and obvious narration comment ("This function is intentionally a no-op until T8 is completed"). Comments referencing internal task IDs and stating what is obvious from the empty function body violate comment quality rules.
+    - **Guidance**: Remove both comment lines from `src/cli/update-checker.ts`. The empty function body is self-documenting as a no-op/stub. If context is desired, use a comment without task references, e.g., `// No-op stub: update checking implemented separately.` Then amend the commit.
+
 - [ ] **T7**: Enhance init command with post-init doctor checks and environment-specific guidance `[complexity:simple]`
 
     **Reference**: [design.md#36-enhanced-init-command](design.md#36-enhanced-init-command)
