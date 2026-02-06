@@ -78,6 +78,19 @@ const bunRuntimeCheck: DiagnosticCheck = {
   name: "Bun Runtime",
   component: "cli",
   run: async () => {
+    // Detect embedded Bun runtime (standalone binary built with bun build --compile)
+    const embeddedVersion = typeof Bun !== "undefined" ? Bun.version : undefined;
+    if (embeddedVersion) {
+      return {
+        id: "bun-runtime",
+        name: "Bun Runtime",
+        status: "PASS",
+        message: `Bun runtime v${embeddedVersion} (embedded)`,
+        fixable: false,
+        component: "cli",
+      };
+    }
+
     const bunPath = which("bun");
     if (!bunPath) {
       return {

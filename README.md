@@ -14,12 +14,12 @@ Use the installer script (recommended). It downloads a standalone binary when av
 curl -fsSL https://raw.githubusercontent.com/flipch/micode-beads/main/scripts/install.sh | sh
 ```
 
-Or install directly via a package manager:
+Or install directly via a package manager (requires the [Bun](https://bun.sh) runtime):
 
 ```bash
-npm install -g micode-beads
-# or
 bun add -g micode-beads
+# or, if Bun is already on your PATH:
+npm install -g micode-beads
 ```
 
 After installing, verify your setup:

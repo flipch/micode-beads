@@ -32,6 +32,6 @@ export function formatAttributedError(error: AttributedError, color: boolean): s
 }
 
 export function printError(error: AttributedError, color?: boolean): void {
-  const useColor = color !== undefined ? color : process.stdout.isTTY === true && !("NO_COLOR" in process.env);
+  const useColor = color !== undefined ? color : process.stderr.isTTY === true && !("NO_COLOR" in process.env);
   console.error(formatAttributedError(error, useColor));
 }

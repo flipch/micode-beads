@@ -100,9 +100,36 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (parsed.flags.help && !parsed.command) {
-    printHelp();
-    return;
+  if (parsed.flags.help) {
+    if (!parsed.command) {
+      printHelp();
+      return;
+    }
+    switch (parsed.command) {
+      case "init":
+        console.log("Usage: micode-beads init [--mindmodel]\n");
+        console.log("Initializes micode-beads in the current project.\n");
+        console.log("Options:");
+        console.log("  --mindmodel   Scaffold .mindmodel/ constraint directory");
+        return;
+      case "doctor":
+        console.log("Usage: micode-beads doctor [--fix] [--json] [--verbose]\n");
+        console.log("Diagnose installation and environment health.\n");
+        console.log("Options:");
+        console.log("  --fix      Attempt to auto-fix detected issues");
+        console.log("  --json     Output results as JSON");
+        console.log("  --verbose  Show detailed check information");
+        return;
+      default:
+        printError(
+          createAttributedError(
+            "cli",
+            `Unknown command: ${parsed.command}`,
+            "Run `micode-beads --help` for available commands.",
+          ),
+        );
+        process.exit(2);
+    }
   }
 
   switch (parsed.command) {

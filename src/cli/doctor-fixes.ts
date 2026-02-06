@@ -87,9 +87,7 @@ function detectShellConfigPath(): string | null {
   const shell = process.env.SHELL || "";
 
   if (shell.includes("zsh")) {
-    const zshrc = join(home, ".zshrc");
-    if (existsSync(zshrc)) return zshrc;
-    return zshrc;
+    return join(home, ".zshrc");
   }
 
   if (shell.includes("bash")) {

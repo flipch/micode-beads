@@ -199,7 +199,10 @@ verify_checksum() {
 check_existing_installation() {
   target_version="$1"
   if has_command micode-beads; then
-    current_version="$(micode-beads --version 2>/dev/null || echo "")"
+    current_version_raw="$(micode-beads --version 2>/dev/null || echo "")"
+    # Extract version from output like "micode-beads v1.2.0" -> "1.2.0"
+    version_field="$(printf '%s\n' "$current_version_raw" | awk '{print $NF}')"
+    current_version="$(printf '%s\n' "$version_field" | sed 's/^v//')"
     if [ -n "$current_version" ] && [ "$current_version" = "$target_version" ]; then
       info "micode-beads ${target_version} is already installed and up to date."
       return 0
@@ -438,8 +441,8 @@ main() {
     fi
   fi
 
-  # Priority 3: npm install -g
-  if [ "$installed" = false ] && has_command npm; then
+  # Priority 3: npm install -g (only when Bun is also available, since CLI requires Bun runtime)
+  if [ "$installed" = false ] && has_command npm && has_command bun; then
     if install_via_npm "$version"; then
       installed=true
     fi

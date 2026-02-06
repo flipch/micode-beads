@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import { resolve } from "node:path";
 
 import { parseArgs } from "../../src/cli/index";
+
+const PROJECT_ROOT = resolve(import.meta.dir, "../..");
 
 describe("parseArgs", () => {
   it("should parse a command with no flags", () => {
@@ -134,7 +137,7 @@ describe("parseArgs", () => {
 describe("CLI binary integration", () => {
   it("should output version with --version flag", async () => {
     const proc = Bun.spawn(["bun", "run", "src/cli/index.ts", "--version"], {
-      cwd: "/Users/felipeh/.micode-beads",
+      cwd: PROJECT_ROOT,
       stdout: "pipe",
       stderr: "pipe",
       env: { ...process.env, MICODE_NO_UPDATE_CHECK: "1" },
@@ -147,7 +150,7 @@ describe("CLI binary integration", () => {
 
   it("should output help text with --help flag", async () => {
     const proc = Bun.spawn(["bun", "run", "src/cli/index.ts", "--help"], {
-      cwd: "/Users/felipeh/.micode-beads",
+      cwd: PROJECT_ROOT,
       stdout: "pipe",
       stderr: "pipe",
       env: { ...process.env, MICODE_NO_UPDATE_CHECK: "1" },
@@ -166,7 +169,7 @@ describe("CLI binary integration", () => {
 
   it("should output help text when no command is provided", async () => {
     const proc = Bun.spawn(["bun", "run", "src/cli/index.ts"], {
-      cwd: "/Users/felipeh/.micode-beads",
+      cwd: PROJECT_ROOT,
       stdout: "pipe",
       stderr: "pipe",
       env: { ...process.env, MICODE_NO_UPDATE_CHECK: "1" },
@@ -179,7 +182,7 @@ describe("CLI binary integration", () => {
 
   it("should exit with code 2 for unknown commands", async () => {
     const proc = Bun.spawn(["bun", "run", "src/cli/index.ts", "nonexistent"], {
-      cwd: "/Users/felipeh/.micode-beads",
+      cwd: PROJECT_ROOT,
       stdout: "pipe",
       stderr: "pipe",
       env: { ...process.env, MICODE_NO_UPDATE_CHECK: "1" },
@@ -194,7 +197,7 @@ describe("CLI binary integration", () => {
 
   it("should use attributed error format for unknown commands", async () => {
     const proc = Bun.spawn(["bun", "run", "src/cli/index.ts", "badcmd"], {
-      cwd: "/Users/felipeh/.micode-beads",
+      cwd: PROJECT_ROOT,
       stdout: "pipe",
       stderr: "pipe",
       env: { ...process.env, MICODE_NO_UPDATE_CHECK: "1", NO_COLOR: "1" },
@@ -208,7 +211,7 @@ describe("CLI binary integration", () => {
 
   it("should pass --json flag through to doctor command", async () => {
     const proc = Bun.spawn(["bun", "run", "src/cli/index.ts", "doctor", "--json"], {
-      cwd: "/Users/felipeh/.micode-beads",
+      cwd: PROJECT_ROOT,
       stdout: "pipe",
       stderr: "pipe",
       env: { ...process.env, MICODE_NO_UPDATE_CHECK: "1" },

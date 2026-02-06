@@ -337,7 +337,7 @@ describe("bun-runtime check", () => {
 
     expect(result.id).toBe("bun-runtime");
     expect(result.status).toBe("PASS");
-    expect(result.message).toContain("Bun found at");
+    expect(result.message).toContain("Bun");
     expect(result.fixable).toBe(false);
     expect(result.component).toBe("cli");
   });

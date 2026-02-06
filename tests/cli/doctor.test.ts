@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { runDoctor } from "../../src/cli/doctor";
 import { checks, type DiagnosticCheck } from "../../src/cli/doctor-checks";
@@ -480,9 +480,9 @@ describe("runDoctor orchestrator", () => {
 
 describe("doctor CLI binary integration", () => {
   let tempDir: string;
-  const PROJECT_ROOT = "/Users/felipeh/.micode-beads";
-  const BUN = `${PROJECT_ROOT}/bin/bun`;
-  const CLI_SCRIPT = `${PROJECT_ROOT}/src/cli/index.ts`;
+  const PROJECT_ROOT = resolve(import.meta.dir, "../..");
+  const BUN = process.execPath;
+  const CLI_SCRIPT = join(PROJECT_ROOT, "src/cli/index.ts");
 
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), "doctor-cli-"));
