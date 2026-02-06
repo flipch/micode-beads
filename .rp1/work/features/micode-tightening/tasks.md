@@ -145,7 +145,7 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
     - [ ] Agent commits and pushes fixes to the existing PR branch (no force-push or history rewriting)
     - [ ] Agent produces a summary of addressed vs. unaddressed review items
 
-- [ ] **T9**: Rewrite README following Standard Readme specification `[complexity:medium]`
+- [x] **T9**: Rewrite README following Standard Readme specification `[complexity:medium]`
 
     **Reference**: [design.md#310-readme-structure](design.md#310-readme-structure)
 
@@ -153,12 +153,19 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
     **Acceptance Criteria**:
 
-    - [ ] README.md contains all required sections: project description, badges (CI, npm, license), quickstart (under 3 steps), installation, configuration, workflow overview, commands, AFK mode, stage resumption, agents table, tools table, hooks table, development (build/test/release), contributing, attribution, and license
-    - [ ] No text is copied verbatim from the upstream micode README
-    - [ ] Fork notice is reduced to a single attribution line under "Attribution"
-    - [ ] README is under 300 lines for the main content (excluding auto-generated tables)
-    - [ ] README follows the Standard Readme specification
-    - [ ] README is understandable by a developer with no prior knowledge of micode-beads
+    - [x] README.md contains all required sections: project description, badges (CI, npm, license), quickstart (under 3 steps), installation, configuration, workflow overview, commands, AFK mode, stage resumption, agents table, tools table, hooks table, development (build/test/release), contributing, attribution, and license
+    - [x] No text is copied verbatim from the upstream micode README
+    - [x] Fork notice is reduced to a single attribution line under "Attribution"
+    - [x] README is under 300 lines for the main content (excluding auto-generated tables)
+    - [x] README follows the Standard Readme specification
+    - [x] README is understandable by a developer with no prior knowledge of micode-beads
+
+    **Implementation Summary**:
+
+    - **Files**: `README.md`
+    - **Approach**: Full rewrite from scratch following Standard Readme specification. 248 lines total. Sections: badges (CI, npm, license), description, install, quick start (3 steps), usage (workflow overview, commands, AFK mode, stage resumption), configuration (opencode.json, micode-beads.json with options table, research directories), agents table (28 agents), tools table (15 tools), hooks table (12 hooks), development (build, test, lint, release), contributing, attribution (single line), license.
+    - **Deviations**: None
+    - **Tests**: N/A (documentation-only change; 368/369 passing, 1 pre-existing failure unrelated)
 
 ### Config-Dependent (Parallel Group 2)
 
