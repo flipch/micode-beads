@@ -8,15 +8,27 @@ An [OpenCode](https://opencode.ai) plugin that turns AI coding into a structured
 
 ## Install
 
-```bash
-npm install -g micode-beads
-```
-
-Or use the installer script:
+Use the installer script (recommended). It downloads a standalone binary when available, falling back to package managers automatically:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/flipch/micode-beads/main/scripts/install.sh | sh
 ```
+
+Or install directly via a package manager (requires the [Bun](https://bun.sh) runtime):
+
+```bash
+bun add -g micode-beads
+# or, if Bun is already on your PATH:
+npm install -g micode-beads
+```
+
+After installing, verify your setup:
+
+```bash
+micode-beads doctor
+```
+
+Run `micode-beads doctor --fix` to auto-repair common issues (missing config, unregistered plugin, missing directories).
 
 ## Quick Start
 
@@ -46,7 +58,18 @@ Brainstorm --> Plan --> Implement --> Verify
 
 **Verify** -- Cross-references the plan against actual implementation: completeness, test coverage, plan adherence, and passing tests. Failures produce actionable error messages.
 
-### Commands
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `micode-beads init` | Initialize project: create `opencode.json`, scaffold `thoughts/` directories, run health checks |
+| `micode-beads init --mindmodel` | Also scaffold `.mindmodel/` constraint directory |
+| `micode-beads doctor` | Diagnose installation and environment health (11 checks across CLI, plugin, OpenCode, and config) |
+| `micode-beads doctor --fix` | Attempt to auto-fix failed checks (create config, register plugin, scaffold directories) |
+| `micode-beads doctor --json` | Output diagnostic results as machine-readable JSON |
+| `micode-beads doctor --verbose` | Show detailed information for each check |
+
+### OpenCode Commands
 
 | Command | Description |
 |---------|-------------|
@@ -121,6 +144,7 @@ Falls back to `micode.json` if `micode-beads.json` is not found.
 | `fragments` | object | -- | Additional prompt fragment files per agent |
 | `researchDirs` | string[] | `["thoughts/shared/designs/"]` | Directories scanned for existing research/design documents |
 | `afk` | boolean | `false` | Enable autonomous mode by default |
+| `methodology` | string | `"default"` | Development methodology profile (`"default"`, `"tdd"`) -- injects methodology-specific instructions into planner, executor, and implementer agents |
 | `gitPr.draftByDefault` | boolean | `true` | Create PRs as drafts when using `--git-pr` |
 
 Model resolution order: per-agent override > `opencode.json` default model > plugin default.
