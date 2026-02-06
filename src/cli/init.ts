@@ -2,6 +2,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { which } from "bun";
 
+import type { CheckResult } from "./doctor-checks";
+import { runAllChecks } from "./doctor-checks";
+import { detectOutputOptions, formatCheckResult } from "./output";
+
 interface DependencyResult {
   name: string;
   available: boolean;
@@ -116,9 +120,40 @@ function createThoughtsDirs(projectDir: string): string[] {
   return created;
 }
 
+function colorize(text: string, code: string, color: boolean): string {
+  return color ? `${code}${text}\x1b[0m` : text;
+}
+
+function buildNextSteps(checkResults: CheckResult[], scaffoldedMindmodel: boolean): string[] {
+  const steps: string[] = [];
+
+  const opencodeCheck = checkResults.find((r) => r.id === "opencode-cli");
+  if (opencodeCheck && opencodeCheck.status !== "PASS") {
+    steps.push("Install OpenCode: https://opencode.ai/docs/getting-started");
+  }
+
+  const gitCheck = checkResults.find((r) => r.id === "git-available");
+  if (gitCheck && gitCheck.status !== "PASS") {
+    steps.push("Install git: https://git-scm.com/downloads");
+  }
+
+  steps.push("Run `opencode` to start the AI coding agent");
+  steps.push("Use /build to start a brainstorm-plan-implement workflow");
+
+  if (!scaffoldedMindmodel) {
+    const mindmodelCheck = checkResults.find((r) => r.id === "mindmodel-dir");
+    if (mindmodelCheck && mindmodelCheck.status !== "PASS") {
+      steps.push("Run `micode-beads init --mindmodel` to scaffold .mindmodel/ constraints (optional)");
+    }
+  }
+
+  return steps;
+}
+
 export async function runInit(args: string[]): Promise<void> {
   const scaffoldMindmodel = args.includes("--mindmodel");
   const projectDir = resolve(process.cwd());
+  const outputOptions = detectOutputOptions({});
 
   console.log("\nmicode-beads init\n");
   console.log(`Project directory: ${projectDir}\n`);
@@ -129,16 +164,18 @@ export async function runInit(args: string[]): Promise<void> {
 
   for (const dep of depResults) {
     if (dep.available) {
-      console.log(`  ${dep.name}: found`);
+      const indicator = colorize("OK", "\x1b[32m", outputOptions.color);
+      console.log(`  [${indicator}] ${dep.name}`);
     } else {
-      console.log(`  ${dep.name}: not found`);
+      const indicator = colorize("MISSING", "\x1b[31m", outputOptions.color);
+      console.log(`  [${indicator}] ${dep.name}`);
       hasMissing = true;
     }
   }
 
   if (hasMissing) {
-    console.log("\nWarning: Some dependencies are missing. micode-beads may not work correctly.");
-    console.log("Install missing dependencies and run init again.\n");
+    const msg = "Some dependencies are missing. micode-beads may not work correctly.";
+    console.log(`\n${colorize(msg, "\x1b[33m", outputOptions.color)}`);
   }
 
   console.log("\nConfiguring opencode.json...");
@@ -174,13 +211,39 @@ export async function runInit(args: string[]): Promise<void> {
     console.log("  All directories already exist");
   }
 
-  console.log("\n--- Setup complete ---\n");
-  console.log("Next steps:");
-  console.log("  1. Run `opencode` to start the AI coding agent");
-  console.log("  2. Use /build to start a brainstorm-plan-implement workflow");
+  console.log("\nRunning health checks...");
+  const checkResults = await runAllChecks(projectDir);
 
-  if (!scaffoldMindmodel) {
-    console.log("  3. Run `micode-beads init --mindmodel` to scaffold .mindmodel/ constraints (optional)");
+  const failures = checkResults.filter((r) => r.status === "FAIL");
+  const warnings = checkResults.filter((r) => r.status === "WARN");
+  const passes = checkResults.filter((r) => r.status === "PASS");
+
+  if (failures.length === 0 && warnings.length === 0) {
+    const msg = `All ${checkResults.length} health checks passed.`;
+    console.log(`  ${colorize(msg, "\x1b[32m", outputOptions.color)}`);
+  } else {
+    for (const result of checkResults) {
+      if (result.status !== "PASS") {
+        const verboseOptions = { ...outputOptions, verbose: true };
+        console.log(`  ${formatCheckResult(result, verboseOptions)}`);
+      }
+    }
+    console.log(
+      `\n  ${passes.length} passed, ${warnings.length} ${warnings.length === 1 ? "warning" : "warnings"}, ${failures.length} failed`,
+    );
+  }
+
+  console.log("\n--- Setup complete ---\n");
+
+  const nextSteps = buildNextSteps(checkResults, scaffoldMindmodel);
+  console.log("Next steps:");
+  for (let i = 0; i < nextSteps.length; i++) {
+    console.log(`  ${i + 1}. ${nextSteps[i]}`);
+  }
+
+  if (failures.length > 0) {
+    const msg = "\nSome health checks failed. Run `micode-beads doctor --fix` to attempt auto-repair.";
+    console.log(colorize(msg, "\x1b[33m", outputOptions.color));
   }
 
   console.log("");

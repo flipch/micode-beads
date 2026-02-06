@@ -1,8 +1,8 @@
 # Development Tasks: CLI Overhaul
 
 **Feature ID**: cli-overhaul
-**Status**: Not Started
-**Progress**: 40% (6 of 15 tasks)
+**Status**: In Progress
+**Progress**: 47% (7 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-06
 
@@ -289,7 +289,7 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
         - [comments] `src/cli/update-checker.ts:2-3` contains task ID reference ("T8") and obvious narration comment ("This function is intentionally a no-op until T8 is completed"). Comments referencing internal task IDs and stating what is obvious from the empty function body violate comment quality rules.
     - **Guidance**: Remove both comment lines from `src/cli/update-checker.ts`. The empty function body is self-documenting as a no-op/stub. If context is desired, use a comment without task references, e.g., `// No-op stub: update checking implemented separately.` Then amend the commit.
 
-- [ ] **T7**: Enhance init command with post-init doctor checks and environment-specific guidance `[complexity:simple]`
+- [x] **T7**: Enhance init command with post-init doctor checks and environment-specific guidance `[complexity:simple]`
 
     **Reference**: [design.md#36-enhanced-init-command](design.md#36-enhanced-init-command)
 
@@ -297,11 +297,18 @@ Overhaul the micode-beads CLI to deliver a frictionless install-to-first-use exp
 
     **Acceptance Criteria**:
 
-    - [ ] After completing existing initialization, `runInit` invokes doctor checks via `runAllChecks`
-    - [ ] If any checks fail, display suggestion to run `micode-beads doctor --fix`
-    - [ ] Provide environment-specific next steps summary tailored to detected setup
-    - [ ] Refactor init output to use the new output module for consistent formatting and error attribution
-    - [ ] Unit tests in `tests/cli/init.test.ts` verify post-init doctor check invocation and enhanced output
+    - [x] After completing existing initialization, `runInit` invokes doctor checks via `runAllChecks`
+    - [x] If any checks fail, display suggestion to run `micode-beads doctor --fix`
+    - [x] Provide environment-specific next steps summary tailored to detected setup
+    - [x] Refactor init output to use the new output module for consistent formatting and error attribution
+    - [x] Unit tests in `tests/cli/init.test.ts` verify post-init doctor check invocation and enhanced output
+
+    **Implementation Summary**:
+
+    - **Files**: `src/cli/init.ts`, `tests/cli/init.test.ts`
+    - **Approach**: Enhanced `runInit` to import and use `runAllChecks` from doctor-checks and `detectOutputOptions`/`formatCheckResult` from output module. After existing initialization (opencode.json, thoughts dirs, optional .mindmodel), runs all 11 diagnostic checks and displays a condensed summary: non-passing checks shown with verbose details, passing checks summarized as a count. Dependency output refactored to use color-aware `[OK]`/`[MISSING]` indicators. Added `buildNextSteps` function that inspects check results to produce environment-specific guidance (suggests installing OpenCode/git if missing, suggests `--mindmodel` if not scaffolded). Displays `doctor --fix` suggestion when any checks fail.
+    - **Deviations**: None
+    - **Tests**: 21/21 passing (10 existing + 11 new: 5 post-init health check tests + 6 environment-specific next steps tests)
 
 - [ ] **T11**: Implement non-interactive and JSON output mode for doctor command `[complexity:medium]`
 

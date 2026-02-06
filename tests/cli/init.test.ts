@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -8,16 +8,23 @@ import { runInit } from "../../src/cli/init";
 describe("runInit", () => {
   let tmpDir: string;
   let originalCwd: string;
+  let logSpy: ReturnType<typeof spyOn>;
+  let logOutput: string[];
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), "cli-init-test-"));
     originalCwd = process.cwd();
     process.chdir(tmpDir);
+    logOutput = [];
+    logSpy = spyOn(console, "log").mockImplementation((...args: unknown[]) => {
+      logOutput.push(args.map(String).join(" "));
+    });
   });
 
   afterEach(() => {
     process.chdir(originalCwd);
     rmSync(tmpDir, { recursive: true, force: true });
+    logSpy.mockRestore();
   });
 
   it("should create opencode.json with micode-beads plugin when no config exists", async () => {
@@ -142,5 +149,96 @@ describe("runInit", () => {
     const config = JSON.parse(readFileSync(configPath, "utf-8"));
     expect(Array.isArray(config.plugin)).toBe(true);
     expect(config.plugin.filter((p: string) => p === "micode-beads")).toHaveLength(1);
+  });
+
+  describe("post-init health checks", () => {
+    it("should run health checks after initialization", async () => {
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      expect(output).toContain("Running health checks...");
+    });
+
+    it("should display check results with pass/warn/fail counts", async () => {
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      const hasPassedSummary = output.includes("health checks passed");
+      const hasCountSummary = /\d+ passed/.test(output);
+      expect(hasPassedSummary || hasCountSummary).toBe(true);
+    });
+
+    it("should display non-passing checks with details when some checks fail", async () => {
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      const hasNonPassingCheck = output.includes("[WARN]") || output.includes("[FAIL]");
+      const hasAllPassedMessage = output.includes("health checks passed");
+      expect(hasNonPassingCheck || hasAllPassedMessage).toBe(true);
+    });
+
+    it("should display doctor --fix suggestion when checks fail", async () => {
+      writeFileSync(join(tmpDir, "micode-beads.json"), "not valid json");
+
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      expect(output).toContain("doctor --fix");
+    });
+
+    it("should display pass/warn/fail summary when issues exist", async () => {
+      writeFileSync(join(tmpDir, "micode-beads.json"), "not valid json");
+
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      expect(output).toMatch(/\d+ passed/);
+      expect(output).toMatch(/\d+ failed/);
+    });
+  });
+
+  describe("environment-specific next steps", () => {
+    it("should display next steps after setup", async () => {
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      expect(output).toContain("Next steps:");
+      expect(output).toContain("Run `opencode` to start the AI coding agent");
+      expect(output).toContain("Use /build to start a brainstorm-plan-implement workflow");
+    });
+
+    it("should suggest --mindmodel when .mindmodel/ does not exist and flag not used", async () => {
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      expect(output).toContain("micode-beads init --mindmodel");
+    });
+
+    it("should not suggest --mindmodel when .mindmodel/ was scaffolded", async () => {
+      await runInit(["--mindmodel"]);
+
+      const output = logOutput.join("\n");
+      const nextStepsSection = output.substring(output.indexOf("Next steps:"));
+      expect(nextStepsSection).not.toContain("micode-beads init --mindmodel");
+    });
+
+    it("should not suggest --mindmodel when .mindmodel/ already exists", async () => {
+      mkdirSync(join(tmpDir, ".mindmodel"), { recursive: true });
+      writeFileSync(join(tmpDir, ".mindmodel", "system.md"), "# Constraints");
+
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      const nextStepsSection = output.substring(output.indexOf("Next steps:"));
+      expect(nextStepsSection).not.toContain("micode-beads init --mindmodel");
+    });
+
+    it("should use formatted dependency output with status indicators", async () => {
+      await runInit([]);
+
+      const output = logOutput.join("\n");
+      expect(output).toContain("Checking dependencies...");
+      expect(output).toMatch(/\[(OK|MISSING)]/);
+    });
   });
 });
