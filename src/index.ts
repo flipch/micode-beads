@@ -33,6 +33,7 @@ import { createPreferenceLookupTool } from "./tools/preference-lookup";
 import { createPtyTools, PTYManager } from "./tools/pty";
 import { createSpawnAgentTool } from "./tools/spawn-agent";
 import { log } from "./utils/logger";
+import { WorkflowManager } from "./workflow";
 
 // Think mode: detect keywords and enable extended thinking
 const THINK_KEYWORDS = [
@@ -83,6 +84,12 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
 
   // Load user config for agent overrides and feature flags
   const userConfig = await loadMicodeConfig();
+
+  // Detect AFK mode from environment variable or config (command arg detection is handled by agent prompts)
+  const afkMode = WorkflowManager.detectAfkMode("", userConfig);
+  if (afkMode) {
+    log.info("workflow", "AFK mode enabled via config or environment");
+  }
 
   // Load model context limits from opencode.json
   const modelContextLimits = loadModelContextLimits();
@@ -290,6 +297,11 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
           description: "Manage coding preferences - declare, capture PR feedback, list, edit, disable, delete",
           agent: "preference-manager",
           template: `Manage preferences: $ARGUMENTS`,
+        },
+        "review-feedback": {
+          description: "Address PR review feedback",
+          agent: "pr-feedback",
+          template: "Process review feedback for PR $ARGUMENTS",
         },
       };
     },

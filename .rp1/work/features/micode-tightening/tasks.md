@@ -2,7 +2,7 @@
 
 **Feature ID**: micode-tightening
 **Status**: In Progress
-**Progress**: 53% (8 of 15 tasks)
+**Progress**: 60% (9 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-05
 
@@ -312,9 +312,21 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
     - **Deviations**: None
     - **Tests**: 368/369 passing (1 pre-existing failure unrelated to this task)
 
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | ✅ PASS |
+    | Accuracy | ✅ PASS |
+    | Completeness | ✅ PASS |
+    | Quality | ✅ PASS |
+    | Testing | ⏭️ N/A |
+    | Commit | ✅ PASS |
+    | Comments | ⏭️ N/A |
+
 ### Integration (Parallel Group 3)
 
-- [ ] **T8**: Wire all new agents, commands, and hooks into src/index.ts `[complexity:medium]`
+- [x] **T8**: Wire all new agents, commands, and hooks into src/index.ts `[complexity:medium]`
 
     **Reference**: [design.md#39-command-registration](design.md#39-command-registration)
 
@@ -322,13 +334,20 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
     **Acceptance Criteria**:
 
-    - [ ] `src/index.ts` imports and registers the verifier agent from T5
-    - [ ] `src/index.ts` imports and registers the PR feedback agent from T6
-    - [ ] `src/index.ts` registers the `/review-feedback` command with description "Address PR review feedback" and template "Process review feedback for PR $ARGUMENTS"
-    - [ ] `src/index.ts` imports the workflow module from T3
-    - [ ] AFK detection integrated into plugin initialization using `WorkflowManager.detectAfkMode()`
-    - [ ] `--afk`, `--resume-from`, and `--correct` flags parsed from `$ARGUMENTS` within agent prompts (not at CLI level)
-    - [ ] All new imports resolve correctly and the project builds without errors
+    - [x] `src/index.ts` imports and registers the verifier agent from T5
+    - [x] `src/index.ts` imports and registers the PR feedback agent from T6
+    - [x] `src/index.ts` registers the `/review-feedback` command with description "Address PR review feedback" and template "Process review feedback for PR $ARGUMENTS"
+    - [x] `src/index.ts` imports the workflow module from T3
+    - [x] AFK detection integrated into plugin initialization using `WorkflowManager.detectAfkMode()`
+    - [x] `--afk`, `--resume-from`, and `--correct` flags parsed from `$ARGUMENTS` within agent prompts (not at CLI level)
+    - [x] All new imports resolve correctly and the project builds without errors
+
+    **Implementation Summary**:
+
+    - **Files**: `src/agents/index.ts`, `src/index.ts`
+    - **Approach**: Added verifier and pr-feedback agents to the agents barrel (import, record entry with model, named export). Added WorkflowManager import to index.ts with static AFK detection at plugin init (env var + config sources; command arg detection deferred to agent prompts per design). Registered /review-feedback command with pr-feedback agent. All imports resolve, typecheck passes, build succeeds.
+    - **Deviations**: None
+    - **Tests**: 368/369 passing (1 pre-existing failure unrelated to this task)
 
 ### Validation (Parallel Group 4)
 
