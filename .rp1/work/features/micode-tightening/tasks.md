@@ -2,7 +2,7 @@
 
 **Feature ID**: micode-tightening
 **Status**: In Progress
-**Progress**: 33% (5 of 15 tasks)
+**Progress**: 47% (7 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-05
 
@@ -167,7 +167,19 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
     - **Deviations**: None
     - **Tests**: 56/56 agent tests passing; typecheck clean
 
-- [ ] **T6**: Create PR feedback agent `[complexity:medium]`
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | ✅ PASS |
+    | Accuracy | ✅ PASS |
+    | Completeness | ✅ PASS |
+    | Quality | ✅ PASS |
+    | Testing | ⏭️ N/A |
+    | Commit | ✅ PASS |
+    | Comments | ✅ PASS |
+
+- [x] **T6**: Create PR feedback agent `[complexity:medium]`
 
     **Reference**: [design.md#35-new-agent-srcagentspr-feedbackts](design.md#35-new-agent-srcagentspr-feedbackts)
 
@@ -175,13 +187,32 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
     **Acceptance Criteria**:
 
-    - [ ] `src/agents/pr-feedback.ts` implements a new agent following the existing agent factory pattern
-    - [ ] Agent uses `gh pr view <number> --json reviews,comments,reviewRequests` to fetch PR data via bash tool
-    - [ ] Agent parses review comments and maps them to file paths and line numbers
-    - [ ] Agent groups comments by file and generates correction tasks
-    - [ ] Agent spawns implementer agents in parallel to apply corrections
-    - [ ] Agent commits and pushes fixes to the existing PR branch (no force-push or history rewriting)
-    - [ ] Agent produces a summary of addressed vs. unaddressed review items
+    - [x] `src/agents/pr-feedback.ts` implements a new agent following the existing agent factory pattern
+    - [x] Agent uses `gh pr view <number> --json reviews,comments,reviewRequests` to fetch PR data via bash tool
+    - [x] Agent parses review comments and maps them to file paths and line numbers
+    - [x] Agent groups comments by file and generates correction tasks
+    - [x] Agent spawns implementer agents in parallel to apply corrections
+    - [x] Agent commits and pushes fixes to the existing PR branch (no force-push or history rewriting)
+    - [x] Agent produces a summary of addressed vs. unaddressed review items
+
+    **Implementation Summary**:
+
+    - **Files**: `src/agents/pr-feedback.ts`
+    - **Approach**: Created new PR feedback agent following the existing AgentConfig pattern (matching executor.ts, reviewer.ts). Agent uses XML-structured prompt with seven workflow phases (fetch, parse, group, plan, implement, commit, report). Uses gh CLI via bash tool for PR data fetching and gh api for inline review comments. Includes comment classification (actionable vs informational), parallel implementer spawning via spawn_agent, commit/push rules (no force-push), structured output format with addressed/unaddressed summary tables, and error handling for common scenarios (auth failure, PR not found, push failure). Temperature set to 0.2.
+    - **Deviations**: None
+    - **Tests**: 368/369 passing (1 pre-existing failure unrelated to this task)
+
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | ✅ PASS |
+    | Accuracy | ✅ PASS |
+    | Completeness | ✅ PASS |
+    | Quality | ✅ PASS |
+    | Testing | ⏭️ N/A |
+    | Commit | ✅ PASS |
+    | Comments | ✅ PASS |
 
 - [x] **T9**: Rewrite README following Standard Readme specification `[complexity:medium]`
 
@@ -219,7 +250,7 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
 ### Config-Dependent (Parallel Group 2)
 
-- [ ] **T3**: Create workflow state module with state machine, manager, and research-loader `[complexity:complex]`
+- [x] **T3**: Create workflow state module with state machine, manager, and research-loader `[complexity:complex]`
 
     **Reference**: [design.md#31-new-module-srcworkflow](design.md#31-new-module-srcworkflow)
 
@@ -227,18 +258,25 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
     **Acceptance Criteria**:
 
-    - [ ] `src/workflow/state.ts` defines `WorkflowState`, `StageRecord`, and `CorrectionRecord` interfaces
-    - [ ] `src/workflow/manager.ts` implements `WorkflowManager` class with: `loadState`, `saveState`, `createState`, `startStage`, `completeStage`, `resetStage`, `getResumePoint`, `addCorrection`, `snapshotStage`, and static `detectAfkMode`
-    - [ ] `src/workflow/research-loader.ts` implements `loadResearchDocuments(dirs: string[])` returning `ResearchDocument[]` with path, content, and format
-    - [ ] `src/workflow/index.ts` provides barrel exports for all public APIs
-    - [ ] State persisted as JSON at `thoughts/workflow/{feature-slug}/state.json`
-    - [ ] Stage snapshots stored at `thoughts/workflow/{feature-slug}/snapshots/{stage}-v{N}/`
-    - [ ] Stage lifecycle transitions enforce valid state changes (pending -> running -> completed/failed)
-    - [ ] Stage versioning increments on each completion (version field in StageRecord)
-    - [ ] AFK detection resolves priority: command arg > env var (`MICODE_AFK`) > config flag
-    - [ ] Research-loader handles missing directories (warning, not error) and empty directories gracefully
-    - [ ] Research-loader supports `.md` and `.txt` file formats
-    - [ ] Reads `researchDirs` from config (requires T1 config schema)
+    - [x] `src/workflow/state.ts` defines `WorkflowState`, `StageRecord`, and `CorrectionRecord` interfaces
+    - [x] `src/workflow/manager.ts` implements `WorkflowManager` class with: `loadState`, `saveState`, `createState`, `startStage`, `completeStage`, `resetStage`, `getResumePoint`, `addCorrection`, `snapshotStage`, and static `detectAfkMode`
+    - [x] `src/workflow/research-loader.ts` implements `loadResearchDocuments(dirs: string[])` returning `ResearchDocument[]` with path, content, and format
+    - [x] `src/workflow/index.ts` provides barrel exports for all public APIs
+    - [x] State persisted as JSON at `thoughts/workflow/{feature-slug}/state.json`
+    - [x] Stage snapshots stored at `thoughts/workflow/{feature-slug}/snapshots/{stage}-v{N}/`
+    - [x] Stage lifecycle transitions enforce valid state changes (pending -> running -> completed/failed)
+    - [x] Stage versioning increments on each completion (version field in StageRecord)
+    - [x] AFK detection resolves priority: command arg > env var (`MICODE_AFK`) > config flag
+    - [x] Research-loader handles missing directories (warning, not error) and empty directories gracefully
+    - [x] Research-loader supports `.md` and `.txt` file formats
+    - [x] Reads `researchDirs` from config (requires T1 config schema)
+
+    **Implementation Summary**:
+
+    - **Files**: `src/workflow/state.ts`, `src/workflow/manager.ts`, `src/workflow/research-loader.ts`, `src/workflow/index.ts`
+    - **Approach**: Created four-file workflow module following existing octto/state persistence patterns. `state.ts` defines all types (WorkflowState, StageRecord, CorrectionRecord, ResumeInfo, ResearchDocument) plus transition validation and factory functions. `manager.ts` implements WorkflowManager class with full stage lifecycle (start/complete/reset), resume logic, correction tracking with automatic downstream stage reset, snapshot persistence via cpSync, and static AFK detection with priority resolution (args > env > config). `research-loader.ts` loads .md/.txt files from configured directories with graceful missing/empty dir handling via log.warn. `index.ts` provides barrel exports. State persisted as JSON at `thoughts/workflow/{feature-slug}/state.json`, snapshots at `snapshots/{stage}-v{N}/`.
+    - **Deviations**: None
+    - **Tests**: 368/369 passing (1 pre-existing failure unrelated to this task)
 
 - [ ] **T7**: Update agent prompts for AFK mode, stage resumption, enriched beads, research dirs, and verification `[complexity:complex]`
 
