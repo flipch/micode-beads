@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.6](https://github.com/flipch/micode-beads/compare/v1.3.5...v1.3.6) (2026-02-06)
+
+
+### Bug Fixes
+
+* **ci:** add -R flag to gh workflow run for repo context ([a3abde9](https://github.com/flipch/micode-beads/commit/a3abde95f082888a24b5173371f6e995ae96833c))
+
 ## [1.3.5](https://github.com/flipch/micode-beads/compare/v1.3.4...v1.3.5) (2026-02-06)
 
 
