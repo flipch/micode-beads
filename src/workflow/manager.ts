@@ -97,7 +97,7 @@ export class WorkflowManager {
 
     const updatedRecord = {
       ...record,
-      status: STAGE_STATUSES.RUNNING as const,
+      status: STAGE_STATUSES.RUNNING,
       startedAt: new Date().toISOString(),
     };
 
@@ -116,7 +116,7 @@ export class WorkflowManager {
 
     const updatedRecord = {
       ...record,
-      status: STAGE_STATUSES.COMPLETED as const,
+      status: STAGE_STATUSES.COMPLETED,
       completedAt: new Date().toISOString(),
       version: record.version + 1,
       artifactPaths: artifacts,

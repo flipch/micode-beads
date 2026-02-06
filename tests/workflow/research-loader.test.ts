@@ -21,7 +21,7 @@ describe("loadResearchDocuments", () => {
     mkdirSync(docsDir);
     writeFileSync(join(docsDir, "design.md"), "# Design Document");
 
-    const docs = await loadResearchDocuments([docsDir]);
+    const docs = await loadResearchDocuments([docsDir], tmpDir);
 
     expect(docs.length).toBe(1);
     expect(docs[0].content).toBe("# Design Document");
@@ -34,7 +34,7 @@ describe("loadResearchDocuments", () => {
     mkdirSync(docsDir);
     writeFileSync(join(docsDir, "notes.txt"), "Some notes");
 
-    const docs = await loadResearchDocuments([docsDir]);
+    const docs = await loadResearchDocuments([docsDir], tmpDir);
 
     expect(docs.length).toBe(1);
     expect(docs[0].content).toBe("Some notes");
@@ -48,7 +48,7 @@ describe("loadResearchDocuments", () => {
     writeFileSync(join(docsDir, "image.png"), "binary");
     writeFileSync(join(docsDir, "data.json"), "{}");
 
-    const docs = await loadResearchDocuments([docsDir]);
+    const docs = await loadResearchDocuments([docsDir], tmpDir);
 
     expect(docs.length).toBe(1);
     expect(docs[0].format).toBe("md");
@@ -62,13 +62,13 @@ describe("loadResearchDocuments", () => {
     writeFileSync(join(dir1, "a.md"), "Doc A");
     writeFileSync(join(dir2, "b.txt"), "Doc B");
 
-    const docs = await loadResearchDocuments([dir1, dir2]);
+    const docs = await loadResearchDocuments([dir1, dir2], tmpDir);
 
     expect(docs.length).toBe(2);
   });
 
   it("should handle missing directories gracefully", async () => {
-    const docs = await loadResearchDocuments([join(tmpDir, "nonexistent")]);
+    const docs = await loadResearchDocuments([join(tmpDir, "nonexistent")], tmpDir);
 
     expect(docs).toEqual([]);
   });
@@ -77,7 +77,7 @@ describe("loadResearchDocuments", () => {
     const emptyDir = join(tmpDir, "empty");
     mkdirSync(emptyDir);
 
-    const docs = await loadResearchDocuments([emptyDir]);
+    const docs = await loadResearchDocuments([emptyDir], tmpDir);
 
     expect(docs).toEqual([]);
   });
@@ -87,7 +87,7 @@ describe("loadResearchDocuments", () => {
     mkdirSync(validDir);
     writeFileSync(join(validDir, "doc.md"), "Content");
 
-    const docs = await loadResearchDocuments([join(tmpDir, "missing"), validDir]);
+    const docs = await loadResearchDocuments([join(tmpDir, "missing"), validDir], tmpDir);
 
     expect(docs.length).toBe(1);
     expect(docs[0].content).toBe("Content");
