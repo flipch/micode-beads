@@ -6,6 +6,9 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "type": "module",
+  "bin": {
+    "micode-beads": "dist/cli.js"
+  },
   "files": [
     "src",
     "dist",
@@ -13,7 +16,7 @@
   ],
   "scripts": {
     "prepare": "lefthook install",
-    "build": "bun build src/index.ts --outdir dist --target bun --external bun-pty",
+    "build": "bun build src/index.ts --outdir dist --target bun --external bun-pty && bun build src/cli/index.ts --target bun --outfile dist/cli.js",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run typecheck",
     "test": "bun test",

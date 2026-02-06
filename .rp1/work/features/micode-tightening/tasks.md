@@ -2,7 +2,7 @@
 
 **Feature ID**: micode-tightening
 **Status**: In Progress
-**Progress**: 13% (2 of 15 tasks)
+**Progress**: 27% (4 of 15 tasks)
 **Estimated Effort**: 8 days
 **Started**: 2026-02-05
 
@@ -71,7 +71,7 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
     | Commit | ✅ PASS |
     | Comments | ✅ PASS |
 
-- [ ] **T2**: Create CLI module with init command `[complexity:medium]`
+- [x] **T2**: Create CLI module with init command `[complexity:medium]`
 
     **Reference**: [design.md#32-new-module-srccli](design.md#32-new-module-srccli)
 
@@ -79,13 +79,20 @@ Overhaul micode-beads across four axes: identity (README rewrite, installer, CLI
 
     **Acceptance Criteria**:
 
-    - [ ] `src/cli/index.ts` provides a minimal CLI entry point with `init`, `--help`, `--version` commands
-    - [ ] `src/cli/init.ts` implements the init command: dependency checks (bun, opencode, git), `opencode.json` creation/update, optional `.mindmodel/` scaffolding, `thoughts/` directory creation
-    - [ ] Init command is idempotent -- running twice does not corrupt existing configuration
-    - [ ] Init command reads existing config before writing (merge, not overwrite)
-    - [ ] `package.json` updated with `"bin": { "micode-beads": "dist/cli.js" }`
-    - [ ] Build script updated to include CLI build target: `bun build src/cli/index.ts --outdir dist --target bun --outfile dist/cli.js`
-    - [ ] Clear success/failure output with next-step instructions printed to stdout
+    - [x] `src/cli/index.ts` provides a minimal CLI entry point with `init`, `--help`, `--version` commands
+    - [x] `src/cli/init.ts` implements the init command: dependency checks (bun, opencode, git), `opencode.json` creation/update, optional `.mindmodel/` scaffolding, `thoughts/` directory creation
+    - [x] Init command is idempotent -- running twice does not corrupt existing configuration
+    - [x] Init command reads existing config before writing (merge, not overwrite)
+    - [x] `package.json` updated with `"bin": { "micode-beads": "dist/cli.js" }`
+    - [x] Build script updated to include CLI build target: `bun build src/cli/index.ts --target bun --outfile dist/cli.js`
+    - [x] Clear success/failure output with next-step instructions printed to stdout
+
+    **Implementation Summary**:
+
+    - **Files**: `src/cli/index.ts`, `src/cli/init.ts`, `package.json`
+    - **Approach**: Created minimal CLI entry point with switch-based command routing (init, --help, --version). Init command uses Bun's `which()` for dependency checks (matching existing ast-grep/btca patterns), reads/merges existing opencode.json before writing, scaffolds .mindmodel/ on demand, and creates thoughts/ directory structure. Build script updated to produce dist/cli.js as a separate Bun bundle.
+    - **Deviations**: Build script uses `--outfile dist/cli.js` without `--outdir` flag (design spec had both, but they conflict in Bun's bundler)
+    - **Tests**: 368/369 passing (1 pre-existing failure unrelated to this task)
 
 - [x] **T4**: Create installer script `[complexity:medium]`
 
