@@ -100,13 +100,14 @@ Not everything needs brainstorm → plan → execute.
 <phase name="brainstorm" trigger="unclear requirements">
 <action>Tell user to invoke brainstormer for interactive design exploration</action>
 <note>Brainstormer is primary agent - user must invoke directly</note>
+<note>In AFK mode, brainstormer skips Octto browser UI and auto-proceeds</note>
 <output>thoughts/shared/designs/YYYY-MM-DD-{topic}-design.md</output>
 </phase>
 
 <phase name="plan" trigger="design exists OR requirements clear">
 <action>Spawn planner with design document (planner does its own research)</action>
 <output>thoughts/shared/plans/YYYY-MM-DD-{topic}.md</output>
-<action>Get approval before implementation</action>
+<action>Get approval before implementation (skipped in AFK mode)</action>
 </phase>
 
 <phase name="setup" trigger="before implementation starts">
@@ -122,7 +123,14 @@ Not everything needs brainstorm → plan → execute.
 <on-mismatch>STOP, report, ask. Don't improvise.</on-mismatch>
 </phase>
 
-<phase name="commit" trigger="after implementation reviewed and verified">
+<phase name="verify" trigger="after all implementer batches complete">
+<action>Executor spawns verifier agent to cross-reference plan against implementation</action>
+<checks>Completeness (all tasks addressed), test coverage, plan adherence, test pass</checks>
+<on-fail>Report verification failures with actionable issues. Re-implement if fixable.</on-fail>
+<on-pass>Proceed to commit phase</on-pass>
+</phase>
+
+<phase name="commit" trigger="after implementation verified">
 <action>Stage all changes in worktree</action>
 <action>Commit with descriptive message</action>
 <rule>Commit message format: type(scope): description</rule>
@@ -136,13 +144,85 @@ Not everything needs brainstorm → plan → execute.
 </phase>
 </workflow>
 
+<workflow-state description="Persistent workflow tracking for resumption and correction">
+<location>thoughts/workflow/{feature-slug}/state.json</location>
+<purpose>Track stage progress, enable resumption from any stage, support corrections</purpose>
+<stages>brainstorm, plan, implement, verify, commit</stages>
+<lifecycle>
+<transition>pending -> running -> completed | failed</transition>
+<transition>completed -> running (on reset for correction/resume)</transition>
+</lifecycle>
+<versioning>Each stage completion increments its version number. Snapshots stored at thoughts/workflow/{feature-slug}/snapshots/{stage}-v{N}/</versioning>
+<rule>When starting a workflow, create or load workflow state for the feature</rule>
+<rule>When completing a stage, mark it complete and record artifact paths</rule>
+<rule>State is read/written by WorkflowManager - passive persistence, not active orchestrator</rule>
+</workflow-state>
+
+<stage-resumption description="Resume from any previously completed stage">
+<trigger>User passes --resume-from={stage} in $ARGUMENTS (e.g., /build --resume-from=plan)</trigger>
+<behavior>
+<step>Load existing workflow state for the feature</step>
+<step>Determine which stages to skip (prior to target) and which to re-execute (target onward)</step>
+<step>Load persisted artifacts for skipped stages</step>
+<step>Re-execute from target stage forward</step>
+</behavior>
+<with-correction>
+<trigger>User passes --correct "message" alongside --resume-from</trigger>
+<step>Record the correction with timestamp and affected stages</step>
+<step>Reset target stage and all downstream stages to pending</step>
+<step>Inject correction message as additional context for the resumed stage</step>
+<step>Re-execute affected stages with corrected inputs</step>
+</with-correction>
+<post-completion>
+<trigger>User passes --correct "message" without --resume-from (after workflow complete)</trigger>
+<step>Load completed workflow state</step>
+<step>Determine which stages are affected by the correction</step>
+<step>Reset and re-execute only affected stages, preserving unaffected outputs</step>
+<step>Log correction with rationale for auditability</step>
+</post-completion>
+<display>Clearly report which stages are being skipped and which are being re-executed</display>
+</stage-resumption>
+
+<afk-mode description="Fully autonomous execution with no user prompts">
+<detection>
+<source priority="1">--afk flag in $ARGUMENTS</source>
+<source priority="2">MICODE_AFK=1 environment variable</source>
+<source priority="3">afk: true in micode-beads.json config</source>
+</detection>
+<behavior>
+<rule>Skip ALL user confirmations and interactive pauses</rule>
+<rule>Auto-resolve all decisions using conservative defaults</rule>
+<rule>Log every auto-resolved decision with the chosen default and rationale</rule>
+<rule>Do NOT reduce verification rigor - all checks run in both interactive and AFK mode</rule>
+<rule>Brainstormer skips Octto browser UI, auto-proceeds through design phases</rule>
+<rule>Plan approval is auto-granted</rule>
+<rule>Produce the same artifact types as interactive mode</rule>
+</behavior>
+<combined-flags>
+<flag name="--afk --git-pr">
+<action>Run full workflow autonomously, then create a GitHub PR</action>
+<step>Create feature branch, commit all changes, push to origin</step>
+<step>Open PR via gh CLI with auto-generated title and description from plan</step>
+<step>PR created as draft by default (configurable via gitPr.draftByDefault in micode-beads.json)</step>
+<step>If PR already exists for the branch, push to it instead of creating duplicate</step>
+</flag>
+</combined-flags>
+<logging>
+<format>AFK Decision: [decision point] -> [chosen default] (rationale: [why])</format>
+<example>AFK Decision: plan approval -> auto-approved (AFK mode, design validated)</example>
+<example>AFK Decision: brainstorm method -> skip Octto, auto-design (AFK mode, no interactive UI)</example>
+</logging>
+</afk-mode>
+
 <agents>
 <agent name="brainstormer" mode="primary" purpose="Design exploration (user invokes directly)"/>
 <agent name="codebase-locator" mode="subagent" purpose="Find WHERE files are"/>
 <agent name="codebase-analyzer" mode="subagent" purpose="Explain HOW code works"/>
 <agent name="pattern-finder" mode="subagent" purpose="Find existing patterns"/>
 <agent name="planner" mode="subagent" purpose="Create detailed implementation plans"/>
-<agent name="executor" mode="subagent" purpose="Execute plan (runs implementer then reviewer automatically)"/>
+<agent name="executor" mode="subagent" purpose="Execute plan (runs implementer, reviewer, then verifier automatically)"/>
+<agent name="verifier" mode="subagent" purpose="Post-implementation verification (completeness, coverage, adherence, test pass)"/>
+<agent name="pr-feedback" mode="subagent" purpose="Ingest GitHub PR review comments and generate corrective implementations"/>
 <agent name="ledger-creator" mode="subagent" purpose="Create/update continuity ledgers"/>
 <spawning>
 <rule>ALWAYS use the built-in Task tool to spawn subagents. NEVER use spawn_agent (that's for subagents only).</rule>
