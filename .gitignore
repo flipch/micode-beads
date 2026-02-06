@@ -19,3 +19,6 @@ yarn.lock
 
 # Worktrees
 .worktrees/
+
+# rp1 working files
+.rp1/

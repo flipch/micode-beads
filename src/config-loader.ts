@@ -110,12 +110,19 @@ export interface MicodeFeatures {
   mindmodelInjection?: boolean;
 }
 
+export interface GitPrConfig {
+  draftByDefault?: boolean;
+}
+
 export interface MicodeConfig {
   agents?: Record<string, AgentOverride>;
   features?: MicodeFeatures;
   compactionThreshold?: number;
   fragments?: Record<string, string[]>;
   methodology?: string;
+  researchDirs?: string[];
+  afk?: boolean;
+  gitPr?: GitPrConfig;
 }
 
 /**
@@ -203,6 +210,33 @@ export async function loadMicodeConfig(configDir?: string): Promise<MicodeConfig
       }
     }
 
+    // Parse researchDirs (must be an array of non-empty strings)
+    if (Array.isArray(parsed.researchDirs)) {
+      const validDirs = parsed.researchDirs.filter(
+        (d: unknown): d is string => typeof d === "string" && d.trim().length > 0,
+      );
+      if (validDirs.length > 0) {
+        result.researchDirs = validDirs;
+      }
+    }
+
+    // Parse afk (must be a boolean)
+    if (typeof parsed.afk === "boolean") {
+      result.afk = parsed.afk;
+    }
+
+    // Parse gitPr (must be an object with optional boolean draftByDefault)
+    if (parsed.gitPr && typeof parsed.gitPr === "object" && !Array.isArray(parsed.gitPr)) {
+      const gitPr = parsed.gitPr as Record<string, unknown>;
+      const gitPrConfig: GitPrConfig = {};
+
+      if (typeof gitPr.draftByDefault === "boolean") {
+        gitPrConfig.draftByDefault = gitPr.draftByDefault;
+      }
+
+      result.gitPr = gitPrConfig;
+    }
+
     return result;
   } catch {
     return null;
@@ -261,7 +295,7 @@ export function mergeAgentConfigs(
 ): Record<string, AgentConfig> {
   const models = availableModels ?? loadAvailableModels();
   const shouldValidateModels = models.size > 0;
-  const opencodeDefaultModel = defaultModel ?? loadDefaultModel();
+  const opencodeDefaultModel = defaultModel === undefined ? loadDefaultModel() : defaultModel;
 
   // Helper to validate a model string
   const isValidModel = (model: string): boolean => {
