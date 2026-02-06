@@ -2,7 +2,7 @@
 
 **Feature ID**: preference-system-and-orchestration
 **Status**: In Progress
-**Progress**: 36% (7 of 19 tasks)
+**Progress**: 42% (8 of 19 tasks)
 **Estimated Effort**: 6 days
 **Started**: 2026-02-05
 
@@ -295,7 +295,19 @@ A unified preference system for micode-beads that enables developers to declare,
     - **Deviations**: None
     - **Tests**: N/A (static agent configuration -- type safety validated by tsc, no testable logic)
 
-- [ ] **T12**: Update config loader to parse methodology setting `[complexity:simple]`
+    **Validation Summary**:
+
+    | Dimension | Status |
+    |-----------|--------|
+    | Discipline | PASS |
+    | Accuracy | PASS |
+    | Completeness | PASS |
+    | Quality | PASS |
+    | Testing | N/A |
+    | Commit | PASS |
+    | Comments | PASS |
+
+- [x] **T12**: Update config loader to parse methodology setting `[complexity:simple]`
 
     **Reference**: [design.md#310-config-loader-updates](design.md#310-config-loader-updates)
 
@@ -303,12 +315,19 @@ A unified preference system for micode-beads that enables developers to declare,
 
     **Acceptance Criteria**:
 
-    - [ ] `src/config-loader.ts` modified: `MicodeConfig` interface includes optional `methodology?: string` field
-    - [ ] Methodology field parsed from `micode-beads.json` during config loading
-    - [ ] Valid methodology values: "default", "tdd", or any string (for future custom profiles)
-    - [ ] Missing methodology field defaults to undefined (resolved downstream to "default" by methodology.ts)
-    - [ ] Existing config loading behavior is fully preserved -- no regressions
-    - [ ] Existing config-loader tests pass after modification
+    - [x] `src/config-loader.ts` modified: `MicodeConfig` interface includes optional `methodology?: string` field
+    - [x] Methodology field parsed from `micode-beads.json` during config loading
+    - [x] Valid methodology values: "default", "tdd", or any string (for future custom profiles)
+    - [x] Missing methodology field defaults to undefined (resolved downstream to "default" by methodology.ts)
+    - [x] Existing config loading behavior is fully preserved -- no regressions
+    - [x] Existing config-loader tests pass after modification
+
+    **Implementation Summary**:
+
+    - **Files**: `src/config-loader.ts`
+    - **Approach**: Added `methodology?: string` to MicodeConfig interface; added parsing block in loadMicodeConfig following the same typeof/trim/assign pattern used by compactionThreshold and fragments; non-string and empty-string values silently ignored
+    - **Deviations**: None
+    - **Tests**: 422/422 passing (full suite, no regressions)
 
 ### Group 3: Integration Modules (Mixed Dependencies)
 
