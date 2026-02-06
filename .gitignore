@@ -19,3 +19,4 @@ yarn.lock
 
 # Worktrees
 .worktrees/
+.rp1/work/worktrees/
