@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import pkg from "../../package.json";
+import { agentCommand } from "./agent";
 import { runDoctor } from "./doctor";
 import { createAttributedError, printError } from "./errors";
 import { runInit } from "./init";
@@ -62,7 +63,7 @@ const doctorCommand: SubcommandDef = {
   },
 };
 
-export const commands: SubcommandDef[] = [initCommand, doctorCommand, workflowCommand];
+export const commands: SubcommandDef[] = [initCommand, doctorCommand, workflowCommand, agentCommand];
 
 async function main(): Promise<void> {
   if (!process.env.MICODE_NO_UPDATE_CHECK) {
