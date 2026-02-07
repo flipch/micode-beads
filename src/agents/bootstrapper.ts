@@ -1,6 +1,8 @@
 // src/agents/bootstrapper.ts
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const bootstrapperAgent: AgentConfig = {
   description: "Analyzes a request and creates exploration branches with scopes for octto brainstorming",
   mode: "subagent",
@@ -161,4 +163,9 @@ Plan review. config: { question, sections: [{id, title, content}] }
 <forbidden>Never wrap output in markdown code blocks</forbidden>
 <forbidden>Never include text outside the JSON</forbidden>
 </never-do>`,
+};
+
+export const bootstrapperKnowledgeDef: AgentKnowledgeDef = {
+  agent: "bootstrapper",
+  fragments: ["bootstrapper-prompt"],
 };

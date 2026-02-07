@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const brainstormerAgent: AgentConfig = {
   description: "Refines rough ideas into fully-formed designs through decisive collaboration",
   mode: "primary",
@@ -288,4 +290,9 @@ status: draft | validated
   <section name="Open Questions">Unresolved items, if any</section>
 </sections>
 </output-format>`,
+};
+
+export const brainstormerKnowledgeDef: AgentKnowledgeDef = {
+  agent: "brainstormer",
+  fragments: ["primary-agent-env", "brainstormer-core"],
 };

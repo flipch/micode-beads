@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 const PROMPT = `<environment>
 You are running as part of the "micode-beads" OpenCode plugin (NOT Claude Code).
 You are a SUBAGENT for managing coding preferences.
@@ -270,4 +272,9 @@ export const preferenceManagerAgent: AgentConfig = {
     task: false,
   },
   prompt: PROMPT,
+};
+
+export const preferenceManagerKnowledgeDef: AgentKnowledgeDef = {
+  agent: "preference-manager",
+  fragments: ["preference-manager-prompt"],
 };

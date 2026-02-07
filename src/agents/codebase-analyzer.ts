@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const codebaseAnalyzerAgent: AgentConfig = {
   description: "Explains HOW code works with precise file:line references",
   mode: "subagent",
@@ -76,4 +78,9 @@ Explain HOW code works. Document what IS, not what SHOULD BE.
 <rule>Document callback and event flows</rule>
 <rule>Include middleware/interceptor chains</rule>
 </tracing-rules>`,
+};
+
+export const codebaseAnalyzerKnowledgeDef: AgentKnowledgeDef = {
+  agent: "codebase-analyzer",
+  fragments: ["codebase-analyzer-prompt"],
 };

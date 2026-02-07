@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const patternFinderAgent: AgentConfig = {
   description: "Finds existing patterns and examples to model after",
   mode: "subagent",
@@ -71,4 +73,9 @@ Find existing patterns in the codebase to model after. Show, don't tell.
 <criterion>Prefer simple over complex</criterion>
 <criterion>Note if pattern seems inconsistent across codebase</criterion>
 </quality-criteria>`,
+};
+
+export const patternFinderKnowledgeDef: AgentKnowledgeDef = {
+  agent: "pattern-finder",
+  fragments: ["pattern-finder-prompt"],
 };

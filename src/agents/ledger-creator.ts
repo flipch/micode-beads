@@ -1,6 +1,8 @@
 // src/agents/ledger-creator.ts
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const ledgerCreatorAgent: AgentConfig = {
   description: "Creates and updates continuity ledgers for session state preservation",
   mode: "subagent",
@@ -114,4 +116,9 @@ Updated: {ISO timestamp}
 Ledger updated: thoughts/ledgers/CONTINUITY_{session-name}.md
 State: {Current In Progress item}
 </output-summary>`,
+};
+
+export const ledgerCreatorKnowledgeDef: AgentKnowledgeDef = {
+  agent: "ledger-creator",
+  fragments: ["ledger-creator-prompt"],
 };

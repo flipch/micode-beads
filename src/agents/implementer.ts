@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const implementerAgent: AgentConfig = {
   description: "Executes ONE micro-task: creates ONE file + its test, runs verification",
   mode: "subagent",
@@ -219,4 +221,9 @@ Blocked. Escalating.
 <forbidden>Don't re-apply changes that are already done</forbidden>
 <forbidden>Don't escalate for minor path differences - find the correct path</forbidden>
 </never-do>`,
+};
+
+export const implementerKnowledgeDef: AgentKnowledgeDef = {
+  agent: "implementer",
+  fragments: ["implementer-prompt"],
 };

@@ -1,6 +1,8 @@
 // src/agents/artifact-searcher.ts
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const artifactSearcherAgent: AgentConfig = {
   description: "Searches past handoffs, plans, and ledgers for relevant precedent",
   mode: "subagent",
@@ -47,4 +49,9 @@ Help the user discover precedent from previous sessions.
 ### Alternative Searches
 {If results sparse, suggest other queries}
 </output-format>`,
+};
+
+export const artifactSearcherKnowledgeDef: AgentKnowledgeDef = {
+  agent: "artifact-searcher",
+  fragments: ["artifact-searcher-prompt"],
 };

@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const reviewerAgent: AgentConfig = {
   description: "Reviews ONE micro-task: verifies file + test match plan, test passes",
   mode: "subagent",
@@ -190,4 +192,9 @@ Code: \`for (let i = 0; i <= arr.length - 1; i++)\`
 <forbidden>NEVER hedge your verdict - state APPROVED or CHANGES REQUESTED clearly</forbidden>
 <forbidden>Don't defer decisions to executor - make the call yourself</forbidden>
 </never-do>`,
+};
+
+export const reviewerKnowledgeDef: AgentKnowledgeDef = {
+  agent: "reviewer",
+  fragments: ["reviewer-prompt"],
 };

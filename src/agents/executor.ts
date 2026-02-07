@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const executorAgent: AgentConfig = {
   description: "Executes plan with batch-first parallelism - groups independent tasks, spawns all in parallel",
   mode: "subagent",
@@ -350,4 +352,9 @@ spawn_agent(agent="reviewer", prompt="Review 1.8: src/app/globals.css", descript
 <forbidden>Never report success if any task is blocked</forbidden>
 <forbidden>Never re-execute tasks that are already completed</forbidden>
 </never-do>`,
+};
+
+export const executorKnowledgeDef: AgentKnowledgeDef = {
+  agent: "executor",
+  fragments: ["executor-prompt"],
 };

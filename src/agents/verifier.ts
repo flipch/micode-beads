@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const verifierAgent: AgentConfig = {
   description:
     "Post-implementation verification: cross-references plan against actual implementation for completeness, coverage, adherence, and test pass",
@@ -167,4 +169,9 @@ All tests must pass.
 <forbidden>NEVER suggest changes beyond what the plan specifies</forbidden>
 <forbidden>NEVER hedge your verdict - state PASS or FAIL clearly</forbidden>
 </never-do>`,
+};
+
+export const verifierKnowledgeDef: AgentKnowledgeDef = {
+  agent: "verifier",
+  fragments: ["verifier-prompt"],
 };

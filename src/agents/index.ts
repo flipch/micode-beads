@@ -1,14 +1,15 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
-import { artifactSearcherAgent } from "./artifact-searcher";
-import { bootstrapperAgent } from "./bootstrapper";
-import { brainstormerAgent } from "./brainstormer";
-import { codebaseAnalyzerAgent } from "./codebase-analyzer";
-import { codebaseLocatorAgent } from "./codebase-locator";
-import { PRIMARY_AGENT_NAME, primaryAgent } from "./commander";
-import { executorAgent } from "./executor";
-import { implementerAgent } from "./implementer";
-import { ledgerCreatorAgent } from "./ledger-creator";
+import type { AgentKnowledgeDef } from "../knowledge/types";
+import { artifactSearcherAgent, artifactSearcherKnowledgeDef } from "./artifact-searcher";
+import { bootstrapperAgent, bootstrapperKnowledgeDef } from "./bootstrapper";
+import { brainstormerAgent, brainstormerKnowledgeDef } from "./brainstormer";
+import { codebaseAnalyzerAgent, codebaseAnalyzerKnowledgeDef } from "./codebase-analyzer";
+import { codebaseLocatorAgent, codebaseLocatorKnowledgeDef } from "./codebase-locator";
+import { commanderKnowledgeDef, PRIMARY_AGENT_NAME, primaryAgent } from "./commander";
+import { executorAgent, executorKnowledgeDef } from "./executor";
+import { implementerAgent, implementerKnowledgeDef } from "./implementer";
+import { ledgerCreatorAgent, ledgerCreatorKnowledgeDef } from "./ledger-creator";
 import {
   antiPatternDetectorAgent,
   codeClustererAgent,
@@ -22,15 +23,15 @@ import {
   mindmodelPatternDiscovererAgent,
   stackDetectorAgent,
 } from "./mindmodel";
-import { octtoAgent } from "./octto";
-import { patternFinderAgent } from "./pattern-finder";
-import { plannerAgent } from "./planner";
-import { prFeedbackAgent } from "./pr-feedback";
-import { preferenceManagerAgent } from "./preference-manager";
-import { probeAgent } from "./probe";
-import { projectInitializerAgent } from "./project-initializer";
-import { reviewerAgent } from "./reviewer";
-import { verifierAgent } from "./verifier";
+import { octtoAgent, octtoKnowledgeDef } from "./octto";
+import { patternFinderAgent, patternFinderKnowledgeDef } from "./pattern-finder";
+import { plannerAgent, plannerKnowledgeDef } from "./planner";
+import { prFeedbackAgent, prFeedbackKnowledgeDef } from "./pr-feedback";
+import { preferenceManagerAgent, preferenceManagerKnowledgeDef } from "./preference-manager";
+import { probeAgent, probeKnowledgeDef } from "./probe";
+import { projectInitializerAgent, projectInitializerKnowledgeDef } from "./project-initializer";
+import { reviewerAgent, reviewerKnowledgeDef } from "./reviewer";
+import { verifierAgent, verifierKnowledgeDef } from "./verifier";
 
 export const agents: Record<string, AgentConfig> = {
   [PRIMARY_AGENT_NAME]: { ...primaryAgent, model: "openai/gpt-5.2-codex" },
@@ -65,6 +66,27 @@ export const agents: Record<string, AgentConfig> = {
   "mm-constraint-writer": { ...constraintWriterAgent, model: "openai/gpt-5.2-codex" },
   "mm-constraint-reviewer": { ...constraintReviewerAgent, model: "openai/gpt-5.2-codex" },
 };
+
+export const agentKnowledgeDefs: AgentKnowledgeDef[] = [
+  commanderKnowledgeDef,
+  brainstormerKnowledgeDef,
+  bootstrapperKnowledgeDef,
+  codebaseLocatorKnowledgeDef,
+  codebaseAnalyzerKnowledgeDef,
+  patternFinderKnowledgeDef,
+  plannerKnowledgeDef,
+  implementerKnowledgeDef,
+  reviewerKnowledgeDef,
+  executorKnowledgeDef,
+  ledgerCreatorKnowledgeDef,
+  artifactSearcherKnowledgeDef,
+  projectInitializerKnowledgeDef,
+  preferenceManagerKnowledgeDef,
+  octtoKnowledgeDef,
+  probeKnowledgeDef,
+  verifierKnowledgeDef,
+  prFeedbackKnowledgeDef,
+];
 
 export {
   primaryAgent,

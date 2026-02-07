@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 const PROMPT = `
 <environment>
 You are running as part of the "micode-beads" OpenCode plugin (NOT Claude Code).
@@ -221,4 +223,9 @@ export const projectInitializerAgent: AgentConfig = {
   temperature: 0.3,
   maxTokens: 32000,
   prompt: PROMPT,
+};
+
+export const projectInitializerKnowledgeDef: AgentKnowledgeDef = {
+  agent: "project-initializer",
+  fragments: ["project-initializer-prompt"],
 };

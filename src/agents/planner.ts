@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const plannerAgent: AgentConfig = {
   description: "Creates micro-task plans optimized for parallel execution - one file per task, batched by dependencies",
   mode: "subagent",
@@ -467,4 +469,9 @@ spawn_agent(agent="pattern-finder", prompt="Find auth middleware patterns", desc
   <forbidden>Never leave implementation details vague - be specific</forbidden>
   <forbidden>Never write "src/somewhere/" - write the exact path</forbidden>
 </never-do>`,
+};
+
+export const plannerKnowledgeDef: AgentKnowledgeDef = {
+  agent: "planner",
+  fragments: ["planner-prompt"],
 };

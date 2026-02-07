@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const codebaseLocatorAgent: AgentConfig = {
   description: "Finds WHERE files live in the codebase",
   mode: "subagent",
@@ -72,4 +74,9 @@ Find WHERE files live. No analysis, no opinions, just locations.
 <category>Scripts</category>
 <category>Assets</category>
 </categories>`,
+};
+
+export const codebaseLocatorKnowledgeDef: AgentKnowledgeDef = {
+  agent: "codebase-locator",
+  fragments: ["codebase-locator-prompt"],
 };
