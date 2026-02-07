@@ -5,6 +5,7 @@ import { agentCommand } from "./agent";
 import { runDoctor } from "./doctor";
 import { createAttributedError, printError } from "./errors";
 import { runInit } from "./init";
+import { knowledgeCommand } from "./knowledge";
 import { dispatch, type SubcommandDef } from "./router";
 import { checkForUpdates } from "./update-checker";
 import { workflowCommand } from "./workflow";
@@ -63,7 +64,7 @@ const doctorCommand: SubcommandDef = {
   },
 };
 
-export const commands: SubcommandDef[] = [initCommand, doctorCommand, workflowCommand, agentCommand];
+export const commands: SubcommandDef[] = [initCommand, doctorCommand, workflowCommand, agentCommand, knowledgeCommand];
 
 async function main(): Promise<void> {
   if (!process.env.MICODE_NO_UPDATE_CHECK) {
