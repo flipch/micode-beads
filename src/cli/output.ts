@@ -40,6 +40,10 @@ export function writeJsonError(code: string, message: string, suggestion?: strin
   console.log(JSON.stringify(output, null, 2));
 }
 
+export function colorize(text: string, colorCode: string, options: OutputOptions): string {
+  return options.color ? `${colorCode}${text}\x1b[0m` : text;
+}
+
 function stripAnsi(str: string): string {
   return str.replace(/\x1b\[[0-9;]*m/g, "");
 }

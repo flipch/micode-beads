@@ -2,48 +2,15 @@ import { agentKnowledgeDefs, agents } from "../agents";
 import { composePrompt, loadFragmentRegistry, validateFragments } from "../knowledge";
 import { allFragments } from "../knowledge/fragments";
 import type { AgentKnowledgeDef, FragmentRegistry } from "../knowledge/types";
+import {
+  colorize,
+  detectOutputOptions,
+  formatTable,
+  type OutputOptions,
+  writeJsonError,
+  writeJsonOutput,
+} from "./output";
 import { EXIT_SUCCESS, EXIT_VALIDATION, formatCommandHelp, type SubcommandDef } from "./router";
-
-interface JsonOutput<T> {
-  success: boolean;
-  data: T;
-  error?: { code: string; message: string; suggestion?: string };
-}
-
-function writeJsonSuccess<T>(data: T): void {
-  const output: JsonOutput<T> = { success: true, data };
-  console.log(JSON.stringify(output, null, 2));
-}
-
-function writeJsonFail(code: string, message: string, suggestion?: string): void {
-  const output: JsonOutput<null> = {
-    success: false,
-    data: null,
-    error: { code, message, ...(suggestion ? { suggestion } : {}) },
-  };
-  console.log(JSON.stringify(output, null, 2));
-}
-
-function useColor(): boolean {
-  return process.stdout.isTTY === true && !("NO_COLOR" in process.env);
-}
-
-function colorize(text: string, colorCode: string): string {
-  return useColor() ? `${colorCode}${text}\x1b[0m` : text;
-}
-
-function formatSimpleTable(headers: string[], rows: string[][]): string {
-  const widths = headers.map((h, i) => {
-    const maxData = rows.reduce((max, row) => Math.max(max, (row[i] ?? "").length), 0);
-    return Math.max(h.length, maxData);
-  });
-
-  const headerLine = headers.map((h, i) => h.padEnd(widths[i])).join("  ");
-  const separator = widths.map((w) => "-".repeat(w)).join("  ");
-  const dataLines = rows.map((row) => row.map((cell, i) => cell.padEnd(widths[i])).join("  "));
-
-  return [headerLine, separator, ...dataLines].join("\n");
-}
 
 function getRegistry(): FragmentRegistry {
   return loadFragmentRegistry(allFragments);
@@ -60,11 +27,11 @@ function resolveAgentMode(name: string, config: { mode?: string }): string {
   return name === "commander" ? "primary" : "subagent";
 }
 
-export function handleAgentList(json: boolean): number {
+export function handleAgentList(opts: OutputOptions): number {
   const knowledgeDefMap = getKnowledgeDefMap();
   const agentEntries = Object.entries(agents);
 
-  if (json) {
+  if (opts.json) {
     const data = agentEntries.map(([name, config]) => {
       const knowledgeDef = knowledgeDefMap.get(name);
       return {
@@ -75,7 +42,7 @@ export function handleAgentList(json: boolean): number {
         fragmentCount: knowledgeDef?.fragments.length ?? 0,
       };
     });
-    writeJsonSuccess(data);
+    writeJsonOutput(data, true);
     return EXIT_SUCCESS;
   }
 
@@ -89,21 +56,21 @@ export function handleAgentList(json: boolean): number {
   });
 
   console.log("");
-  console.log(colorize("Registered Agents", "\x1b[1m"));
+  console.log(colorize("Registered Agents", "\x1b[1m", opts));
   console.log("");
-  console.log(formatSimpleTable(headers, rows));
+  console.log(formatTable(headers, rows, opts));
   console.log("");
   console.log(`Total: ${agentEntries.length} agents`);
   console.log("");
   return EXIT_SUCCESS;
 }
 
-export function handleAgentShow(agentName: string, json: boolean): number {
+export function handleAgentShow(agentName: string, opts: OutputOptions): number {
   const config = agents[agentName];
   if (!config) {
     const available = Object.keys(agents).join(", ");
-    if (json) {
-      writeJsonFail("AGENT_NOT_FOUND", `No agent found with name: ${agentName}`, `Available agents: ${available}`);
+    if (opts.json) {
+      writeJsonError("AGENT_NOT_FOUND", `No agent found with name: ${agentName}`, `Available agents: ${available}`);
     } else {
       console.error(`No agent found with name: ${agentName}`);
       console.error(`Available agents: ${available}`);
@@ -122,24 +89,27 @@ export function handleAgentShow(agentName: string, json: boolean): number {
 
   const promptLength = composedPrompt?.length ?? config.prompt?.length ?? 0;
 
-  if (json) {
-    writeJsonSuccess({
-      name: agentName,
-      description: config.description ?? "",
-      mode: resolveAgentMode(agentName, config),
-      model: config.model ?? "",
-      temperature: config.temperature,
-      fragments: knowledgeDef?.fragments ?? [],
-      hasInlineContent: knowledgeDef?.inlineContent !== undefined && knowledgeDef.inlineContent !== null,
-      promptLength,
-      prompt: composedPrompt ?? config.prompt ?? "",
-    });
+  if (opts.json) {
+    writeJsonOutput(
+      {
+        name: agentName,
+        description: config.description ?? "",
+        mode: resolveAgentMode(agentName, config),
+        model: config.model ?? "",
+        temperature: config.temperature,
+        fragments: knowledgeDef?.fragments ?? [],
+        hasInlineContent: knowledgeDef?.inlineContent !== undefined && knowledgeDef.inlineContent !== null,
+        promptLength,
+        prompt: composedPrompt ?? config.prompt ?? "",
+      },
+      true,
+    );
     return EXIT_SUCCESS;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize(`Agent: ${agentName}`, "\x1b[1m"));
+  lines.push(colorize(`Agent: ${agentName}`, "\x1b[1m", opts));
   lines.push("");
   lines.push(`Description: ${config.description ?? "(none)"}`);
   lines.push(`Mode: ${resolveAgentMode(agentName, config)}`);
@@ -151,7 +121,7 @@ export function handleAgentShow(agentName: string, json: boolean): number {
 
   if (knowledgeDef) {
     lines.push("");
-    lines.push(colorize("Knowledge Fragments:", "\x1b[1m"));
+    lines.push(colorize("Knowledge Fragments:", "\x1b[1m", opts));
     for (let i = 0; i < knowledgeDef.fragments.length; i++) {
       const fragmentName = knowledgeDef.fragments[i];
       const fragment = registry.has(fragmentName) ? registry.get(fragmentName) : null;
@@ -168,7 +138,7 @@ export function handleAgentShow(agentName: string, json: boolean): number {
 
   if (composedPrompt) {
     lines.push("");
-    lines.push(colorize("Prompt Preview:", "\x1b[1m"));
+    lines.push(colorize("Prompt Preview:", "\x1b[1m", opts));
     const preview = composedPrompt.length > 500 ? `${composedPrompt.slice(0, 500)}...` : composedPrompt;
     lines.push(preview);
   }
@@ -178,51 +148,56 @@ export function handleAgentShow(agentName: string, json: boolean): number {
   return EXIT_SUCCESS;
 }
 
-export function handleAgentValidate(json: boolean): number {
+export function handleAgentValidate(opts: OutputOptions): number {
   const registry = getRegistry();
   const result = validateFragments(registry, agentKnowledgeDefs);
 
-  if (json) {
-    writeJsonSuccess({
-      valid: result.valid,
-      errors: result.errors,
-      warnings: result.warnings,
-      totalFragments: registry.names().length,
-      totalAgents: agentKnowledgeDefs.length,
-    });
+  if (opts.json) {
+    writeJsonOutput(
+      {
+        valid: result.valid,
+        errors: result.errors,
+        warnings: result.warnings,
+        totalFragments: registry.names().length,
+        totalAgents: agentKnowledgeDefs.length,
+      },
+      true,
+    );
     return result.valid ? EXIT_SUCCESS : EXIT_VALIDATION;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize("Agent Knowledge Validation", "\x1b[1m"));
+  lines.push(colorize("Agent Knowledge Validation", "\x1b[1m", opts));
   lines.push("");
   lines.push(`Fragments: ${registry.names().length}`);
   lines.push(`Agents with knowledge defs: ${agentKnowledgeDefs.length}`);
   lines.push("");
 
   if (result.errors.length > 0) {
-    lines.push(colorize("Errors:", "\x1b[31m"));
+    lines.push(colorize("Errors:", "\x1b[31m", opts));
     for (const err of result.errors) {
-      lines.push(`  ${colorize("[ERROR]", "\x1b[31m")} ${err.message}`);
+      lines.push(`  ${colorize("[ERROR]", "\x1b[31m", opts)} ${err.message}`);
     }
     lines.push("");
   }
 
   if (result.warnings.length > 0) {
-    lines.push(colorize("Warnings:", "\x1b[33m"));
+    lines.push(colorize("Warnings:", "\x1b[33m", opts));
     for (const warn of result.warnings) {
-      lines.push(`  ${colorize("[WARN]", "\x1b[33m")} ${warn.message}`);
+      lines.push(`  ${colorize("[WARN]", "\x1b[33m", opts)} ${warn.message}`);
     }
     lines.push("");
   }
 
   if (result.valid && result.warnings.length === 0) {
-    lines.push(colorize("All checks passed.", "\x1b[32m"));
+    lines.push(colorize("All checks passed.", "\x1b[32m", opts));
   } else if (result.valid) {
-    lines.push(colorize("Validation passed with warnings.", "\x1b[33m"));
+    lines.push(colorize("Validation passed with warnings.", "\x1b[33m", opts));
   } else {
-    lines.push(colorize("Validation failed. Fix errors above to ensure correct agent prompt composition.", "\x1b[31m"));
+    lines.push(
+      colorize("Validation failed. Fix errors above to ensure correct agent prompt composition.", "\x1b[31m", opts),
+    );
   }
   lines.push("");
 
@@ -241,7 +216,8 @@ const listCommand: SubcommandDef = {
   usage: "micode-beads agent list [--json]",
   flags: [{ name: "json", description: "Output as structured JSON", type: "boolean" }],
   handler: async (args) => {
-    return handleAgentList(args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleAgentList(opts);
   },
 };
 
@@ -252,7 +228,8 @@ const showCommand: SubcommandDef = {
   positional: [{ name: "agent-name", description: "Agent identifier", required: true }],
   flags: [{ name: "json", description: "Output as structured JSON", type: "boolean" }],
   handler: async (args) => {
-    return handleAgentShow(args.positional[0], args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleAgentShow(args.positional[0], opts);
   },
 };
 
@@ -262,7 +239,8 @@ const validateCommand: SubcommandDef = {
   usage: "micode-beads agent validate [--json]",
   flags: [{ name: "json", description: "Output as structured JSON", type: "boolean" }],
   handler: async (args) => {
-    return handleAgentValidate(args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleAgentValidate(opts);
   },
 };
 

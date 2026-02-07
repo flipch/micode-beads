@@ -3,68 +3,35 @@ import { join } from "node:path";
 
 import { WorkflowManager } from "../workflow/manager";
 import { STAGE_NAMES, type StageName, type StageRecord } from "../workflow/state";
+import {
+  colorize,
+  detectOutputOptions,
+  formatTable,
+  type OutputOptions,
+  writeJsonError,
+  writeJsonOutput,
+} from "./output";
 import { EXIT_SUCCESS, EXIT_USAGE, EXIT_WORKFLOW, formatCommandHelp, type SubcommandDef } from "./router";
-
-interface JsonOutput<T> {
-  success: boolean;
-  data: T;
-  error?: { code: string; message: string; suggestion?: string };
-}
 
 function isValidStage(stage: string): stage is StageName {
   return (STAGE_NAMES as readonly string[]).includes(stage);
 }
 
-function writeJsonSuccess<T>(data: T): void {
-  const output: JsonOutput<T> = { success: true, data };
-  console.log(JSON.stringify(output, null, 2));
-}
-
-function writeJsonFail(code: string, message: string, suggestion?: string): void {
-  const output: JsonOutput<null> = {
-    success: false,
-    data: null,
-    error: { code, message, ...(suggestion ? { suggestion } : {}) },
-  };
-  console.log(JSON.stringify(output, null, 2));
-}
-
-function useColor(): boolean {
-  return process.stdout.isTTY === true && !("NO_COLOR" in process.env);
-}
-
-function colorize(text: string, colorCode: string): string {
-  return useColor() ? `${colorCode}${text}\x1b[0m` : text;
-}
-
-function stageStatusDisplay(status: string): string {
+function stageStatusDisplay(status: string, opts: OutputOptions): string {
   switch (status) {
     case "completed":
-      return colorize("completed", "\x1b[32m");
+      return colorize("completed", "\x1b[32m", opts);
     case "running":
-      return colorize("running", "\x1b[33m");
+      return colorize("running", "\x1b[33m", opts);
     case "failed":
-      return colorize("failed", "\x1b[31m");
+      return colorize("failed", "\x1b[31m", opts);
     case "pending":
-      return colorize("pending", "\x1b[90m");
+      return colorize("pending", "\x1b[90m", opts);
     case "skipped":
-      return colorize("skipped", "\x1b[90m");
+      return colorize("skipped", "\x1b[90m", opts);
     default:
       return status;
   }
-}
-
-function formatSimpleTable(headers: string[], rows: string[][]): string {
-  const widths = headers.map((h, i) => {
-    const maxData = rows.reduce((max, row) => Math.max(max, (row[i] ?? "").length), 0);
-    return Math.max(h.length, maxData);
-  });
-
-  const headerLine = headers.map((h, i) => h.padEnd(widths[i])).join("  ");
-  const separator = widths.map((w) => "-".repeat(w)).join("  ");
-  const dataLines = rows.map((row) => row.map((cell, i) => cell.padEnd(widths[i])).join("  "));
-
-  return [headerLine, separator, ...dataLines].join("\n");
 }
 
 function formatStageRecord(stage: StageName, record: StageRecord | undefined): string[] {
@@ -92,13 +59,13 @@ function listWorkflowDirs(baseDir: string): string[] {
   });
 }
 
-export async function handleWorkflowStatus(baseDir: string, featureId: string, json: boolean): Promise<number> {
+export async function handleWorkflowStatus(baseDir: string, featureId: string, opts: OutputOptions): Promise<number> {
   const manager = new WorkflowManager(baseDir);
   const state = await manager.loadState(featureId);
 
   if (!state) {
-    if (json) {
-      writeJsonFail(
+    if (opts.json) {
+      writeJsonError(
         "WORKFLOW_NOT_FOUND",
         `No workflow found for feature: ${featureId}`,
         "Create a workflow first by running a task with the commander agent.",
@@ -109,14 +76,14 @@ export async function handleWorkflowStatus(baseDir: string, featureId: string, j
     return EXIT_WORKFLOW;
   }
 
-  if (json) {
-    writeJsonSuccess(state);
+  if (opts.json) {
+    writeJsonOutput(state, true);
     return EXIT_SUCCESS;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize(`Workflow: ${state.featureId}`, "\x1b[1m"));
+  lines.push(colorize(`Workflow: ${state.featureId}`, "\x1b[1m", opts));
   lines.push(`Mode: ${state.afkMode ? "AFK" : "Interactive"}`);
   lines.push(`Current Stage: ${state.currentStage}`);
   lines.push(`Created: ${state.createdAt}`);
@@ -127,11 +94,11 @@ export async function handleWorkflowStatus(baseDir: string, featureId: string, j
   const rows = STAGE_NAMES.map((stage) => {
     const record = state.stages[stage];
     const rawRow = formatStageRecord(stage, record);
-    rawRow[1] = stageStatusDisplay(rawRow[1]);
+    rawRow[1] = stageStatusDisplay(rawRow[1], opts);
     return rawRow;
   });
 
-  lines.push(formatSimpleTable(headers, rows));
+  lines.push(formatTable(headers, rows, opts));
 
   if (state.corrections.length > 0) {
     lines.push("");
@@ -146,7 +113,7 @@ export async function handleWorkflowStatus(baseDir: string, featureId: string, j
   return EXIT_SUCCESS;
 }
 
-export async function handleWorkflowList(baseDir: string, json: boolean): Promise<number> {
+export async function handleWorkflowList(baseDir: string, opts: OutputOptions): Promise<number> {
   const featureIds = listWorkflowDirs(baseDir);
   const manager = new WorkflowManager(baseDir);
 
@@ -169,8 +136,8 @@ export async function handleWorkflowList(baseDir: string, json: boolean): Promis
     }
   }
 
-  if (json) {
-    writeJsonSuccess(summaries);
+  if (opts.json) {
+    writeJsonOutput(summaries, true);
     return EXIT_SUCCESS;
   }
 
@@ -183,7 +150,7 @@ export async function handleWorkflowList(baseDir: string, json: boolean): Promis
   const rows = summaries.map((s) => [s.featureId, s.currentStage, s.afkMode ? "yes" : "no", s.updatedAt]);
 
   console.log("");
-  console.log(formatSimpleTable(headers, rows));
+  console.log(formatTable(headers, rows, opts));
   console.log("");
   return EXIT_SUCCESS;
 }
@@ -192,12 +159,12 @@ export async function handleWorkflowResume(
   baseDir: string,
   featureId: string,
   fromStage: string,
-  json: boolean,
+  opts: OutputOptions,
 ): Promise<number> {
   if (!isValidStage(fromStage)) {
     const validStages = STAGE_NAMES.join(", ");
-    if (json) {
-      writeJsonFail("INVALID_STAGE", `Invalid stage: ${fromStage}. Valid stages: ${validStages}`);
+    if (opts.json) {
+      writeJsonError("INVALID_STAGE", `Invalid stage: ${fromStage}. Valid stages: ${validStages}`);
     } else {
       console.error(`Invalid stage: ${fromStage}. Valid stages: ${validStages}`);
     }
@@ -208,8 +175,8 @@ export async function handleWorkflowResume(
   const state = await manager.loadState(featureId);
 
   if (!state) {
-    if (json) {
-      writeJsonFail("WORKFLOW_NOT_FOUND", `No workflow found for feature: ${featureId}`);
+    if (opts.json) {
+      writeJsonError("WORKFLOW_NOT_FOUND", `No workflow found for feature: ${featureId}`);
     } else {
       console.error(`No workflow found for feature: ${featureId}`);
     }
@@ -220,20 +187,23 @@ export async function handleWorkflowResume(
   const updatedState = manager.resetStage(state, fromStage);
   await manager.saveState(updatedState);
 
-  if (json) {
-    writeJsonSuccess({
-      featureId,
-      resumeFrom: fromStage,
-      stagesToSkip: resumeInfo.stagesToSkip,
-      stagesToExecute: resumeInfo.stagesToExecute,
-      loadedArtifacts: resumeInfo.loadedArtifacts,
-    });
+  if (opts.json) {
+    writeJsonOutput(
+      {
+        featureId,
+        resumeFrom: fromStage,
+        stagesToSkip: resumeInfo.stagesToSkip,
+        stagesToExecute: resumeInfo.stagesToExecute,
+        loadedArtifacts: resumeInfo.loadedArtifacts,
+      },
+      true,
+    );
     return EXIT_SUCCESS;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize(`Resume plan for: ${featureId}`, "\x1b[1m"));
+  lines.push(colorize(`Resume plan for: ${featureId}`, "\x1b[1m", opts));
   lines.push(`Resume from: ${fromStage}`);
   lines.push("");
 
@@ -264,15 +234,15 @@ export async function handleWorkflowCorrect(
   featureId: string,
   message: string,
   stagesStr: string,
-  json: boolean,
+  opts: OutputOptions,
 ): Promise<number> {
   const stageList = stagesStr.split(",").map((s) => s.trim());
   const invalidStages = stageList.filter((s) => !isValidStage(s));
 
   if (invalidStages.length > 0) {
     const validStages = STAGE_NAMES.join(", ");
-    if (json) {
-      writeJsonFail("INVALID_STAGE", `Invalid stage(s): ${invalidStages.join(", ")}. Valid stages: ${validStages}`);
+    if (opts.json) {
+      writeJsonError("INVALID_STAGE", `Invalid stage(s): ${invalidStages.join(", ")}. Valid stages: ${validStages}`);
     } else {
       console.error(`Invalid stage(s): ${invalidStages.join(", ")}. Valid stages: ${validStages}`);
     }
@@ -283,8 +253,8 @@ export async function handleWorkflowCorrect(
   const state = await manager.loadState(featureId);
 
   if (!state) {
-    if (json) {
-      writeJsonFail("WORKFLOW_NOT_FOUND", `No workflow found for feature: ${featureId}`);
+    if (opts.json) {
+      writeJsonError("WORKFLOW_NOT_FOUND", `No workflow found for feature: ${featureId}`);
     } else {
       console.error(`No workflow found for feature: ${featureId}`);
     }
@@ -296,18 +266,21 @@ export async function handleWorkflowCorrect(
 
   const correction = updatedState.corrections[updatedState.corrections.length - 1];
 
-  if (json) {
-    writeJsonSuccess({
-      featureId,
-      correction,
-      resetStages: stageList,
-    });
+  if (opts.json) {
+    writeJsonOutput(
+      {
+        featureId,
+        correction,
+        resetStages: stageList,
+      },
+      true,
+    );
     return EXIT_SUCCESS;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize("Correction applied", "\x1b[1m"));
+  lines.push(colorize("Correction applied", "\x1b[1m", opts));
   lines.push(`Feature: ${featureId}`);
   lines.push(`Message: ${message}`);
   lines.push(`Affected stages: ${stageList.join(", ")}`);
@@ -323,12 +296,12 @@ export async function handleWorkflowReset(
   baseDir: string,
   featureId: string,
   stage: string,
-  json: boolean,
+  opts: OutputOptions,
 ): Promise<number> {
   if (!isValidStage(stage)) {
     const validStages = STAGE_NAMES.join(", ");
-    if (json) {
-      writeJsonFail("INVALID_STAGE", `Invalid stage: ${stage}. Valid stages: ${validStages}`);
+    if (opts.json) {
+      writeJsonError("INVALID_STAGE", `Invalid stage: ${stage}. Valid stages: ${validStages}`);
     } else {
       console.error(`Invalid stage: ${stage}. Valid stages: ${validStages}`);
     }
@@ -339,8 +312,8 @@ export async function handleWorkflowReset(
   const state = await manager.loadState(featureId);
 
   if (!state) {
-    if (json) {
-      writeJsonFail("WORKFLOW_NOT_FOUND", `No workflow found for feature: ${featureId}`);
+    if (opts.json) {
+      writeJsonError("WORKFLOW_NOT_FOUND", `No workflow found for feature: ${featureId}`);
     } else {
       console.error(`No workflow found for feature: ${featureId}`);
     }
@@ -353,19 +326,22 @@ export async function handleWorkflowReset(
   const downstreamStages = STAGE_NAMES.slice(STAGE_NAMES.indexOf(stage) + 1);
   const resetStages = [stage, ...downstreamStages.filter((s) => state.stages[s] !== undefined)];
 
-  if (json) {
-    writeJsonSuccess({
-      featureId,
-      stage,
-      resetStages,
-      currentStage: updatedState.currentStage,
-    });
+  if (opts.json) {
+    writeJsonOutput(
+      {
+        featureId,
+        stage,
+        resetStages,
+        currentStage: updatedState.currentStage,
+      },
+      true,
+    );
     return EXIT_SUCCESS;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize("Stage reset", "\x1b[1m"));
+  lines.push(colorize("Stage reset", "\x1b[1m", opts));
   lines.push(`Feature: ${featureId}`);
   lines.push(`Reset stage: ${stage}`);
   if (resetStages.length > 1) {
@@ -384,7 +360,8 @@ const statusCommand: SubcommandDef = {
   positional: [{ name: "feature-id", description: "Feature identifier", required: true }],
   flags: [{ name: "json", description: "Output as structured JSON", type: "boolean" }],
   handler: async (args) => {
-    return handleWorkflowStatus(process.cwd(), args.positional[0], args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleWorkflowStatus(process.cwd(), args.positional[0], opts);
   },
 };
 
@@ -394,7 +371,8 @@ const listCommand: SubcommandDef = {
   usage: "micode-beads workflow list [--json]",
   flags: [{ name: "json", description: "Output as structured JSON", type: "boolean" }],
   handler: async (args) => {
-    return handleWorkflowList(process.cwd(), args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleWorkflowList(process.cwd(), opts);
   },
 };
 
@@ -414,7 +392,8 @@ const resumeCommand: SubcommandDef = {
       console.error(`Valid stages: ${STAGE_NAMES.join(", ")}`);
       return EXIT_USAGE;
     }
-    return handleWorkflowResume(process.cwd(), args.positional[0], fromStage, args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleWorkflowResume(process.cwd(), args.positional[0], fromStage, opts);
   },
 };
 
@@ -440,7 +419,8 @@ const correctCommand: SubcommandDef = {
       console.error(`Valid stages: ${STAGE_NAMES.join(", ")}`);
       return EXIT_USAGE;
     }
-    return handleWorkflowCorrect(process.cwd(), args.positional[0], message, stages, args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleWorkflowCorrect(process.cwd(), args.positional[0], message, stages, opts);
   },
 };
 
@@ -460,7 +440,8 @@ const resetCommand: SubcommandDef = {
       console.error(`Valid stages: ${STAGE_NAMES.join(", ")}`);
       return EXIT_USAGE;
     }
-    return handleWorkflowReset(process.cwd(), args.positional[0], stage, args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleWorkflowReset(process.cwd(), args.positional[0], stage, opts);
   },
 };
 

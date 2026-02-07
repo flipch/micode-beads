@@ -3,48 +3,15 @@ import { loadFragmentRegistry, validateFragments } from "../knowledge";
 import { allFragments } from "../knowledge/fragments";
 import type { AgentKnowledgeDef, FragmentCategory, FragmentRegistry } from "../knowledge/types";
 import { FRAGMENT_CATEGORIES } from "../knowledge/types";
+import {
+  colorize,
+  detectOutputOptions,
+  formatTable,
+  type OutputOptions,
+  writeJsonError,
+  writeJsonOutput,
+} from "./output";
 import { EXIT_SUCCESS, EXIT_VALIDATION, formatCommandHelp, type SubcommandDef } from "./router";
-
-interface JsonOutput<T> {
-  success: boolean;
-  data: T;
-  error?: { code: string; message: string; suggestion?: string };
-}
-
-function writeJsonSuccess<T>(data: T): void {
-  const output: JsonOutput<T> = { success: true, data };
-  console.log(JSON.stringify(output, null, 2));
-}
-
-function writeJsonFail(code: string, message: string, suggestion?: string): void {
-  const output: JsonOutput<null> = {
-    success: false,
-    data: null,
-    error: { code, message, ...(suggestion ? { suggestion } : {}) },
-  };
-  console.log(JSON.stringify(output, null, 2));
-}
-
-function useColor(): boolean {
-  return process.stdout.isTTY === true && !("NO_COLOR" in process.env);
-}
-
-function colorize(text: string, colorCode: string): string {
-  return useColor() ? `${colorCode}${text}\x1b[0m` : text;
-}
-
-function formatSimpleTable(headers: string[], rows: string[][]): string {
-  const widths = headers.map((h, i) => {
-    const maxData = rows.reduce((max, row) => Math.max(max, (row[i] ?? "").length), 0);
-    return Math.max(h.length, maxData);
-  });
-
-  const headerLine = headers.map((h, i) => h.padEnd(widths[i])).join("  ");
-  const separator = widths.map((w) => "-".repeat(w)).join("  ");
-  const dataLines = rows.map((row) => row.map((cell, i) => cell.padEnd(widths[i])).join("  "));
-
-  return [headerLine, separator, ...dataLines].join("\n");
-}
 
 function getRegistry(): FragmentRegistry {
   return loadFragmentRegistry(allFragments);
@@ -62,14 +29,14 @@ function buildReferencedByMap(defs: AgentKnowledgeDef[]): Map<string, string[]> 
   return refMap;
 }
 
-export function handleKnowledgeList(json: boolean, category?: string): number {
+export function handleKnowledgeList(opts: OutputOptions, category?: string): number {
   const registry = getRegistry();
   const refMap = buildReferencedByMap(agentKnowledgeDefs);
 
   if (category && !FRAGMENT_CATEGORIES.includes(category as FragmentCategory)) {
     const validCategories = FRAGMENT_CATEGORIES.join(", ");
-    if (json) {
-      writeJsonFail("INVALID_CATEGORY", `Invalid category: "${category}"`, `Valid categories: ${validCategories}`);
+    if (opts.json) {
+      writeJsonError("INVALID_CATEGORY", `Invalid category: "${category}"`, `Valid categories: ${validCategories}`);
     } else {
       console.error(`Invalid category: "${category}"`);
       console.error(`Valid categories: ${validCategories}`);
@@ -84,7 +51,7 @@ export function handleKnowledgeList(json: boolean, category?: string): number {
     fragmentNames = fragmentNames.filter((n) => categoryNameSet.has(n));
   }
 
-  if (json) {
+  if (opts.json) {
     const data = fragmentNames.map((name) => {
       const fragment = registry.get(name);
       return {
@@ -95,7 +62,7 @@ export function handleKnowledgeList(json: boolean, category?: string): number {
         contentLength: fragment.content.length,
       };
     });
-    writeJsonSuccess(data);
+    writeJsonOutput(data, true);
     return EXIT_SUCCESS;
   }
 
@@ -110,60 +77,63 @@ export function handleKnowledgeList(json: boolean, category?: string): number {
   });
 
   console.log("");
-  console.log(colorize(category ? `Knowledge Fragments [${category}]` : "Knowledge Fragments", "\x1b[1m"));
+  console.log(colorize(category ? `Knowledge Fragments [${category}]` : "Knowledge Fragments", "\x1b[1m", opts));
   console.log("");
-  console.log(formatSimpleTable(headers, rows));
+  console.log(formatTable(headers, rows, opts));
   console.log("");
   console.log(`Total: ${fragmentNames.length} fragments${category ? ` (filtered by category: ${category})` : ""}`);
   console.log("");
   return EXIT_SUCCESS;
 }
 
-export function handleKnowledgeValidate(json: boolean): number {
+export function handleKnowledgeValidate(opts: OutputOptions): number {
   const registry = getRegistry();
   const result = validateFragments(registry, agentKnowledgeDefs);
 
-  if (json) {
-    writeJsonSuccess({
-      valid: result.valid,
-      errors: result.errors,
-      warnings: result.warnings,
-      totalFragments: registry.names().length,
-      totalAgents: agentKnowledgeDefs.length,
-    });
+  if (opts.json) {
+    writeJsonOutput(
+      {
+        valid: result.valid,
+        errors: result.errors,
+        warnings: result.warnings,
+        totalFragments: registry.names().length,
+        totalAgents: agentKnowledgeDefs.length,
+      },
+      true,
+    );
     return result.valid ? EXIT_SUCCESS : EXIT_VALIDATION;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize("Knowledge Fragment Validation", "\x1b[1m"));
+  lines.push(colorize("Knowledge Fragment Validation", "\x1b[1m", opts));
   lines.push("");
   lines.push(`Fragments: ${registry.names().length}`);
   lines.push(`Agents with knowledge defs: ${agentKnowledgeDefs.length}`);
   lines.push("");
 
   if (result.errors.length > 0) {
-    lines.push(colorize("Errors:", "\x1b[31m"));
+    lines.push(colorize("Errors:", "\x1b[31m", opts));
     for (const err of result.errors) {
-      lines.push(`  ${colorize("[ERROR]", "\x1b[31m")} ${err.message}`);
+      lines.push(`  ${colorize("[ERROR]", "\x1b[31m", opts)} ${err.message}`);
     }
     lines.push("");
   }
 
   if (result.warnings.length > 0) {
-    lines.push(colorize("Warnings:", "\x1b[33m"));
+    lines.push(colorize("Warnings:", "\x1b[33m", opts));
     for (const warn of result.warnings) {
-      lines.push(`  ${colorize("[WARN]", "\x1b[33m")} ${warn.message}`);
+      lines.push(`  ${colorize("[WARN]", "\x1b[33m", opts)} ${warn.message}`);
     }
     lines.push("");
   }
 
   if (result.valid && result.warnings.length === 0) {
-    lines.push(colorize("All checks passed.", "\x1b[32m"));
+    lines.push(colorize("All checks passed.", "\x1b[32m", opts));
   } else if (result.valid) {
-    lines.push(colorize("Validation passed with warnings.", "\x1b[33m"));
+    lines.push(colorize("Validation passed with warnings.", "\x1b[33m", opts));
   } else {
-    lines.push(colorize("Validation failed. Fix errors above to ensure correct prompt composition.", "\x1b[31m"));
+    lines.push(colorize("Validation failed. Fix errors above to ensure correct prompt composition.", "\x1b[31m", opts));
   }
   lines.push("");
 
@@ -176,13 +146,13 @@ export function handleKnowledgeValidate(json: boolean): number {
   return result.valid ? EXIT_SUCCESS : EXIT_VALIDATION;
 }
 
-export function handleKnowledgeShow(fragmentName: string, json: boolean): number {
+export function handleKnowledgeShow(fragmentName: string, opts: OutputOptions): number {
   const registry = getRegistry();
 
   if (!registry.has(fragmentName)) {
     const available = registry.names().join(", ");
-    if (json) {
-      writeJsonFail(
+    if (opts.json) {
+      writeJsonError(
         "FRAGMENT_NOT_FOUND",
         `No fragment found with name: "${fragmentName}"`,
         `Available fragments: ${available}`,
@@ -198,22 +168,25 @@ export function handleKnowledgeShow(fragmentName: string, json: boolean): number
   const refMap = buildReferencedByMap(agentKnowledgeDefs);
   const referencedBy = refMap.get(fragmentName) ?? [];
 
-  if (json) {
-    writeJsonSuccess({
-      name: fragment.name,
-      category: fragment.category,
-      description: fragment.description,
-      contentLength: fragment.content.length,
-      content: fragment.content,
-      applicability: fragment.applicability ?? null,
-      referencedBy,
-    });
+  if (opts.json) {
+    writeJsonOutput(
+      {
+        name: fragment.name,
+        category: fragment.category,
+        description: fragment.description,
+        contentLength: fragment.content.length,
+        content: fragment.content,
+        applicability: fragment.applicability ?? null,
+        referencedBy,
+      },
+      true,
+    );
     return EXIT_SUCCESS;
   }
 
   const lines: string[] = [];
   lines.push("");
-  lines.push(colorize(`Fragment: ${fragment.name}`, "\x1b[1m"));
+  lines.push(colorize(`Fragment: ${fragment.name}`, "\x1b[1m", opts));
   lines.push("");
   lines.push(`Category: ${fragment.category}`);
   lines.push(`Description: ${fragment.description}`);
@@ -221,7 +194,7 @@ export function handleKnowledgeShow(fragmentName: string, json: boolean): number
 
   if (fragment.applicability) {
     lines.push("");
-    lines.push(colorize("Applicability:", "\x1b[1m"));
+    lines.push(colorize("Applicability:", "\x1b[1m", opts));
     if (fragment.applicability.agents) {
       lines.push(`  Agents: ${fragment.applicability.agents.join(", ")}`);
     }
@@ -235,7 +208,7 @@ export function handleKnowledgeShow(fragmentName: string, json: boolean): number
 
   lines.push("");
   if (referencedBy.length > 0) {
-    lines.push(colorize("Referenced by:", "\x1b[1m"));
+    lines.push(colorize("Referenced by:", "\x1b[1m", opts));
     for (const agent of referencedBy) {
       lines.push(`  - ${agent}`);
     }
@@ -244,7 +217,7 @@ export function handleKnowledgeShow(fragmentName: string, json: boolean): number
   }
 
   lines.push("");
-  lines.push(colorize("Content Preview:", "\x1b[1m"));
+  lines.push(colorize("Content Preview:", "\x1b[1m", opts));
   const preview = fragment.content.length > 500 ? `${fragment.content.slice(0, 500)}...` : fragment.content;
   lines.push(preview);
   lines.push("");
@@ -262,7 +235,8 @@ const listCommand: SubcommandDef = {
     { name: "json", description: "Output as structured JSON", type: "boolean" },
   ],
   handler: async (args) => {
-    return handleKnowledgeList(args.flags.json === true, args.flags.category as string | undefined);
+    const opts = detectOutputOptions(args.flags);
+    return handleKnowledgeList(opts, args.flags.category as string | undefined);
   },
 };
 
@@ -272,7 +246,8 @@ const validateCommand: SubcommandDef = {
   usage: "micode-beads knowledge validate [--json]",
   flags: [{ name: "json", description: "Output as structured JSON", type: "boolean" }],
   handler: async (args) => {
-    return handleKnowledgeValidate(args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleKnowledgeValidate(opts);
   },
 };
 
@@ -283,7 +258,8 @@ const showCommand: SubcommandDef = {
   positional: [{ name: "fragment-name", description: "Fragment identifier", required: true }],
   flags: [{ name: "json", description: "Output as structured JSON", type: "boolean" }],
   handler: async (args) => {
-    return handleKnowledgeShow(args.positional[0], args.flags.json === true);
+    const opts = detectOutputOptions(args.flags);
+    return handleKnowledgeShow(args.positional[0], opts);
   },
 };
 
