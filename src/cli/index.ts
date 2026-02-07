@@ -6,6 +6,7 @@ import { createAttributedError, printError } from "./errors";
 import { runInit } from "./init";
 import { dispatch, type SubcommandDef } from "./router";
 import { checkForUpdates } from "./update-checker";
+import { workflowCommand } from "./workflow";
 
 const VERSION = pkg.version;
 
@@ -61,7 +62,7 @@ const doctorCommand: SubcommandDef = {
   },
 };
 
-export const commands: SubcommandDef[] = [initCommand, doctorCommand];
+export const commands: SubcommandDef[] = [initCommand, doctorCommand, workflowCommand];
 
 async function main(): Promise<void> {
   if (!process.env.MICODE_NO_UPDATE_CHECK) {
