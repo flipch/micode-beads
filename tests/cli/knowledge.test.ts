@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { resolve } from "node:path";
 
 import { handleKnowledgeList, handleKnowledgeShow, handleKnowledgeValidate } from "../../src/cli/knowledge";
+import type { OutputOptions } from "../../src/cli/output";
 import { EXIT_SUCCESS, EXIT_VALIDATION } from "../../src/cli/router";
+
+const HUMAN: OutputOptions = { json: false, color: false, verbose: false };
+const JSON_OPTS: OutputOptions = { json: true, color: false, verbose: false };
 
 const PROJECT_ROOT = resolve(import.meta.dir, "../..");
 
@@ -21,12 +25,12 @@ describe("handleKnowledgeList", () => {
   });
 
   it("should return EXIT_SUCCESS", () => {
-    const code = handleKnowledgeList(false);
+    const code = handleKnowledgeList(HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
   });
 
   it("should display table headers in human output", () => {
-    handleKnowledgeList(false);
+    handleKnowledgeList(HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Name");
     expect(output).toContain("Category");
@@ -35,21 +39,21 @@ describe("handleKnowledgeList", () => {
   });
 
   it("should show total count in human output", () => {
-    handleKnowledgeList(false);
+    handleKnowledgeList(HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Total:");
     expect(output).toContain("fragments");
   });
 
   it("should display fragment names in human output", () => {
-    handleKnowledgeList(false);
+    handleKnowledgeList(HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("primary-agent-env");
     expect(output).toContain("commander-core");
   });
 
   it("should output valid JSON in JSON mode", () => {
-    handleKnowledgeList(true);
+    handleKnowledgeList(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -58,7 +62,7 @@ describe("handleKnowledgeList", () => {
   });
 
   it("should include expected fields in JSON output", () => {
-    handleKnowledgeList(true);
+    handleKnowledgeList(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     const first = parsed.data[0];
@@ -70,14 +74,14 @@ describe("handleKnowledgeList", () => {
   });
 
   it("should filter by category in human output", () => {
-    handleKnowledgeList(false, "environment");
+    handleKnowledgeList(HUMAN, "environment");
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("primary-agent-env");
     expect(output).toContain("environment");
   });
 
   it("should filter by category in JSON mode", () => {
-    handleKnowledgeList(true, "environment");
+    handleKnowledgeList(JSON_OPTS, "environment");
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -87,13 +91,13 @@ describe("handleKnowledgeList", () => {
   });
 
   it("should show fewer results when filtered by category", () => {
-    handleKnowledgeList(true);
+    handleKnowledgeList(JSON_OPTS);
     const allOutput = logSpy.mock.calls[0][0];
     const allParsed = JSON.parse(allOutput);
     const allCount = allParsed.data.length;
 
     logSpy.mockClear();
-    handleKnowledgeList(true, "environment");
+    handleKnowledgeList(JSON_OPTS, "environment");
     const filteredOutput = logSpy.mock.calls[0][0];
     const filteredParsed = JSON.parse(filteredOutput);
     expect(filteredParsed.data.length).toBeLessThan(allCount);
@@ -101,19 +105,19 @@ describe("handleKnowledgeList", () => {
   });
 
   it("should return EXIT_VALIDATION for invalid category", () => {
-    const code = handleKnowledgeList(false, "nonexistent-category");
+    const code = handleKnowledgeList(HUMAN, "nonexistent-category");
     expect(code).toBe(EXIT_VALIDATION);
   });
 
   it("should show error for invalid category in human mode", () => {
-    handleKnowledgeList(false, "nonexistent-category");
+    handleKnowledgeList(HUMAN, "nonexistent-category");
     const output = errorSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Invalid category");
     expect(output).toContain("Valid categories");
   });
 
   it("should return JSON error for invalid category", () => {
-    handleKnowledgeList(true, "nonexistent-category");
+    handleKnowledgeList(JSON_OPTS, "nonexistent-category");
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(false);
@@ -136,12 +140,12 @@ describe("handleKnowledgeValidate", () => {
   });
 
   it("should return EXIT_SUCCESS when validation passes", () => {
-    const code = handleKnowledgeValidate(false);
+    const code = handleKnowledgeValidate(HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
   });
 
   it("should display validation summary in human output", () => {
-    handleKnowledgeValidate(false);
+    handleKnowledgeValidate(HUMAN);
     const allOutput = [...logSpy.mock.calls.map((c) => c[0]), ...errorSpy.mock.calls.map((c) => c[0])].join("\n");
     expect(allOutput).toContain("Knowledge Fragment Validation");
     expect(allOutput).toContain("Fragments:");
@@ -149,7 +153,7 @@ describe("handleKnowledgeValidate", () => {
   });
 
   it("should return valid JSON in JSON mode", () => {
-    handleKnowledgeValidate(true);
+    handleKnowledgeValidate(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -161,7 +165,7 @@ describe("handleKnowledgeValidate", () => {
   });
 
   it("should report fragment and agent counts in JSON", () => {
-    handleKnowledgeValidate(true);
+    handleKnowledgeValidate(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.data.totalFragments).toBeGreaterThan(0);
@@ -184,12 +188,12 @@ describe("handleKnowledgeShow", () => {
   });
 
   it("should return EXIT_SUCCESS for known fragment", () => {
-    const code = handleKnowledgeShow("primary-agent-env", false);
+    const code = handleKnowledgeShow("primary-agent-env", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
   });
 
   it("should display fragment details in human output", () => {
-    handleKnowledgeShow("primary-agent-env", false);
+    handleKnowledgeShow("primary-agent-env", HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Fragment: primary-agent-env");
     expect(output).toContain("Category:");
@@ -198,19 +202,19 @@ describe("handleKnowledgeShow", () => {
   });
 
   it("should show referenced-by agents in human output", () => {
-    handleKnowledgeShow("primary-agent-env", false);
+    handleKnowledgeShow("primary-agent-env", HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Referenced by:");
   });
 
   it("should show content preview in human output", () => {
-    handleKnowledgeShow("primary-agent-env", false);
+    handleKnowledgeShow("primary-agent-env", HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Content Preview:");
   });
 
   it("should return full JSON data for known fragment", () => {
-    handleKnowledgeShow("primary-agent-env", true);
+    handleKnowledgeShow("primary-agent-env", JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -225,7 +229,7 @@ describe("handleKnowledgeShow", () => {
   });
 
   it("should include referencedBy agents in JSON output", () => {
-    handleKnowledgeShow("primary-agent-env", true);
+    handleKnowledgeShow("primary-agent-env", JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(Array.isArray(parsed.data.referencedBy)).toBe(true);
@@ -233,18 +237,18 @@ describe("handleKnowledgeShow", () => {
   });
 
   it("should return EXIT_VALIDATION for unknown fragment", () => {
-    const code = handleKnowledgeShow("nonexistent-fragment", false);
+    const code = handleKnowledgeShow("nonexistent-fragment", HUMAN);
     expect(code).toBe(EXIT_VALIDATION);
   });
 
   it("should show error for unknown fragment in human mode", () => {
-    handleKnowledgeShow("nonexistent-fragment", false);
+    handleKnowledgeShow("nonexistent-fragment", HUMAN);
     const output = errorSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain('No fragment found with name: "nonexistent-fragment"');
   });
 
   it("should return JSON error for unknown fragment", () => {
-    handleKnowledgeShow("nonexistent-fragment", true);
+    handleKnowledgeShow("nonexistent-fragment", JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(false);
@@ -252,7 +256,7 @@ describe("handleKnowledgeShow", () => {
   });
 
   it("should show commander-core fragment details", () => {
-    handleKnowledgeShow("commander-core", true);
+    handleKnowledgeShow("commander-core", JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);

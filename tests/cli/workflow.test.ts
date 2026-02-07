@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
+import type { OutputOptions } from "../../src/cli/output";
 import { EXIT_SUCCESS, EXIT_USAGE, EXIT_WORKFLOW } from "../../src/cli/router";
 import {
   handleWorkflowCorrect,
@@ -12,6 +13,9 @@ import {
   handleWorkflowStatus,
 } from "../../src/cli/workflow";
 import { WorkflowManager } from "../../src/workflow/manager";
+
+const HUMAN: OutputOptions = { json: false, color: false, verbose: false };
+const JSON_OPTS: OutputOptions = { json: true, color: false, verbose: false };
 
 const PROJECT_ROOT = resolve(import.meta.dir, "../..");
 
@@ -31,12 +35,12 @@ describe("handleWorkflowStatus", () => {
   });
 
   it("should return EXIT_WORKFLOW when feature not found", async () => {
-    const code = await handleWorkflowStatus(tmpDir, "nonexistent", false);
+    const code = await handleWorkflowStatus(tmpDir, "nonexistent", HUMAN);
     expect(code).toBe(EXIT_WORKFLOW);
   });
 
   it("should return EXIT_WORKFLOW with JSON error when feature not found in JSON mode", async () => {
-    const code = await handleWorkflowStatus(tmpDir, "nonexistent", true);
+    const code = await handleWorkflowStatus(tmpDir, "nonexistent", JSON_OPTS);
     expect(code).toBe(EXIT_WORKFLOW);
 
     const output = logSpy.mock.calls[0][0];
@@ -49,7 +53,7 @@ describe("handleWorkflowStatus", () => {
     const manager = new WorkflowManager(tmpDir);
     await manager.createState("my-feature", false);
 
-    const code = await handleWorkflowStatus(tmpDir, "my-feature", false);
+    const code = await handleWorkflowStatus(tmpDir, "my-feature", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
@@ -61,7 +65,7 @@ describe("handleWorkflowStatus", () => {
     const manager = new WorkflowManager(tmpDir);
     await manager.createState("json-feature", true);
 
-    const code = await handleWorkflowStatus(tmpDir, "json-feature", true);
+    const code = await handleWorkflowStatus(tmpDir, "json-feature", JSON_OPTS);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls[0][0];
@@ -80,7 +84,7 @@ describe("handleWorkflowStatus", () => {
     state = manager.startStage(state, "plan");
     await manager.saveState(state);
 
-    const code = await handleWorkflowStatus(tmpDir, "stages-test", false);
+    const code = await handleWorkflowStatus(tmpDir, "stages-test", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
@@ -98,7 +102,7 @@ describe("handleWorkflowStatus", () => {
     state = manager.addCorrection(state, "Fix the approach", ["brainstorm"]);
     await manager.saveState(state);
 
-    const code = await handleWorkflowStatus(tmpDir, "corr-test", false);
+    const code = await handleWorkflowStatus(tmpDir, "corr-test", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
@@ -122,7 +126,7 @@ describe("handleWorkflowList", () => {
   });
 
   it("should return empty list when no workflows exist", async () => {
-    const code = await handleWorkflowList(tmpDir, false);
+    const code = await handleWorkflowList(tmpDir, HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
@@ -130,7 +134,7 @@ describe("handleWorkflowList", () => {
   });
 
   it("should return empty JSON array when no workflows exist", async () => {
-    const code = await handleWorkflowList(tmpDir, true);
+    const code = await handleWorkflowList(tmpDir, JSON_OPTS);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls[0][0];
@@ -144,7 +148,7 @@ describe("handleWorkflowList", () => {
     await manager.createState("feature-a", false);
     await manager.createState("feature-b", true);
 
-    const code = await handleWorkflowList(tmpDir, false);
+    const code = await handleWorkflowList(tmpDir, HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
@@ -157,7 +161,7 @@ describe("handleWorkflowList", () => {
     await manager.createState("feat-1", false);
     await manager.createState("feat-2", true);
 
-    const code = await handleWorkflowList(tmpDir, true);
+    const code = await handleWorkflowList(tmpDir, JSON_OPTS);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls[0][0];
@@ -173,7 +177,7 @@ describe("handleWorkflowList", () => {
     await manager.createState("valid-feature", false);
     mkdirSync(join(tmpDir, "thoughts", "workflow", "empty-dir"), { recursive: true });
 
-    const code = await handleWorkflowList(tmpDir, true);
+    const code = await handleWorkflowList(tmpDir, JSON_OPTS);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls[0][0];
@@ -199,12 +203,12 @@ describe("handleWorkflowResume", () => {
   });
 
   it("should return EXIT_USAGE for invalid stage", async () => {
-    const code = await handleWorkflowResume(tmpDir, "test", "invalid-stage", false);
+    const code = await handleWorkflowResume(tmpDir, "test", "invalid-stage", HUMAN);
     expect(code).toBe(EXIT_USAGE);
   });
 
   it("should return EXIT_WORKFLOW when feature not found", async () => {
-    const code = await handleWorkflowResume(tmpDir, "missing", "plan", false);
+    const code = await handleWorkflowResume(tmpDir, "missing", "plan", HUMAN);
     expect(code).toBe(EXIT_WORKFLOW);
   });
 
@@ -219,7 +223,7 @@ describe("handleWorkflowResume", () => {
     state = manager.completeStage(state, "implement", ["/tmp/code.ts"]);
     await manager.saveState(state);
 
-    const code = await handleWorkflowResume(tmpDir, "resume-test", "implement", false);
+    const code = await handleWorkflowResume(tmpDir, "resume-test", "implement", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const reloaded = await manager.loadState("resume-test");
@@ -234,7 +238,7 @@ describe("handleWorkflowResume", () => {
     state = manager.completeStage(state, "brainstorm", ["/tmp/a.md"]);
     await manager.saveState(state);
 
-    const code = await handleWorkflowResume(tmpDir, "json-resume", "plan", true);
+    const code = await handleWorkflowResume(tmpDir, "json-resume", "plan", JSON_OPTS);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls[0][0];
@@ -252,7 +256,7 @@ describe("handleWorkflowResume", () => {
     state = manager.completeStage(state, "brainstorm", ["/tmp/d.md"]);
     await manager.saveState(state);
 
-    const code = await handleWorkflowResume(tmpDir, "human-resume", "plan", false);
+    const code = await handleWorkflowResume(tmpDir, "human-resume", "plan", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
@@ -277,12 +281,12 @@ describe("handleWorkflowCorrect", () => {
   });
 
   it("should return EXIT_USAGE for invalid stages", async () => {
-    const code = await handleWorkflowCorrect(tmpDir, "test", "msg", "badstage", false);
+    const code = await handleWorkflowCorrect(tmpDir, "test", "msg", "badstage", HUMAN);
     expect(code).toBe(EXIT_USAGE);
   });
 
   it("should return EXIT_WORKFLOW when feature not found", async () => {
-    const code = await handleWorkflowCorrect(tmpDir, "missing", "fix it", "plan", false);
+    const code = await handleWorkflowCorrect(tmpDir, "missing", "fix it", "plan", HUMAN);
     expect(code).toBe(EXIT_WORKFLOW);
   });
 
@@ -295,7 +299,7 @@ describe("handleWorkflowCorrect", () => {
     state = manager.completeStage(state, "plan", []);
     await manager.saveState(state);
 
-    const code = await handleWorkflowCorrect(tmpDir, "corr-test", "Use JWT", "plan", false);
+    const code = await handleWorkflowCorrect(tmpDir, "corr-test", "Use JWT", "plan", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const reloaded = await manager.loadState("corr-test");
@@ -315,7 +319,7 @@ describe("handleWorkflowCorrect", () => {
     state = manager.completeStage(state, "implement", []);
     await manager.saveState(state);
 
-    const code = await handleWorkflowCorrect(tmpDir, "multi-corr", "Redo both", "plan,implement", false);
+    const code = await handleWorkflowCorrect(tmpDir, "multi-corr", "Redo both", "plan,implement", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const reloaded = await manager.loadState("multi-corr");
@@ -331,7 +335,7 @@ describe("handleWorkflowCorrect", () => {
     state = manager.completeStage(state, "brainstorm", []);
     await manager.saveState(state);
 
-    const code = await handleWorkflowCorrect(tmpDir, "json-corr", "Fix design", "brainstorm", true);
+    const code = await handleWorkflowCorrect(tmpDir, "json-corr", "Fix design", "brainstorm", JSON_OPTS);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls[0][0];
@@ -342,7 +346,7 @@ describe("handleWorkflowCorrect", () => {
   });
 
   it("should return EXIT_USAGE when any stage in list is invalid", async () => {
-    const code = await handleWorkflowCorrect(tmpDir, "test", "msg", "plan,invalid", false);
+    const code = await handleWorkflowCorrect(tmpDir, "test", "msg", "plan,invalid", HUMAN);
     expect(code).toBe(EXIT_USAGE);
   });
 });
@@ -363,12 +367,12 @@ describe("handleWorkflowReset", () => {
   });
 
   it("should return EXIT_USAGE for invalid stage", async () => {
-    const code = await handleWorkflowReset(tmpDir, "test", "badstage", false);
+    const code = await handleWorkflowReset(tmpDir, "test", "badstage", HUMAN);
     expect(code).toBe(EXIT_USAGE);
   });
 
   it("should return EXIT_WORKFLOW when feature not found", async () => {
-    const code = await handleWorkflowReset(tmpDir, "missing", "plan", false);
+    const code = await handleWorkflowReset(tmpDir, "missing", "plan", HUMAN);
     expect(code).toBe(EXIT_WORKFLOW);
   });
 
@@ -381,7 +385,7 @@ describe("handleWorkflowReset", () => {
     state = manager.completeStage(state, "plan", ["/tmp/plan.md"]);
     await manager.saveState(state);
 
-    const code = await handleWorkflowReset(tmpDir, "reset-test", "plan", false);
+    const code = await handleWorkflowReset(tmpDir, "reset-test", "plan", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const reloaded = await manager.loadState("reset-test");
@@ -400,7 +404,7 @@ describe("handleWorkflowReset", () => {
     state = manager.completeStage(state, "implement", []);
     await manager.saveState(state);
 
-    const code = await handleWorkflowReset(tmpDir, "downstream-reset", "plan", false);
+    const code = await handleWorkflowReset(tmpDir, "downstream-reset", "plan", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const reloaded = await manager.loadState("downstream-reset");
@@ -416,7 +420,7 @@ describe("handleWorkflowReset", () => {
     state = manager.completeStage(state, "brainstorm", []);
     await manager.saveState(state);
 
-    const code = await handleWorkflowReset(tmpDir, "json-reset", "brainstorm", true);
+    const code = await handleWorkflowReset(tmpDir, "json-reset", "brainstorm", JSON_OPTS);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls[0][0];
@@ -437,7 +441,7 @@ describe("handleWorkflowReset", () => {
     state = manager.completeStage(state, "implement", []);
     await manager.saveState(state);
 
-    const code = await handleWorkflowReset(tmpDir, "human-reset", "plan", false);
+    const code = await handleWorkflowReset(tmpDir, "human-reset", "plan", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
 
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");

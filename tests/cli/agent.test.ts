@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { resolve } from "node:path";
 
 import { handleAgentList, handleAgentShow, handleAgentValidate } from "../../src/cli/agent";
+import type { OutputOptions } from "../../src/cli/output";
 import { EXIT_SUCCESS, EXIT_VALIDATION } from "../../src/cli/router";
+
+const HUMAN: OutputOptions = { json: false, color: false, verbose: false };
+const JSON_OPTS: OutputOptions = { json: true, color: false, verbose: false };
 
 const PROJECT_ROOT = resolve(import.meta.dir, "../..");
 
@@ -18,12 +22,12 @@ describe("handleAgentList", () => {
   });
 
   it("should return EXIT_SUCCESS", () => {
-    const code = handleAgentList(false);
+    const code = handleAgentList(HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
   });
 
   it("should display agent names in human output", () => {
-    handleAgentList(false);
+    handleAgentList(HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("commander");
     expect(output).toContain("planner");
@@ -32,7 +36,7 @@ describe("handleAgentList", () => {
   });
 
   it("should show table headers in human output", () => {
-    handleAgentList(false);
+    handleAgentList(HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Name");
     expect(output).toContain("Description");
@@ -41,14 +45,14 @@ describe("handleAgentList", () => {
   });
 
   it("should show total count in human output", () => {
-    handleAgentList(false);
+    handleAgentList(HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Total:");
     expect(output).toContain("agents");
   });
 
   it("should output valid JSON in JSON mode", () => {
-    handleAgentList(true);
+    handleAgentList(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -57,7 +61,7 @@ describe("handleAgentList", () => {
   });
 
   it("should include all expected fields in JSON output", () => {
-    handleAgentList(true);
+    handleAgentList(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     const first = parsed.data[0];
@@ -69,7 +73,7 @@ describe("handleAgentList", () => {
   });
 
   it("should list commander as primary mode", () => {
-    handleAgentList(true);
+    handleAgentList(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     const commander = parsed.data.find((a: { name: string }) => a.name === "commander");
@@ -93,18 +97,18 @@ describe("handleAgentShow", () => {
   });
 
   it("should return EXIT_VALIDATION for unknown agent", () => {
-    const code = handleAgentShow("nonexistent-agent", false);
+    const code = handleAgentShow("nonexistent-agent", HUMAN);
     expect(code).toBe(EXIT_VALIDATION);
   });
 
   it("should show error for unknown agent in human mode", () => {
-    handleAgentShow("nonexistent-agent", false);
+    handleAgentShow("nonexistent-agent", HUMAN);
     const output = errorSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("No agent found with name: nonexistent-agent");
   });
 
   it("should return JSON error for unknown agent", () => {
-    handleAgentShow("nonexistent-agent", true);
+    handleAgentShow("nonexistent-agent", JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(false);
@@ -112,12 +116,12 @@ describe("handleAgentShow", () => {
   });
 
   it("should return EXIT_SUCCESS for known agent", () => {
-    const code = handleAgentShow("commander", false);
+    const code = handleAgentShow("commander", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
   });
 
   it("should display agent details in human output", () => {
-    handleAgentShow("commander", false);
+    handleAgentShow("commander", HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Agent: commander");
     expect(output).toContain("Description:");
@@ -127,19 +131,19 @@ describe("handleAgentShow", () => {
   });
 
   it("should display knowledge fragments for commander", () => {
-    handleAgentShow("commander", false);
+    handleAgentShow("commander", HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Knowledge Fragments:");
   });
 
   it("should display prompt preview in human output", () => {
-    handleAgentShow("commander", false);
+    handleAgentShow("commander", HUMAN);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("Prompt Preview:");
   });
 
   it("should return full JSON data for known agent", () => {
-    handleAgentShow("commander", true);
+    handleAgentShow("commander", JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -151,14 +155,14 @@ describe("handleAgentShow", () => {
   });
 
   it("should show agent without knowledge def", () => {
-    const code = handleAgentShow("mm-orchestrator", false);
+    const code = handleAgentShow("mm-orchestrator", HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
     expect(output).toContain("mm-orchestrator");
   });
 
   it("should show planner agent details", () => {
-    handleAgentShow("planner", true);
+    handleAgentShow("planner", JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -182,12 +186,12 @@ describe("handleAgentValidate", () => {
   });
 
   it("should return EXIT_SUCCESS when validation passes", () => {
-    const code = handleAgentValidate(false);
+    const code = handleAgentValidate(HUMAN);
     expect(code).toBe(EXIT_SUCCESS);
   });
 
   it("should display validation summary in human output", () => {
-    handleAgentValidate(false);
+    handleAgentValidate(HUMAN);
     const allOutput = [...logSpy.mock.calls.map((c) => c[0]), ...errorSpy.mock.calls.map((c) => c[0])].join("\n");
     expect(allOutput).toContain("Agent Knowledge Validation");
     expect(allOutput).toContain("Fragments:");
@@ -195,7 +199,7 @@ describe("handleAgentValidate", () => {
   });
 
   it("should return valid JSON in JSON mode", () => {
-    handleAgentValidate(true);
+    handleAgentValidate(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.success).toBe(true);
@@ -207,7 +211,7 @@ describe("handleAgentValidate", () => {
   });
 
   it("should report fragment and agent counts in JSON", () => {
-    handleAgentValidate(true);
+    handleAgentValidate(JSON_OPTS);
     const output = logSpy.mock.calls[0][0];
     const parsed = JSON.parse(output);
     expect(parsed.data.totalFragments).toBeGreaterThan(0);
