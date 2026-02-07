@@ -1,5 +1,7 @@
 import * as v from "valibot";
 
+import { CONTRACT_VERSION } from "./types";
+
 export const VerificationItemSchema = v.object({
   taskId: v.string(),
   category: v.union([
@@ -13,7 +15,7 @@ export const VerificationItemSchema = v.object({
 });
 
 export const VerificationReportSchema = v.object({
-  version: v.literal(1),
+  version: v.literal(CONTRACT_VERSION),
   featureId: v.string(),
   planPath: v.string(),
   overallStatus: v.union([v.literal("pass"), v.literal("fail")]),

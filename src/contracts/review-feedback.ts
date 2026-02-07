@@ -1,5 +1,7 @@
 import * as v from "valibot";
 
+import { CONTRACT_VERSION } from "./types";
+
 export const ReviewCommentSchema = v.object({
   id: v.string(),
   path: v.string(),
@@ -18,7 +20,7 @@ export const CorrectionTaskSchema = v.object({
 });
 
 export const ReviewFeedbackSchema = v.object({
-  version: v.literal(1),
+  version: v.literal(CONTRACT_VERSION),
   prNumber: v.number(),
   repository: v.string(),
   comments: v.array(ReviewCommentSchema),

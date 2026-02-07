@@ -1,5 +1,7 @@
 import * as v from "valibot";
 
+import { CONTRACT_VERSION } from "./types";
+
 export const TaskResultSchema = v.object({
   taskId: v.string(),
   beadsId: v.optional(v.string()),
@@ -19,7 +21,7 @@ export const BatchResultSchema = v.object({
 });
 
 export const ExecutionResultSchema = v.object({
-  version: v.literal(1),
+  version: v.literal(CONTRACT_VERSION),
   featureId: v.string(),
   planPath: v.string(),
   batches: v.array(BatchResultSchema),

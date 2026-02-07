@@ -1,6 +1,6 @@
 import * as v from "valibot";
 
-import { CodeSnippetSchema } from "./types";
+import { CONTRACT_VERSION, CodeSnippetSchema } from "./types";
 
 export const MicroTaskSchema = v.object({
   id: v.string(),
@@ -20,7 +20,7 @@ export const BatchSchema = v.object({
 });
 
 export const PlanContractSchema = v.object({
-  version: v.literal(1),
+  version: v.literal(CONTRACT_VERSION),
   featureId: v.string(),
   title: v.string(),
   overview: v.string(),
