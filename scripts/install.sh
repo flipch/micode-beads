@@ -144,7 +144,7 @@ resolve_version() {
     echo "$MICODE_VERSION"
     return
   fi
-  info "Fetching latest version from GitHub..."
+  info "Fetching latest version from GitHub..." >&2
   version="$(fetch_url "${GITHUB_API}/repos/${REPO}/releases/latest" \
     | grep '"tag_name"' \
     | sed 's/.*"tag_name": *"v\{0,1\}\([^"]*\)".*/\1/')"
