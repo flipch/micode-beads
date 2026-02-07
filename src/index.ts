@@ -73,12 +73,12 @@ if (process.env.FIRECRAWL_API_KEY) {
 const OpenCodeConfigPlugin: Plugin = async (ctx) => {
   // Validate external tool dependencies at startup
   const astGrepStatus = await checkAstGrepAvailable();
-  if (!astGrepStatus.available) {
+  if (!astGrepStatus.available && process.env.MICODE_VERBOSE) {
     console.warn(`[micode-beads] ${astGrepStatus.message}`);
   }
 
   const btcaStatus = await checkBtcaAvailable();
-  if (!btcaStatus.available) {
+  if (!btcaStatus.available && process.env.MICODE_VERBOSE) {
     console.warn(`[micode-beads] ${btcaStatus.message}`);
   }
 
