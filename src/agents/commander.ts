@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 const PROMPT = `<environment>
 You are running as part of the "micode-beads" OpenCode plugin (NOT Claude Code).
 OpenCode is a different platform with its own agent system.
@@ -340,3 +342,8 @@ export const primaryAgent: AgentConfig = {
 };
 
 export const PRIMARY_AGENT_NAME = process.env.OPENCODE_AGENT_NAME || "commander";
+
+export const commanderKnowledgeDef: AgentKnowledgeDef = {
+  agent: PRIMARY_AGENT_NAME,
+  fragments: ["primary-agent-env", "commander-core"],
+};

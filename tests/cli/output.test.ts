@@ -1,13 +1,17 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import type { CheckResult } from "../../src/cli/doctor-checks";
 import type { FixResult } from "../../src/cli/doctor-fixes";
 import {
+  type CliJsonOutput,
   detectOutputOptions,
   formatCheckResult,
   formatDoctorReport,
   formatFixResult,
+  formatTable,
   type OutputOptions,
+  writeJsonError,
+  writeJsonOutput,
 } from "../../src/cli/output";
 
 function makeCheckResult(overrides: Partial<CheckResult> = {}): CheckResult {
@@ -291,5 +295,204 @@ describe("formatDoctorReport", () => {
     const output = formatDoctorReport(checks, undefined, jsonOpts, "1.0.0");
     const parsed = JSON.parse(output);
     expect("detail" in parsed.checks[0]).toBe(false);
+  });
+});
+
+describe("writeJsonOutput", () => {
+  let captured: string[];
+  const originalLog = console.log;
+
+  beforeEach(() => {
+    captured = [];
+    console.log = (...args: unknown[]) => {
+      captured.push(args.map(String).join(" "));
+    };
+  });
+
+  afterEach(() => {
+    console.log = originalLog;
+  });
+
+  it("should write success JSON with data to stdout", () => {
+    writeJsonOutput({ name: "test", count: 42 }, true);
+    expect(captured).toHaveLength(1);
+    const parsed: CliJsonOutput<{ name: string; count: number }> = JSON.parse(captured[0]);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data).toEqual({ name: "test", count: 42 });
+    expect(parsed.error).toBeUndefined();
+  });
+
+  it("should write failure JSON with data", () => {
+    writeJsonOutput(null, false);
+    const parsed: CliJsonOutput<null> = JSON.parse(captured[0]);
+    expect(parsed.success).toBe(false);
+    expect(parsed.data).toBeNull();
+  });
+
+  it("should write pretty-printed JSON (indented)", () => {
+    writeJsonOutput({ x: 1 }, true);
+    expect(captured[0]).toContain("\n");
+    expect(captured[0]).toContain("  ");
+  });
+
+  it("should handle array data", () => {
+    writeJsonOutput([1, 2, 3], true);
+    const parsed: CliJsonOutput<number[]> = JSON.parse(captured[0]);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data).toEqual([1, 2, 3]);
+  });
+
+  it("should handle empty object data", () => {
+    writeJsonOutput({}, true);
+    const parsed: CliJsonOutput<Record<string, never>> = JSON.parse(captured[0]);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data).toEqual({});
+  });
+});
+
+describe("writeJsonError", () => {
+  let captured: string[];
+  const originalLog = console.log;
+
+  beforeEach(() => {
+    captured = [];
+    console.log = (...args: unknown[]) => {
+      captured.push(args.map(String).join(" "));
+    };
+  });
+
+  afterEach(() => {
+    console.log = originalLog;
+  });
+
+  it("should write error JSON with code and message", () => {
+    writeJsonError("NOT_FOUND", "Resource not found");
+    const parsed: CliJsonOutput<null> = JSON.parse(captured[0]);
+    expect(parsed.success).toBe(false);
+    expect(parsed.data).toBeNull();
+    expect(parsed.error).toBeDefined();
+    expect(parsed.error!.code).toBe("NOT_FOUND");
+    expect(parsed.error!.message).toBe("Resource not found");
+    expect(parsed.error!.suggestion).toBeUndefined();
+  });
+
+  it("should include suggestion when provided", () => {
+    writeJsonError("INVALID_INPUT", "Bad input", "Check the --help output.");
+    const parsed: CliJsonOutput<null> = JSON.parse(captured[0]);
+    expect(parsed.error!.suggestion).toBe("Check the --help output.");
+  });
+
+  it("should omit suggestion field when not provided", () => {
+    writeJsonError("ERR", "Something broke");
+    const parsed = JSON.parse(captured[0]);
+    expect("suggestion" in parsed.error).toBe(false);
+  });
+
+  it("should produce valid parseable JSON", () => {
+    writeJsonError("CODE", "msg", "hint");
+    expect(() => JSON.parse(captured[0])).not.toThrow();
+  });
+});
+
+describe("formatTable", () => {
+  const plainOpts: OutputOptions = { color: false, json: false, verbose: false };
+  const colorOpts: OutputOptions = { color: true, json: false, verbose: false };
+
+  it("should render headers, separator, and data rows", () => {
+    const headers = ["Name", "Value"];
+    const rows = [
+      ["alpha", "1"],
+      ["beta", "2"],
+    ];
+    const output = formatTable(headers, rows, plainOpts);
+    const lines = output.split("\n");
+    expect(lines).toHaveLength(4);
+    expect(lines[0]).toContain("Name");
+    expect(lines[0]).toContain("Value");
+    expect(lines[1]).toMatch(/^-+\s+-+$/);
+    expect(lines[2]).toContain("alpha");
+    expect(lines[2]).toContain("1");
+    expect(lines[3]).toContain("beta");
+    expect(lines[3]).toContain("2");
+  });
+
+  it("should calculate column widths based on widest content", () => {
+    const headers = ["ID", "Description"];
+    const rows = [
+      ["1", "short"],
+      ["2", "a much longer description here"],
+    ];
+    const output = formatTable(headers, rows, plainOpts);
+    const lines = output.split("\n");
+    const separatorParts = lines[1].split("  ");
+    expect(separatorParts[1].length).toBeGreaterThanOrEqual("a much longer description here".length);
+  });
+
+  it("should use header width when header is wider than data", () => {
+    const headers = ["LongHeaderName", "X"];
+    const rows = [["a", "1"]];
+    const output = formatTable(headers, rows, plainOpts);
+    const lines = output.split("\n");
+    expect(lines[0].startsWith("LongHeaderName")).toBe(true);
+    const separatorParts = lines[1].split("  ");
+    expect(separatorParts[0].length).toBe("LongHeaderName".length);
+  });
+
+  it("should bold headers in color mode", () => {
+    const headers = ["Name", "Value"];
+    const rows = [["a", "1"]];
+    const output = formatTable(headers, rows, colorOpts);
+    const lines = output.split("\n");
+    expect(lines[0]).toContain("\x1b[1m");
+    expect(lines[0]).toContain("\x1b[0m");
+  });
+
+  it("should not include ANSI codes in plain mode headers", () => {
+    const headers = ["Name"];
+    const rows = [["val"]];
+    const output = formatTable(headers, rows, plainOpts);
+    expect(output).not.toContain("\x1b[");
+  });
+
+  it("should handle empty rows", () => {
+    const headers = ["Name", "Value"];
+    const output = formatTable(headers, [], plainOpts);
+    const lines = output.split("\n");
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain("Name");
+    expect(lines[1]).toMatch(/^-+/);
+  });
+
+  it("should handle cells with ANSI color codes and still align correctly", () => {
+    const headers = ["Status", "Name"];
+    const rows = [
+      ["\x1b[32mcompleted\x1b[0m", "task-a"],
+      ["pending", "task-b"],
+    ];
+    const output = formatTable(headers, rows, plainOpts);
+    const lines = output.split("\n");
+    const strip = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, "");
+    const nameColStart2 = strip(lines[2]).indexOf("task-a");
+    const nameColStart3 = strip(lines[3]).indexOf("task-b");
+    expect(nameColStart2).toBe(nameColStart3);
+  });
+
+  it("should handle single-column table", () => {
+    const headers = ["Item"];
+    const rows = [["one"], ["two"], ["three"]];
+    const output = formatTable(headers, rows, plainOpts);
+    const lines = output.split("\n");
+    expect(lines).toHaveLength(5);
+    expect(lines[0]).toContain("Item");
+    expect(lines[4]).toContain("three");
+  });
+
+  it("should handle missing cells gracefully", () => {
+    const headers = ["A", "B", "C"];
+    const rows = [["1"]];
+    const output = formatTable(headers, rows, plainOpts);
+    const lines = output.split("\n");
+    expect(lines).toHaveLength(3);
+    expect(lines[2]).toContain("1");
   });
 });

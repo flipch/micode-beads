@@ -1,5 +1,7 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const prFeedbackAgent: AgentConfig = {
   description: "Ingests GitHub PR review comments and generates corrective implementations",
   mode: "subagent",
@@ -232,4 +234,9 @@ Action: Continue with other corrections, report partial success.
 <forbidden>NEVER create a new PR - push to the existing PR branch</forbidden>
 <forbidden>NEVER store or log GitHub credentials</forbidden>
 </never-do>`,
+};
+
+export const prFeedbackKnowledgeDef: AgentKnowledgeDef = {
+  agent: "pr-feedback",
+  fragments: ["pr-feedback-prompt"],
 };

@@ -1,6 +1,8 @@
 // src/agents/octto.ts
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const octtoAgent: AgentConfig = {
   description: "Runs interactive browser-based brainstorming with proactive suggestions and structured questions",
   mode: "primary",
@@ -129,4 +131,9 @@ After end_brainstorm, write to thoughts/shared/plans/YYYY-MM-DD-{topic}-design.m
 <section name="findings">Findings by branch - each branch's finding</section>
 <section name="recommendation">Recommended approach - synthesize all findings</section>
 </design-document-format>`,
+};
+
+export const octtoKnowledgeDef: AgentKnowledgeDef = {
+  agent: "octto",
+  fragments: ["octto-prompt"],
 };

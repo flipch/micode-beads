@@ -7,6 +7,12 @@ export interface OutputOptions {
   verbose: boolean;
 }
 
+export interface CliJsonOutput<T> {
+  success: boolean;
+  data: T;
+  error?: { code: string; message: string; suggestion?: string };
+}
+
 export function detectOutputOptions(flags: { json?: boolean; verbose?: boolean }): OutputOptions {
   const json = flags.json === true;
   const noColor = "NO_COLOR" in process.env;
@@ -18,6 +24,54 @@ export function detectOutputOptions(flags: { json?: boolean; verbose?: boolean }
     json,
     verbose: flags.verbose === true,
   };
+}
+
+export function writeJsonOutput<T>(data: T, success: boolean): void {
+  const output: CliJsonOutput<T> = { success, data };
+  console.log(JSON.stringify(output, null, 2));
+}
+
+export function writeJsonError(code: string, message: string, suggestion?: string): void {
+  const output: CliJsonOutput<null> = {
+    success: false,
+    data: null,
+    error: { code, message, ...(suggestion ? { suggestion } : {}) },
+  };
+  console.log(JSON.stringify(output, null, 2));
+}
+
+export function colorize(text: string, colorCode: string, options: OutputOptions): string {
+  return options.color ? `${colorCode}${text}\x1b[0m` : text;
+}
+
+function stripAnsi(str: string): string {
+  return str.replace(/\x1b\[[0-9;]*m/g, "");
+}
+
+export function formatTable(headers: string[], rows: string[][], options: OutputOptions): string {
+  const widths = headers.map((h, i) => {
+    const maxData = rows.reduce((max, row) => Math.max(max, stripAnsi(row[i] ?? "").length), 0);
+    return Math.max(h.length, maxData);
+  });
+
+  const headerLine = headers.map((h, i) => h.padEnd(widths[i])).join("  ");
+  const separator = widths.map((w) => "-".repeat(w)).join("  ");
+  const dataLines = rows.map((row) =>
+    row
+      .map((cell, i) => {
+        const visibleLen = stripAnsi(cell).length;
+        const padding = Math.max(0, widths[i] - visibleLen);
+        return cell + " ".repeat(padding);
+      })
+      .join("  "),
+  );
+
+  if (options.color) {
+    const colorHeader = `\x1b[1m${headerLine}\x1b[0m`;
+    return [colorHeader, separator, ...dataLines].join("\n");
+  }
+
+  return [headerLine, separator, ...dataLines].join("\n");
 }
 
 const PASS_COLOR = "\x1b[32m\u2714\x1b[0m";

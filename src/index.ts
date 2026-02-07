@@ -2,7 +2,7 @@ import type { Plugin } from "@opencode-ai/plugin";
 import type { McpLocalConfig } from "@opencode-ai/sdk";
 
 // Agents
-import { agents, PRIMARY_AGENT_NAME } from "./agents";
+import { agentKnowledgeDefs, agents, PRIMARY_AGENT_NAME } from "./agents";
 // Config loader
 import { loadMicodeConfig, loadModelContextLimits, mergeAgentConfigs } from "./config-loader";
 import { createArtifactAutoIndexHook } from "./hooks/artifact-auto-index";
@@ -19,6 +19,9 @@ import { createMindmodelInjectorHook } from "./hooks/mindmodel-injector";
 import { createPreferenceInjectorHook } from "./hooks/preference-injector";
 import { createSessionRecoveryHook } from "./hooks/session-recovery";
 import { createTokenAwareTruncationHook } from "./hooks/token-aware-truncation";
+// Knowledge system
+import { composePrompt, loadFragmentRegistry } from "./knowledge";
+import { allFragments } from "./knowledge/fragments";
 import { artifact_search } from "./tools/artifact-search";
 // Tools
 import { ast_grep_replace, ast_grep_search, checkAstGrepAvailable } from "./tools/ast-grep";
@@ -249,8 +252,21 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
         external_directory: "allow",
       };
 
+      // Compose agent prompts from knowledge fragments
+      const fragmentRegistry = loadFragmentRegistry(allFragments);
+      const knowledgeDefMap = new Map(agentKnowledgeDefs.map((d) => [d.agent, d]));
+      const composedAgents: Record<string, (typeof agents)[string]> = {};
+      for (const [name, agentConfig] of Object.entries(agents)) {
+        const knowledgeDef = knowledgeDefMap.get(name);
+        if (knowledgeDef) {
+          composedAgents[name] = { ...agentConfig, prompt: composePrompt(knowledgeDef, fragmentRegistry) };
+        } else {
+          composedAgents[name] = agentConfig;
+        }
+      }
+
       // Merge user config overrides into plugin agents
-      const mergedAgents = mergeAgentConfigs(agents, userConfig);
+      const mergedAgents = mergeAgentConfigs(composedAgents, userConfig);
 
       // Add our agents - our agents override OpenCode defaults, demote built-in build/plan to subagent
       config.agent = {

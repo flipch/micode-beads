@@ -1,6 +1,8 @@
 // src/agents/probe.ts
 import type { AgentConfig } from "@opencode-ai/sdk";
 
+import type { AgentKnowledgeDef } from "../knowledge/types";
+
 export const probeAgent: AgentConfig = {
   description: "Evaluates octto branch Q&A and decides whether to ask more or complete with finding",
   mode: "subagent",
@@ -149,4 +151,9 @@ Plan review. config: { question, sections: [{id, title, content}] }
 <forbidden>Never present options without marking one as recommended</forbidden>
 <forbidden>Never ask "what do you want?" - propose what YOU think they want</forbidden>
 </never-do>`,
+};
+
+export const probeKnowledgeDef: AgentKnowledgeDef = {
+  agent: "probe",
+  fragments: ["probe-prompt"],
 };
