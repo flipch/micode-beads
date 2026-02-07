@@ -4,161 +4,80 @@ import pkg from "../../package.json";
 import { runDoctor } from "./doctor";
 import { createAttributedError, printError } from "./errors";
 import { runInit } from "./init";
+import { dispatch, type SubcommandDef } from "./router";
 import { checkForUpdates } from "./update-checker";
 
 const VERSION = pkg.version;
 
-export interface ParsedArgs {
-  command: string | undefined;
-  flags: {
-    help: boolean;
-    version: boolean;
-    fix: boolean;
-    json: boolean;
-    verbose: boolean;
-    mindmodel: boolean;
-  };
-  positional: string[];
-}
+const initCommand: SubcommandDef = {
+  name: "init",
+  description: "Initialize project for micode-beads",
+  usage: "micode-beads init [--mindmodel]",
+  flags: [
+    {
+      name: "mindmodel",
+      description: "Scaffold .mindmodel/ constraint directory",
+      type: "boolean",
+    },
+  ],
+  handler: async (args) => {
+    const initArgs: string[] = [];
+    if (args.flags.mindmodel) initArgs.push("--mindmodel");
+    await runInit(initArgs);
+    return 0;
+  },
+};
 
-export function parseArgs(argv: string[]): ParsedArgs {
-  const flags = {
-    help: false,
-    version: false,
-    fix: false,
-    json: false,
-    verbose: false,
-    mindmodel: false,
-  };
+const doctorCommand: SubcommandDef = {
+  name: "doctor",
+  description: "Diagnose installation and environment health",
+  usage: "micode-beads doctor [--fix] [--json] [--verbose]",
+  flags: [
+    {
+      name: "fix",
+      description: "Attempt to auto-fix detected issues",
+      type: "boolean",
+    },
+    {
+      name: "json",
+      description: "Output results as JSON",
+      type: "boolean",
+    },
+    {
+      name: "verbose",
+      description: "Show detailed check information",
+      type: "boolean",
+    },
+  ],
+  handler: async (args) => {
+    return await runDoctor(
+      {
+        fix: args.flags.fix === true,
+        json: args.flags.json === true,
+        verbose: args.flags.verbose === true,
+      },
+      VERSION,
+    );
+  },
+};
 
-  let command: string | undefined;
-  const positional: string[] = [];
-
-  for (const arg of argv) {
-    if (arg === "--help" || arg === "-h") {
-      flags.help = true;
-    } else if (arg === "--version" || arg === "-v") {
-      flags.version = true;
-    } else if (arg === "--fix") {
-      flags.fix = true;
-    } else if (arg === "--json") {
-      flags.json = true;
-    } else if (arg === "--verbose") {
-      flags.verbose = true;
-    } else if (arg === "--mindmodel") {
-      flags.mindmodel = true;
-    } else if (!arg.startsWith("-") && command === undefined) {
-      command = arg;
-    } else {
-      positional.push(arg);
-    }
-  }
-
-  return { command, flags, positional };
-}
-
-function printVersion(): void {
-  console.log(`micode-beads v${VERSION}`);
-}
-
-function printHelp(): void {
-  console.log(`
-micode-beads v${VERSION}
-
-Usage: micode-beads <command> [options]
-
-Commands:
-  init [--mindmodel]   Initialize project for micode-beads
-                       --mindmodel  Scaffold .mindmodel/ directory
-  doctor [--fix]       Diagnose installation and environment health
-                       --fix        Attempt to auto-fix issues
-                       --json       Output results as JSON
-                       --verbose    Show detailed check information
-
-Options:
-  -h, --help           Show this help message
-  -v, --version        Show version number
-
-Examples:
-  micode-beads init
-  micode-beads init --mindmodel
-  micode-beads doctor
-  micode-beads doctor --fix
-  micode-beads doctor --json
-`);
-}
+export const commands: SubcommandDef[] = [initCommand, doctorCommand];
 
 async function main(): Promise<void> {
-  const parsed = parseArgs(process.argv.slice(2));
-
   if (!process.env.MICODE_NO_UPDATE_CHECK) {
     checkForUpdates(VERSION).catch(() => {});
   }
 
-  if (parsed.flags.version) {
-    printVersion();
-    return;
-  }
+  const exitCode = await dispatch(commands, process.argv.slice(2), {
+    programName: "micode-beads",
+    version: VERSION,
+    onError: (message) => {
+      printError(createAttributedError("cli", message, "Run `micode-beads --help` for available commands."));
+    },
+  });
 
-  if (parsed.flags.help) {
-    if (!parsed.command) {
-      printHelp();
-      return;
-    }
-    switch (parsed.command) {
-      case "init":
-        console.log("Usage: micode-beads init [--mindmodel]\n");
-        console.log("Initializes micode-beads in the current project.\n");
-        console.log("Options:");
-        console.log("  --mindmodel   Scaffold .mindmodel/ constraint directory");
-        return;
-      case "doctor":
-        console.log("Usage: micode-beads doctor [--fix] [--json] [--verbose]\n");
-        console.log("Diagnose installation and environment health.\n");
-        console.log("Options:");
-        console.log("  --fix      Attempt to auto-fix detected issues");
-        console.log("  --json     Output results as JSON");
-        console.log("  --verbose  Show detailed check information");
-        return;
-      default:
-        printError(
-          createAttributedError(
-            "cli",
-            `Unknown command: ${parsed.command}`,
-            "Run `micode-beads --help` for available commands.",
-          ),
-        );
-        process.exit(2);
-    }
-  }
-
-  switch (parsed.command) {
-    case "init": {
-      const initArgs: string[] = [];
-      if (parsed.flags.mindmodel) initArgs.push("--mindmodel");
-      await runInit(initArgs);
-      break;
-    }
-    case "doctor": {
-      const exitCode = await runDoctor(
-        { fix: parsed.flags.fix, json: parsed.flags.json, verbose: parsed.flags.verbose },
-        VERSION,
-      );
-      process.exit(exitCode);
-      break;
-    }
-    case undefined:
-      printHelp();
-      break;
-    default:
-      printError(
-        createAttributedError(
-          "cli",
-          `Unknown command: ${parsed.command}`,
-          "Run `micode-beads --help` for available commands.",
-        ),
-      );
-      process.exit(2);
+  if (exitCode !== 0) {
+    process.exit(exitCode);
   }
 }
 
