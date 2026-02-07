@@ -18,7 +18,7 @@ interface ConfigResult {
 }
 
 interface OpencodeJson {
-  plugin?: Record<string, unknown> | string[];
+  plugin?: string[] | Record<string, unknown>;
   [key: string]: unknown;
 }
 
@@ -68,14 +68,13 @@ function createOrUpdateOpencodeJson(projectDir: string): ConfigResult {
       return { created: false, updated: false, path: configPath };
     }
 
-    let updatedPlugin: Record<string, unknown> | string[];
+    let updatedPlugin: string[];
     if (Array.isArray(existing.plugin)) {
       updatedPlugin = [...existing.plugin, "micode-beads"];
+    } else if (typeof existing.plugin === "object" && existing.plugin !== null) {
+      updatedPlugin = [...Object.keys(existing.plugin), "micode-beads"];
     } else {
-      updatedPlugin = {
-        ...(typeof existing.plugin === "object" && existing.plugin !== null ? existing.plugin : {}),
-        "micode-beads": {},
-      };
+      updatedPlugin = ["micode-beads"];
     }
 
     const updated: OpencodeJson = { ...existing, plugin: updatedPlugin };
@@ -84,9 +83,7 @@ function createOrUpdateOpencodeJson(projectDir: string): ConfigResult {
   }
 
   const newConfig: OpencodeJson = {
-    plugin: {
-      "micode-beads": {},
-    },
+    plugin: ["micode-beads"],
   };
   writeFileSync(configPath, `${JSON.stringify(newConfig, null, 2)}\n`);
   return { created: true, updated: false, path: configPath };

@@ -143,9 +143,7 @@ const opencodeJsonExistsFix: DiagnosticFix = {
     }
 
     const config = {
-      plugin: {
-        "micode-beads": {},
-      },
+      plugin: ["micode-beads"],
     };
 
     writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
@@ -161,7 +159,7 @@ const opencodeJsonExistsFix: DiagnosticFix = {
 
 const opencodeJsonValidFix: DiagnosticFix = {
   checkId: "opencode-json-valid",
-  isDestructive: true,
+  isDestructive: false,
   run: async (projectDir: string, _interactive: boolean): Promise<FixResult> => {
     const configPath = join(projectDir, "opencode.json");
 
@@ -184,23 +182,11 @@ const opencodeJsonValidFix: DiagnosticFix = {
       }
     }
 
-    const backupPath = `${configPath}.backup`;
-    const originalContent = readFileSync(configPath, "utf-8");
-    writeFileSync(backupPath, originalContent);
-
-    const freshConfig = {
-      plugin: {
-        "micode-beads": {},
-      },
-    };
-
-    writeFileSync(configPath, `${JSON.stringify(freshConfig, null, 2)}\n`);
-
     return {
       checkId: "opencode-json-valid",
-      status: "FIXED",
-      message: "Replaced malformed opencode.json with valid configuration",
-      action: `Original backed up to ${backupPath}`,
+      status: "MANUAL",
+      message: "opencode.json contains invalid JSON",
+      action: `Fix the JSON syntax in ${configPath} manually, then re-run \`micode-beads doctor --fix\` to register the plugin.`,
     };
   },
 };
@@ -243,20 +229,20 @@ const pluginRegisteredFix: DiagnosticFix = {
         }
         config.plugin.push("micode-beads");
       } else if (typeof config.plugin === "object" && config.plugin !== null) {
-        const pluginObj = config.plugin as Record<string, unknown>;
-        if ("micode-beads" in pluginObj) {
+        if ("micode-beads" in (config.plugin as Record<string, unknown>)) {
           return {
             checkId: "plugin-registered",
             status: "SKIPPED",
             message: "micode-beads is already registered in opencode.json",
           };
         }
-        pluginObj["micode-beads"] = {};
+        const existing = Object.keys(config.plugin as Record<string, unknown>);
+        config.plugin = [...existing, "micode-beads"];
       } else {
-        config.plugin = { "micode-beads": {} };
+        config.plugin = ["micode-beads"];
       }
     } else {
-      config.plugin = { "micode-beads": {} };
+      config.plugin = ["micode-beads"];
     }
 
     writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);

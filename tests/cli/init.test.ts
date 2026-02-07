@@ -35,7 +35,8 @@ describe("runInit", () => {
 
     const config = JSON.parse(readFileSync(configPath, "utf-8"));
     expect(config.plugin).toBeDefined();
-    expect(config.plugin["micode-beads"]).toBeDefined();
+    expect(Array.isArray(config.plugin)).toBe(true);
+    expect(config.plugin).toContain("micode-beads");
   });
 
   it("should update existing opencode.json to include micode-beads plugin", async () => {
@@ -54,23 +55,22 @@ describe("runInit", () => {
 
     const config = JSON.parse(readFileSync(configPath, "utf-8"));
     expect(config.model).toBe("openai/gpt-4o");
-    expect(config.plugin["some-other-plugin"]).toBeDefined();
-    expect(config.plugin["micode-beads"]).toBeDefined();
+    expect(config.plugin).toContain("some-other-plugin");
+    expect(config.plugin).toContain("micode-beads");
   });
 
   it("should not modify opencode.json when micode-beads is already configured (idempotent)", async () => {
     const configPath = join(tmpDir, "opencode.json");
     const original = {
-      plugin: {
-        "micode-beads": { custom: "setting" },
-      },
+      plugin: ["micode-beads"],
     };
     writeFileSync(configPath, JSON.stringify(original, null, 2));
 
     await runInit([]);
 
     const config = JSON.parse(readFileSync(configPath, "utf-8"));
-    expect(config.plugin["micode-beads"]).toEqual({ custom: "setting" });
+    expect(config.plugin).toContain("micode-beads");
+    expect(config.plugin).toHaveLength(1);
   });
 
   it("should create thoughts/ directory structure", async () => {
@@ -115,7 +115,7 @@ describe("runInit", () => {
 
     const configPath = join(tmpDir, "opencode.json");
     const config = JSON.parse(readFileSync(configPath, "utf-8"));
-    expect(config.plugin["micode-beads"]).toBeDefined();
+    expect(config.plugin).toContain("micode-beads");
 
     expect(existsSync(join(tmpDir, "thoughts", "ledgers"))).toBe(true);
   });

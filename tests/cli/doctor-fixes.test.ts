@@ -38,7 +38,7 @@ describe("fixes registry", () => {
 
   it("should have correct isDestructive flags", () => {
     const destructiveIds = fixes.filter((f) => f.isDestructive).map((f) => f.checkId);
-    expect(destructiveIds).toEqual(["opencode-json-valid"]);
+    expect(destructiveIds).toEqual([]);
 
     const nonDestructiveIds = fixes.filter((f) => !f.isDestructive).map((f) => f.checkId);
     expect(nonDestructiveIds).toContain("path-correct");
@@ -198,7 +198,7 @@ describe("opencode-json-exists fix", () => {
 
     const content = JSON.parse(readFileSync(configPath, "utf-8"));
     expect(content.plugin).toBeDefined();
-    expect(content.plugin["micode-beads"]).toBeDefined();
+    expect(content.plugin).toContain("micode-beads");
   });
 
   it("should return SKIPPED when opencode.json already exists", async () => {
@@ -233,9 +233,9 @@ describe("opencode-json-valid fix", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("should be marked as destructive", () => {
+  it("should not be marked as destructive", () => {
     const fix = fixes.find((f) => f.checkId === "opencode-json-valid")!;
-    expect(fix.isDestructive).toBe(true);
+    expect(fix.isDestructive).toBe(false);
   });
 
   it("should return SKIPPED when opencode.json does not exist", async () => {
@@ -247,7 +247,7 @@ describe("opencode-json-valid fix", () => {
   });
 
   it("should return SKIPPED when opencode.json is already valid", async () => {
-    writeFileSync(join(tempDir, "opencode.json"), '{"plugin": {"micode-beads": {}}}');
+    writeFileSync(join(tempDir, "opencode.json"), '{"plugin": ["micode-beads"]}');
 
     const fix = fixes.find((f) => f.checkId === "opencode-json-valid")!;
     const result = await fix.run(tempDir, true);
@@ -256,51 +256,32 @@ describe("opencode-json-valid fix", () => {
     expect(result.message).toContain("already valid");
   });
 
-  it("should replace malformed JSON and create backup", async () => {
+  it("should return MANUAL for malformed JSON instead of overwriting", async () => {
     const configPath = join(tempDir, "opencode.json");
     writeFileSync(configPath, "{ not valid json }");
 
     const fix = fixes.find((f) => f.checkId === "opencode-json-valid")!;
     const result = await fix.run(tempDir, true);
 
-    expect(result.status).toBe("FIXED");
-    expect(result.message).toContain("Replaced malformed");
-    expect(result.action).toContain(".backup");
+    expect(result.status).toBe("MANUAL");
+    expect(result.message).toContain("invalid JSON");
+    expect(result.action).toContain("Fix the JSON syntax");
 
-    const newContent = JSON.parse(readFileSync(configPath, "utf-8"));
-    expect(newContent.plugin).toBeDefined();
-    expect(newContent.plugin["micode-beads"]).toBeDefined();
-
-    const backupPath = `${configPath}.backup`;
-    expect(existsSync(backupPath)).toBe(true);
-    expect(readFileSync(backupPath, "utf-8")).toBe("{ not valid json }");
+    // Original file should be untouched
+    expect(readFileSync(configPath, "utf-8")).toBe("{ not valid json }");
   });
 
-  it("should replace when JSON is an array instead of object", async () => {
+  it("should return MANUAL when JSON is an array instead of object", async () => {
     const configPath = join(tempDir, "opencode.json");
     writeFileSync(configPath, "[]");
 
     const fix = fixes.find((f) => f.checkId === "opencode-json-valid")!;
     const result = await fix.run(tempDir, true);
 
-    expect(result.status).toBe("FIXED");
+    expect(result.status).toBe("MANUAL");
 
-    const newContent = JSON.parse(readFileSync(configPath, "utf-8"));
-    expect(typeof newContent).toBe("object");
-    expect(Array.isArray(newContent)).toBe(false);
-  });
-
-  it("should be idempotent: second run returns SKIPPED", async () => {
-    const configPath = join(tempDir, "opencode.json");
-    writeFileSync(configPath, "not json");
-
-    const fix = fixes.find((f) => f.checkId === "opencode-json-valid")!;
-
-    const first = await fix.run(tempDir, true);
-    expect(first.status).toBe("FIXED");
-
-    const second = await fix.run(tempDir, true);
-    expect(second.status).toBe("SKIPPED");
+    // Original file should be untouched
+    expect(readFileSync(configPath, "utf-8")).toBe("[]");
   });
 });
 
@@ -344,11 +325,11 @@ describe("plugin-registered fix", () => {
     expect(result.message).toContain("Added micode-beads");
 
     const content = JSON.parse(readFileSync(configPath, "utf-8"));
-    expect(content.plugin["micode-beads"]).toBeDefined();
+    expect(content.plugin).toContain("micode-beads");
     expect(content.model).toBe("test");
   });
 
-  it("should add micode-beads to existing plugin object", async () => {
+  it("should convert existing plugin object to array and add micode-beads", async () => {
     const configPath = join(tempDir, "opencode.json");
     writeFileSync(configPath, '{"plugin": {"other-plugin": {}}}');
 
@@ -358,8 +339,9 @@ describe("plugin-registered fix", () => {
     expect(result.status).toBe("FIXED");
 
     const content = JSON.parse(readFileSync(configPath, "utf-8"));
-    expect(content.plugin["micode-beads"]).toBeDefined();
-    expect(content.plugin["other-plugin"]).toBeDefined();
+    expect(Array.isArray(content.plugin)).toBe(true);
+    expect(content.plugin).toContain("micode-beads");
+    expect(content.plugin).toContain("other-plugin");
   });
 
   it("should add micode-beads to existing plugin array", async () => {
@@ -386,7 +368,8 @@ describe("plugin-registered fix", () => {
     expect(result.status).toBe("FIXED");
 
     const content = JSON.parse(readFileSync(configPath, "utf-8"));
-    expect(content.plugin["micode-beads"]).toBeDefined();
+    expect(Array.isArray(content.plugin)).toBe(true);
+    expect(content.plugin).toContain("micode-beads");
   });
 
   it("should return SKIPPED when micode-beads is already registered (object format)", async () => {
