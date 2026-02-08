@@ -1,0 +1,8 @@
+name: test-project
+version: 2
+categories:
+  - path: patterns.md
+    description: Code patterns and constraints
+  - path: naming.md
+    description: Naming conventions
+    group: style
