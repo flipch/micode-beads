@@ -231,6 +231,8 @@ git clone git@github.com:flipch/micode-beads.git && cd micode-beads
 bun install
 ```
 
+The repo uses [Hermit](https://cashapp.github.io/hermit/) to pin tool versions (Bun 1.3.8, Node 22.14.0). Activate it with `source bin/activate-hermit` or let the shell hooks do it automatically.
+
 Point OpenCode at your local clone for development:
 
 ```json
@@ -246,19 +248,50 @@ bun run build
 ### Test
 
 ```bash
-bun test
+bun test                   # all tests (~97 files, 580+ assertions)
+bun run test:e2e           # end-to-end suite only (3 files)
+bun run test:coverage      # generate lcov report in ./coverage
+bun test --watch           # re-run on file changes
 ```
 
 ### Lint and Format
 
 ```bash
-bun run lint
-bun run format
+bun run lint               # biome lint
+bun run format             # biome format --write
+bun run check              # biome check (lint + format)
 ```
+
+### Git Hooks (Lefthook)
+
+Installed automatically via `bun install`. Two hooks run on every commit and push:
+
+- **pre-commit** -- formats and lint-checks staged files via Biome
+- **pre-push** -- runs `tsc --noEmit` to catch type errors before they reach CI
+
+### CI Pipeline
+
+Every push and PR triggers the [CI workflow](.github/workflows/ci.yml) which runs five quality gates in order: lint, format check, type check, build, and test with coverage. Coverage results are uploaded to [Codecov](https://codecov.io/gh/flipch/micode-beads).
 
 ### Release
 
 Releases are managed by [release-please](https://github.com/googleapis/release-please). Merge the release PR to cut a new version. The CI workflow publishes to npm via OIDC trusted publishing.
+
+## Demo
+
+The `demo/` directory contains a 100-agent stress test that builds a complete terminal-based snake game in parallel. Each agent is a Bun subprocess that receives a micro-task and generates code from canned mock LLM responses.
+
+```bash
+bun run demo               # from the project root
+```
+
+Reduce concurrency on resource-constrained machines:
+
+```bash
+cd demo && bun run orchestrator.ts --concurrency 25
+```
+
+See [`demo/README.md`](demo/README.md) for full options, system requirements, and expected output.
 
 ## Contributing
 
