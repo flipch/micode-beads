@@ -1,0 +1,708 @@
+{
+  "project": "snake-game",
+  "description": "Terminal-based classic snake game built by ~100 parallel agents",
+  "tasks": [
+    {
+      "id": "core-001",
+      "category": "core",
+      "title": "Game loop tick system",
+      "outputFile": "src/game-loop.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-002",
+      "category": "core",
+      "title": "Snake movement logic",
+      "outputFile": "src/snake.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-003",
+      "category": "core",
+      "title": "Collision detection - walls",
+      "outputFile": "src/collision/wall-collision.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-004",
+      "category": "core",
+      "title": "Collision detection - self",
+      "outputFile": "src/collision/self-collision.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-005",
+      "category": "core",
+      "title": "Collision detection - food",
+      "outputFile": "src/collision/food-collision.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-006",
+      "category": "core",
+      "title": "Food spawning algorithm",
+      "outputFile": "src/food.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-007",
+      "category": "core",
+      "title": "Snake growth mechanics",
+      "outputFile": "src/growth.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-008",
+      "category": "core",
+      "title": "Direction queue with buffering",
+      "outputFile": "src/direction-queue.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-009",
+      "category": "core",
+      "title": "Game over detection",
+      "outputFile": "src/game-over.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-010",
+      "category": "core",
+      "title": "Game reset and restart",
+      "outputFile": "src/game-reset.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-011",
+      "category": "core",
+      "title": "Speed increase per level",
+      "outputFile": "src/speed-controller.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-012",
+      "category": "core",
+      "title": "Level progression system",
+      "outputFile": "src/level-system.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-013",
+      "category": "core",
+      "title": "Pause and resume",
+      "outputFile": "src/pause-controller.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-014",
+      "category": "core",
+      "title": "Main entry point",
+      "outputFile": "src/main.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "core-015",
+      "category": "core",
+      "title": "Game initialization",
+      "outputFile": "src/init.ts",
+      "type": "implementation"
+    },
+
+    {
+      "id": "render-001",
+      "category": "rendering",
+      "title": "Terminal renderer setup",
+      "outputFile": "src/renderer/terminal.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-002",
+      "category": "rendering",
+      "title": "Grid drawing with borders",
+      "outputFile": "src/renderer/grid.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-003",
+      "category": "rendering",
+      "title": "Snake body rendering",
+      "outputFile": "src/renderer/snake-renderer.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-004",
+      "category": "rendering",
+      "title": "Food rendering with colors",
+      "outputFile": "src/renderer/food-renderer.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-005",
+      "category": "rendering",
+      "title": "Score display HUD",
+      "outputFile": "src/renderer/score-display.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-006",
+      "category": "rendering",
+      "title": "Game over screen",
+      "outputFile": "src/renderer/game-over-screen.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-007",
+      "category": "rendering",
+      "title": "Color theme system",
+      "outputFile": "src/renderer/colors.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-008",
+      "category": "rendering",
+      "title": "Double buffering for flicker-free rendering",
+      "outputFile": "src/renderer/buffer.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-009",
+      "category": "rendering",
+      "title": "Level display overlay",
+      "outputFile": "src/renderer/level-display.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "render-010",
+      "category": "rendering",
+      "title": "Pause screen overlay",
+      "outputFile": "src/renderer/pause-screen.ts",
+      "type": "implementation"
+    },
+
+    {
+      "id": "input-001",
+      "category": "input",
+      "title": "Keyboard input listener",
+      "outputFile": "src/input/keyboard.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "input-002",
+      "category": "input",
+      "title": "Arrow key to direction mapping",
+      "outputFile": "src/input/direction-map.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "input-003",
+      "category": "input",
+      "title": "WASD key support",
+      "outputFile": "src/input/wasd-map.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "input-004",
+      "category": "input",
+      "title": "Vim key support (hjkl)",
+      "outputFile": "src/input/vim-map.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "input-005",
+      "category": "input",
+      "title": "Input debouncing",
+      "outputFile": "src/input/debounce.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "input-006",
+      "category": "input",
+      "title": "Raw mode terminal setup",
+      "outputFile": "src/input/raw-mode.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "input-007",
+      "category": "input",
+      "title": "Quit key handler (q/Esc)",
+      "outputFile": "src/input/quit-handler.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "input-008",
+      "category": "input",
+      "title": "Pause key handler (p/Space)",
+      "outputFile": "src/input/pause-handler.ts",
+      "type": "implementation"
+    },
+
+    {
+      "id": "state-001",
+      "category": "state",
+      "title": "Game state manager",
+      "outputFile": "src/state/manager.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-002",
+      "category": "state",
+      "title": "Score tracking",
+      "outputFile": "src/state/score.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-003",
+      "category": "state",
+      "title": "High score persistence (file-based)",
+      "outputFile": "src/state/high-scores.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-004",
+      "category": "state",
+      "title": "Game state serialization",
+      "outputFile": "src/state/serializer.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-005",
+      "category": "state",
+      "title": "Difficulty level state",
+      "outputFile": "src/state/difficulty.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-006",
+      "category": "state",
+      "title": "Snake body state",
+      "outputFile": "src/state/snake-body.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-007",
+      "category": "state",
+      "title": "Food position state",
+      "outputFile": "src/state/food-position.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-008",
+      "category": "state",
+      "title": "Game phase state machine",
+      "outputFile": "src/state/phase.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-009",
+      "category": "state",
+      "title": "Statistics tracker",
+      "outputFile": "src/state/stats.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-010",
+      "category": "state",
+      "title": "Undo last move (for debug)",
+      "outputFile": "src/state/undo.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-011",
+      "category": "state",
+      "title": "Game event emitter",
+      "outputFile": "src/state/events.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "state-012",
+      "category": "state",
+      "title": "State snapshot for replay",
+      "outputFile": "src/state/snapshot.ts",
+      "type": "implementation"
+    },
+
+    {
+      "id": "data-001",
+      "category": "data",
+      "title": "Position type and math utilities",
+      "outputFile": "src/data/position.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-002",
+      "category": "data",
+      "title": "Direction enum and vectors",
+      "outputFile": "src/data/direction.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-003",
+      "category": "data",
+      "title": "Grid board representation",
+      "outputFile": "src/data/grid.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-004",
+      "category": "data",
+      "title": "Ring buffer for snake body",
+      "outputFile": "src/data/ring-buffer.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-005",
+      "category": "data",
+      "title": "Random position generator",
+      "outputFile": "src/data/random-position.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-006",
+      "category": "data",
+      "title": "Bounding box utilities",
+      "outputFile": "src/data/bounds.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-007",
+      "category": "data",
+      "title": "Coordinate system conversion",
+      "outputFile": "src/data/coordinates.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-008",
+      "category": "data",
+      "title": "Cell type enum",
+      "outputFile": "src/data/cell.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-009",
+      "category": "data",
+      "title": "Color palette constants",
+      "outputFile": "src/data/palette.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "data-010",
+      "category": "data",
+      "title": "Difficulty presets",
+      "outputFile": "src/data/difficulty-presets.ts",
+      "type": "implementation"
+    },
+
+    {
+      "id": "test-001",
+      "category": "test",
+      "title": "Snake movement tests",
+      "outputFile": "tests/snake.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-002",
+      "category": "test",
+      "title": "Wall collision tests",
+      "outputFile": "tests/collision/wall.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-003",
+      "category": "test",
+      "title": "Self collision tests",
+      "outputFile": "tests/collision/self.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-004",
+      "category": "test",
+      "title": "Food collision tests",
+      "outputFile": "tests/collision/food.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-005",
+      "category": "test",
+      "title": "Food spawning tests",
+      "outputFile": "tests/food.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-006",
+      "category": "test",
+      "title": "Direction queue tests",
+      "outputFile": "tests/direction-queue.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-007",
+      "category": "test",
+      "title": "Game loop tick tests",
+      "outputFile": "tests/game-loop.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-008",
+      "category": "test",
+      "title": "Score tracking tests",
+      "outputFile": "tests/state/score.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-009",
+      "category": "test",
+      "title": "High score persistence tests",
+      "outputFile": "tests/state/high-scores.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-010",
+      "category": "test",
+      "title": "Game state serialization tests",
+      "outputFile": "tests/state/serializer.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-011",
+      "category": "test",
+      "title": "Difficulty level tests",
+      "outputFile": "tests/state/difficulty.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-012",
+      "category": "test",
+      "title": "Position math tests",
+      "outputFile": "tests/data/position.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-013",
+      "category": "test",
+      "title": "Grid representation tests",
+      "outputFile": "tests/data/grid.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-014",
+      "category": "test",
+      "title": "Ring buffer tests",
+      "outputFile": "tests/data/ring-buffer.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-015",
+      "category": "test",
+      "title": "Bounds checking tests",
+      "outputFile": "tests/data/bounds.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-016",
+      "category": "test",
+      "title": "Terminal renderer tests",
+      "outputFile": "tests/renderer/terminal.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-017",
+      "category": "test",
+      "title": "Grid drawing tests",
+      "outputFile": "tests/renderer/grid.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-018",
+      "category": "test",
+      "title": "Color theme tests",
+      "outputFile": "tests/renderer/colors.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-019",
+      "category": "test",
+      "title": "Keyboard input tests",
+      "outputFile": "tests/input/keyboard.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-020",
+      "category": "test",
+      "title": "Direction mapping tests",
+      "outputFile": "tests/input/direction-map.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-021",
+      "category": "test",
+      "title": "Game phase state machine tests",
+      "outputFile": "tests/state/phase.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-022",
+      "category": "test",
+      "title": "Statistics tracker tests",
+      "outputFile": "tests/state/stats.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-023",
+      "category": "test",
+      "title": "Event emitter tests",
+      "outputFile": "tests/state/events.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-024",
+      "category": "test",
+      "title": "Speed controller tests",
+      "outputFile": "tests/speed-controller.test.ts",
+      "type": "test"
+    },
+    {
+      "id": "test-025",
+      "category": "test",
+      "title": "Level progression tests",
+      "outputFile": "tests/level-system.test.ts",
+      "type": "test"
+    },
+
+    {
+      "id": "config-001",
+      "category": "config",
+      "title": "Game configuration schema",
+      "outputFile": "src/config/schema.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "config-002",
+      "category": "config",
+      "title": "Default configuration values",
+      "outputFile": "src/config/defaults.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "config-003",
+      "category": "config",
+      "title": "Difficulty preset definitions",
+      "outputFile": "src/config/difficulty.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "config-004",
+      "category": "config",
+      "title": "Keybinding configuration",
+      "outputFile": "src/config/keybindings.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "config-005",
+      "category": "config",
+      "title": "Color theme configuration",
+      "outputFile": "src/config/themes.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "config-006",
+      "category": "config",
+      "title": "Board size presets",
+      "outputFile": "src/config/board-sizes.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "config-007",
+      "category": "config",
+      "title": "Config file loader",
+      "outputFile": "src/config/loader.ts",
+      "type": "implementation"
+    },
+    {
+      "id": "config-008",
+      "category": "config",
+      "title": "Config validation",
+      "outputFile": "src/config/validator.ts",
+      "type": "implementation"
+    },
+
+    {
+      "id": "docs-001",
+      "category": "docs",
+      "title": "Project README",
+      "outputFile": "README.md",
+      "type": "documentation"
+    },
+    {
+      "id": "docs-002",
+      "category": "docs",
+      "title": "Architecture document",
+      "outputFile": "docs/ARCHITECTURE.md",
+      "type": "documentation"
+    },
+    {
+      "id": "docs-003",
+      "category": "docs",
+      "title": "API reference for game state",
+      "outputFile": "docs/api/game-state.md",
+      "type": "documentation"
+    },
+    {
+      "id": "docs-004",
+      "category": "docs",
+      "title": "API reference for renderer",
+      "outputFile": "docs/api/renderer.md",
+      "type": "documentation"
+    },
+    {
+      "id": "docs-005",
+      "category": "docs",
+      "title": "API reference for input system",
+      "outputFile": "docs/api/input.md",
+      "type": "documentation"
+    },
+    {
+      "id": "docs-006",
+      "category": "docs",
+      "title": "Contributing guide",
+      "outputFile": "CONTRIBUTING.md",
+      "type": "documentation"
+    },
+    {
+      "id": "docs-007",
+      "category": "docs",
+      "title": "Changelog",
+      "outputFile": "CHANGELOG.md",
+      "type": "documentation"
+    },
+
+    {
+      "id": "build-001",
+      "category": "build",
+      "title": "Package.json with scripts",
+      "outputFile": "package.json",
+      "type": "build"
+    },
+    {
+      "id": "build-002",
+      "category": "build",
+      "title": "TypeScript configuration",
+      "outputFile": "tsconfig.json",
+      "type": "build"
+    },
+    {
+      "id": "build-003",
+      "category": "build",
+      "title": "Biome configuration",
+      "outputFile": "biome.json",
+      "type": "build"
+    },
+    { "id": "build-004", "category": "build", "title": "Git ignore file", "outputFile": ".gitignore", "type": "build" },
+    {
+      "id": "build-005",
+      "category": "build",
+      "title": "Build script",
+      "outputFile": "scripts/build.ts",
+      "type": "build"
+    }
+  ]
+}

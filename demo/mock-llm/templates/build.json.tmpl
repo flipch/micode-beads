@@ -1,0 +1,24 @@
+{
+  "name": "snake-game",
+  "version": "1.0.0",
+  "description": "Terminal-based classic snake game - {{TASK_TITLE}}",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "bun run src/main.ts",
+    "build": "bun build src/main.ts --outdir dist --target bun",
+    "test": "bun test",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["snake", "game", "terminal", "bun"],
+  "author": "micode-beads-demo",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
+    "bun-types": "latest",
+    "typescript": "^5.7.3"
+  },
+  "generated-by": "agent-{{TASK_ID}}"
+}
