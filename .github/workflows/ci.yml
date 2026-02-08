@@ -35,5 +35,14 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Test
-        run: bun test
+      - name: Test with coverage
+        run: bun test --coverage --coverageReporter=lcov --coverageDir=./coverage
+
+      - name: Upload coverage to Codecov
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

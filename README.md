@@ -1,6 +1,7 @@
 # micode-beads
 
 [![CI](https://github.com/flipch/micode-beads/actions/workflows/ci.yml/badge.svg)](https://github.com/flipch/micode-beads/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/flipch/micode-beads/branch/main/graph/badge.svg)](https://codecov.io/gh/flipch/micode-beads)
 [![npm version](https://badge.fury.io/js/micode-beads.svg)](https://www.npmjs.com/package/micode-beads)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
