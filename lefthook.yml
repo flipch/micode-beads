@@ -1,6 +1,15 @@
 pre-commit:
   commands:
+    format:
+      glob: "**/*.{ts,tsx,js,jsx,json}"
+      run: bunx biome format --write {staged_files}
+      stage_fixed: true
     biome:
       glob: "**/*.{ts,tsx,js,jsx,json}"
       run: bunx biome check --write --staged {staged_files}
       stage_fixed: true
+
+pre-push:
+  commands:
+    typecheck:
+      run: PATH="$HOME/.bun/bin:$PATH" bun run typecheck

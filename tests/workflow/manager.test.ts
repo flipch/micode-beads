@@ -20,21 +20,33 @@ describe("WorkflowManager", () => {
   });
 
   describe("createState", () => {
-    it("should create and persist a new workflow state", async () => {
+    it("should create and persist a new workflow state with valid JSON on disk", async () => {
+      // Guards against: createState writing invalid JSON or missing fields in persisted state
       const state = await manager.createState("my-feature", false);
 
       expect(state.featureId).toBe("my-feature");
       expect(state.afkMode).toBe(false);
       expect(state.currentStage).toBe("brainstorm");
+      expect(state.stages).toEqual({});
+      expect(state.corrections).toEqual([]);
 
       const statePath = join(tmpDir, "thoughts", "workflow", "my-feature", "state.json");
       expect(existsSync(statePath)).toBe(true);
+
+      const { readFileSync } = await import("node:fs");
+      const persisted = JSON.parse(readFileSync(statePath, "utf-8"));
+      expect(persisted.featureId).toBe("my-feature");
+      expect(persisted.afkMode).toBe(false);
+      expect(persisted.currentStage).toBe("brainstorm");
+      expect(typeof persisted.createdAt).toBe("string");
     });
 
     it("should create state with AFK mode enabled", async () => {
+      // Guards against: AFK mode flag not being persisted correctly
       const state = await manager.createState("afk-feature", true);
 
       expect(state.afkMode).toBe(true);
+      expect(state.featureId).toBe("afk-feature");
     });
   });
 

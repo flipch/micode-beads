@@ -26,10 +26,14 @@ describe("logger utility", () => {
   });
 
   describe("log.info", () => {
-    it("should log with module prefix", async () => {
+    it("should log with module prefix using bracket format and exactly one call", async () => {
+      // Guards against: log.info format changing from [module] message or producing multiple calls
       const { log } = await import("../../src/utils/logger");
       log.info("my-module", "Hello world");
       expect(consoleLogSpy).toHaveBeenCalledWith("[my-module] Hello world");
+      expect(consoleLogSpy).toHaveBeenCalledTimes(1);
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 

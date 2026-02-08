@@ -1,0 +1,33 @@
+{
+  "model": "openai/gpt-5.3-codex",
+  "provider": {
+    "openai": {
+      "models": {
+        "gpt-5.3-codex": {
+          "limit": {
+            "context": 200000
+          }
+        },
+        "gpt-4.1": {
+          "limit": {
+            "context": 128000
+          }
+        }
+      }
+    },
+    "anthropic": {
+      "models": {
+        "claude-opus-4.6": {
+          "limit": {
+            "context": 200000
+          }
+        },
+        "claude-sonnet-4.5": {
+          "limit": {
+            "context": 200000
+          }
+        }
+      }
+    }
+  }
+}

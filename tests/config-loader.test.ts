@@ -99,7 +99,8 @@ describe("config-loader", () => {
     expect(config).toBeNull();
   });
 
-  it("should handle empty agents object", async () => {
+  it("should handle empty agents object and return valid config shape", async () => {
+    // Guards against: empty agents object causing null return or corrupted config shape
     const configPath = join(testConfigDir, BEADS_CONFIG_FILENAME);
     writeFileSync(configPath, JSON.stringify({ agents: {} }));
 
@@ -107,6 +108,10 @@ describe("config-loader", () => {
 
     expect(config).not.toBeNull();
     expect(config?.agents).toEqual({});
+    expect(config?.compactionThreshold).toBeUndefined();
+    expect(config?.fragments).toBeUndefined();
+    expect(config?.researchDirs).toBeUndefined();
+    expect(config?.afk).toBeUndefined();
   });
 
   it("should only allow safe properties (model, temperature, maxTokens)", async () => {
@@ -181,7 +186,8 @@ describe("config-loader", () => {
 });
 
 describe("mergeAgentConfigs", () => {
-  it("should merge user config into plugin agents", () => {
+  it("should merge user config into plugin agents preserving all non-overridden fields", () => {
+    // Guards against: mergeAgentConfigs clobbering non-overridden fields like mode, prompt, description
     const pluginAgents = {
       commander: {
         description: "Main agent",
@@ -206,6 +212,7 @@ describe("mergeAgentConfigs", () => {
     // Original properties should be preserved
     expect(merged.commander.description).toBe("Main agent");
     expect(merged.commander.prompt).toBe("System prompt");
+    expect(merged.commander.mode).toBe("primary");
   });
 
   it("should not modify agents without user overrides", () => {
@@ -233,7 +240,8 @@ describe("mergeAgentConfigs", () => {
     expect(merged.brainstormer.model).toBe("anthropic/claude-opus-4-5");
   });
 
-  it("should handle null user config", () => {
+  it("should handle null user config preserving all original properties", () => {
+    // Guards against: null config causing property loss or mutation of original agent definitions
     const pluginAgents = {
       commander: {
         description: "Main agent",
@@ -245,6 +253,8 @@ describe("mergeAgentConfigs", () => {
     const merged = mergeAgentConfigs(pluginAgents, null, undefined, null);
 
     expect(merged.commander.model).toBe("anthropic/claude-opus-4-5");
+    expect(merged.commander.description).toBe("Main agent");
+    expect(Object.keys(merged)).toEqual(["commander"]);
   });
 
   it("should apply opencode default model to all agents when no per-agent override", () => {

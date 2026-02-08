@@ -15,12 +15,16 @@ describe("STAGE_NAMES", () => {
 });
 
 describe("STAGE_STATUSES", () => {
-  it("should have all status values", () => {
+  it("should have exactly five status values covering all lifecycle states", () => {
+    // Guards against: missing or extra status values that break state machine transitions
     expect(STAGE_STATUSES.PENDING).toBe("pending");
     expect(STAGE_STATUSES.RUNNING).toBe("running");
     expect(STAGE_STATUSES.COMPLETED).toBe("completed");
     expect(STAGE_STATUSES.SKIPPED).toBe("skipped");
     expect(STAGE_STATUSES.FAILED).toBe("failed");
+    expect(Object.keys(STAGE_STATUSES)).toHaveLength(5);
+    const values = Object.values(STAGE_STATUSES);
+    expect(new Set(values).size).toBe(5);
   });
 });
 
@@ -67,20 +71,24 @@ describe("isValidTransition", () => {
 });
 
 describe("createStageRecord", () => {
-  it("should create a record with pending status and version 0", () => {
+  it("should create a record with pending status and version 0 matching StageRecord interface", () => {
+    // Guards against: createStageRecord returning incomplete or incorrectly typed records
     const record = createStageRecord();
 
     expect(record.status).toBe("pending");
     expect(record.version).toBe(0);
     expect(record.artifactPaths).toEqual([]);
+    expect(Array.isArray(record.artifactPaths)).toBe(true);
     expect(record.startedAt).toBeUndefined();
     expect(record.completedAt).toBeUndefined();
     expect(record.inputHash).toBeUndefined();
+    expect(Object.keys(record).sort()).toEqual(["artifactPaths", "status", "version"]);
   });
 });
 
 describe("createWorkflowState", () => {
-  it("should create state with correct feature ID and AFK mode", () => {
+  it("should create state with correct feature ID and AFK mode and complete WorkflowState shape", () => {
+    // Guards against: createWorkflowState returning incomplete state or wrong default values
     const state = createWorkflowState("test-feature", true);
 
     expect(state.featureId).toBe("test-feature");
@@ -88,9 +96,13 @@ describe("createWorkflowState", () => {
     expect(state.currentStage).toBe("brainstorm");
     expect(state.stages).toEqual({});
     expect(state.corrections).toEqual([]);
+    expect(Array.isArray(state.corrections)).toBe(true);
+    expect(typeof state.createdAt).toBe("string");
+    expect(typeof state.updatedAt).toBe("string");
   });
 
-  it("should set timestamps to ISO strings", () => {
+  it("should set timestamps as valid ISO 8601 strings", () => {
+    // Guards against: timestamps using non-ISO format or incorrect time ordering
     const before = new Date().toISOString();
     const state = createWorkflowState("my-feature", false);
     const after = new Date().toISOString();
@@ -98,11 +110,15 @@ describe("createWorkflowState", () => {
     expect(state.createdAt >= before).toBe(true);
     expect(state.createdAt <= after).toBe(true);
     expect(state.updatedAt).toBe(state.createdAt);
+    expect(state.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    expect(new Date(state.createdAt).toISOString()).toBe(state.createdAt);
   });
 
   it("should default currentStage to the first stage name", () => {
+    // Guards against: currentStage defaulting to wrong stage or hardcoded value instead of STAGE_NAMES[0]
     const state = createWorkflowState("feature-x", false);
 
     expect(state.currentStage).toBe(STAGE_NAMES[0]);
+    expect(state.currentStage).toBe("brainstorm");
   });
 });
