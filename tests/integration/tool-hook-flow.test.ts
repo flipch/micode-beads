@@ -188,7 +188,7 @@ Add OAuth2 authorization code flow with PKCE support for third-party integration
 
   describe("file-ops-tracker: tracking tool operations in session state", () => {
     it("should track read, write, and edit operations on separate sets", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const hook = createFileOpsTrackerHook(ctx);
       const sessionID = "int-fileops-session";
       clearFileOps(sessionID);
@@ -219,7 +219,7 @@ Add OAuth2 authorization code flow with PKCE support for third-party integration
     });
 
     it("should deduplicate repeated file operations within a session", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const hook = createFileOpsTrackerHook(ctx);
       const sessionID = "int-dedup-session";
       clearFileOps(sessionID);
@@ -241,7 +241,7 @@ Add OAuth2 authorization code flow with PKCE support for third-party integration
     });
 
     it("should not track non-file tools (Bash, Glob, etc.)", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const hook = createFileOpsTrackerHook(ctx);
       const sessionID = "int-skip-tools";
       clearFileOps(sessionID);
@@ -350,7 +350,7 @@ Test the combined hook flow.
 `,
       );
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
       const sessionID = "int-combined-session";
       clearFileOps(sessionID);
@@ -387,7 +387,7 @@ Test the combined hook flow.
     });
 
     it("should handle session deletion cleaning up file ops state", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
       const sessionID = "int-cleanup-session";
       clearFileOps(sessionID);

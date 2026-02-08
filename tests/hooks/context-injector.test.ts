@@ -4,16 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-// Mock PluginInput
-function createMockCtx(directory: string) {
-  return {
-    directory,
-    client: {
-      session: {},
-      tui: {},
-    },
-  };
-}
+import { createMockPluginCtx } from "../helpers/mock-context";
 
 describe("context-injector", () => {
   let testDir: string;
@@ -40,8 +31,8 @@ describe("context-injector", () => {
 
       // Import the hook dynamically to get fresh module
       const { createContextInjectorHook } = await import("../../src/hooks/context-injector");
-      const ctx = createMockCtx(testDir);
-      const hooks = createContextInjectorHook(ctx as any);
+      const ctx = createMockPluginCtx({ directory: testDir });
+      const hooks = createContextInjectorHook(ctx);
 
       // Simulate tool execution with camelCase filePath (as OpenCode sends it)
       const input = {
@@ -65,8 +56,8 @@ describe("context-injector", () => {
     it("should not inject context for non-file-access tools", async () => {
       // Guards against: context injector incorrectly triggering on bash/non-file tools
       const { createContextInjectorHook } = await import("../../src/hooks/context-injector");
-      const ctx = createMockCtx(testDir);
-      const hooks = createContextInjectorHook(ctx as any);
+      const ctx = createMockPluginCtx({ directory: testDir });
+      const hooks = createContextInjectorHook(ctx);
 
       const input = {
         tool: "bash",

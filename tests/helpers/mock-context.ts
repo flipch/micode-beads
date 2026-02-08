@@ -8,6 +8,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import type { PluginInput } from "@opencode-ai/plugin";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -18,13 +20,13 @@ import { join } from "node:path";
  */
 export interface MockPluginCtxOptions {
   /** Project root directory (typically a temp dir created with mkdtempSync). */
-  directory: string;
+  directory?: string;
   /** Git worktree directory (defaults to same as directory). */
-  worktree: string;
+  worktree?: string;
   /** Override the mock session API stubs. */
-  session: Partial<MockSessionApi>;
+  session?: Partial<MockSessionApi>;
   /** Override the mock tui API stubs. */
-  tui: Record<string, unknown>;
+  tui?: Record<string, unknown>;
 }
 
 /**
@@ -97,7 +99,7 @@ export interface MockChatParamsOutput {
  * const hook = createSomeHook(ctx as PluginInput);
  * ```
  */
-export function createMockPluginCtx(overrides?: Partial<MockPluginCtxOptions>) {
+export function createMockPluginCtx(overrides?: MockPluginCtxOptions): PluginInput {
   const directory = overrides?.directory ?? "/tmp/mock-project";
   const worktree = overrides?.worktree ?? directory;
 
@@ -146,7 +148,7 @@ export function createMockPluginCtx(overrides?: Partial<MockPluginCtxOptions>) {
       auth: {},
       event: {},
     },
-  };
+  } as unknown as PluginInput;
 }
 
 // ---------------------------------------------------------------------------

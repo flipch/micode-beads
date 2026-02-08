@@ -16,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # CI uses setup-bun for reliable GitHub Actions caching; Hermit is for local dev only
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -39,7 +40,7 @@ jobs:
         run: bun test --coverage --coverageReporter=lcov --coverageDir=./coverage
 
       - name: Upload coverage to Codecov
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+        if: ${{ !github.event.pull_request.head.repo.fork && (github.event_name == 'push' || github.event_name == 'pull_request') }}
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage/lcov.info

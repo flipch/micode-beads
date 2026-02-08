@@ -110,7 +110,7 @@ describe("createWorkflowState", () => {
     expect(state.createdAt >= before).toBe(true);
     expect(state.createdAt <= after).toBe(true);
     expect(state.updatedAt).toBe(state.createdAt);
-    expect(state.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+    expect(state.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     expect(new Date(state.createdAt).toISOString()).toBe(state.createdAt);
   });
 

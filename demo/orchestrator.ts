@@ -79,6 +79,12 @@ function parseArgs(): OrchestratorOptions {
     }
   }
 
+  if (!Number.isFinite(options.concurrency) || options.concurrency <= 0) {
+    console.error(`Invalid --concurrency value. Must be a positive integer.`);
+    printUsage();
+    process.exit(1);
+  }
+
   return options;
 }
 

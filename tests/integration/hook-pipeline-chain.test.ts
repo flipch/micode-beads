@@ -9,6 +9,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import type { MicodeConfig } from "../../src/config-loader";
 import { createContextInjectorHook } from "../../src/hooks/context-injector";
 import { createFragmentInjectorHook } from "../../src/hooks/fragment-injector";
 import { createLedgerLoaderHook } from "../../src/hooks/ledger-loader";
@@ -35,12 +36,12 @@ describe("Integration: Hook Pipeline Chaining", () => {
       writeFileSync(join(tmpDir, "README.md"), "# My Project\nA TypeScript API server.");
       setupLedgerFixture(tmpDir, "chain-session");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Always use async/await", "Prefer immutable data structures"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -74,12 +75,12 @@ describe("Integration: Hook Pipeline Chaining", () => {
       writeFileSync(join(tmpDir, "ARCHITECTURE.md"), "# Architecture\nLayered design.");
       setupLedgerFixture(tmpDir, "order-check");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["ORDER_MARKER_FRAGMENT"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -113,12 +114,12 @@ describe("Integration: Hook Pipeline Chaining", () => {
     });
 
     it("should preserve the output object identity across hooks (mutation, not replacement)", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Test fragment"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -145,9 +146,9 @@ describe("Integration: Hook Pipeline Chaining", () => {
       writeFileSync(join(tmpDir, "README.md"), "# README present");
       setupLedgerFixture(tmpDir, "no-frags");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       // No fragments for commander
-      const userConfig = { fragments: {} } as any;
+      const userConfig = { fragments: {} } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -170,12 +171,12 @@ describe("Integration: Hook Pipeline Chaining", () => {
     it("should handle missing ledger gracefully while other hooks still inject", async () => {
       writeFileSync(join(tmpDir, "CODE_STYLE.md"), "# Code Style\nUse camelCase.");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Fragment present"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -200,12 +201,12 @@ describe("Integration: Hook Pipeline Chaining", () => {
       // No README.md, ARCHITECTURE.md, or CODE_STYLE.md
       setupLedgerFixture(tmpDir, "no-ctx");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Fragment for no-ctx test"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -231,13 +232,13 @@ describe("Integration: Hook Pipeline Chaining", () => {
       writeFileSync(join(tmpDir, "README.md"), "# Project");
       setupLedgerFixture(tmpDir, "agent-scope");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           implementer: ["Implementer-only fragment"],
           commander: ["Commander fragment"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -263,12 +264,12 @@ describe("Integration: Hook Pipeline Chaining", () => {
     });
 
     it("should skip fragment injection entirely for agents with no fragments", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           brainstormer: ["Brainstormer instruction"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -294,12 +295,12 @@ describe("Integration: Hook Pipeline Chaining", () => {
       writeFileSync(join(tmpDir, "ARCHITECTURE.md"), "# Architecture Content");
       writeFileSync(join(tmpDir, "CODE_STYLE.md"), "# Style Content");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Chain test fragment"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);

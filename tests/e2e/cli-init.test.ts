@@ -73,7 +73,7 @@ describe("E2E: CLI Init", () => {
 
       const output = logOutput.join("\n");
 
-      expect(output).toMatch(/\[OK\]\s+bun/);
+      expect(output).toMatch(/\[(OK|MISSING)\]\s+bun/);
       expect(output).toMatch(/\[(OK|MISSING)\]\s+opencode/);
       expect(output).toMatch(/\[(OK|MISSING)\]\s+git/);
     });

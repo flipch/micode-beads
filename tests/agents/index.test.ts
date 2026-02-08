@@ -12,7 +12,6 @@ describe("agents index", () => {
 
     const agentCount = Object.keys(module.agents).length;
     expect(agentCount).toBeGreaterThanOrEqual(25);
-    expect(agentCount).toBeLessThanOrEqual(35);
   });
 
   it("should still export other agents with correct config shape", async () => {

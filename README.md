@@ -231,7 +231,7 @@ git clone git@github.com:flipch/micode-beads.git && cd micode-beads
 bun install
 ```
 
-The repo uses [Hermit](https://cashapp.github.io/hermit/) to pin tool versions (Bun 1.3.8, Node 22.14.0). Activate it with `source bin/activate-hermit` or let the shell hooks do it automatically.
+**For contributors:** The repo optionally uses [Hermit](https://cashapp.github.io/hermit/) to pin tool versions (Bun 1.3.8, Node 22.14.0) for local development. Activate it with `source bin/activate-hermit` or let the shell hooks do it automatically. Hermit is **not** required for end users of the plugin or CLI.
 
 Point OpenCode at your local clone for development:
 

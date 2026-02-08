@@ -11,6 +11,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import type { MicodeConfig } from "../../src/config-loader";
 import { createCommentCheckerHook } from "../../src/hooks/comment-checker";
 import { createContextInjectorHook } from "../../src/hooks/context-injector";
 import { clearFileOps, createFileOpsTrackerHook, getFileOps } from "../../src/hooks/file-ops-tracker";
@@ -42,12 +43,12 @@ describe("E2E: Hook Pipeline", () => {
 
       setupLedgerFixture(tmpDir, "test-session");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Always explain your reasoning", "Use TypeScript strict mode"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -82,12 +83,12 @@ describe("E2E: Hook Pipeline", () => {
       writeFileSync(join(tmpDir, "README.md"), "# Project README");
       setupLedgerFixture(tmpDir, "order-test");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Fragment instruction"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -118,12 +119,12 @@ describe("E2E: Hook Pipeline", () => {
     it("should handle missing ledger gracefully without affecting other injections", async () => {
       writeFileSync(join(tmpDir, "README.md"), "# Project");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Fragment text"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -144,7 +145,7 @@ describe("E2E: Hook Pipeline", () => {
     it("should handle missing project context files gracefully", async () => {
       setupLedgerFixture(tmpDir, "no-readme-session");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
 
       const ledgerHook = createLedgerLoaderHook(ctx);
       const contextHook = createContextInjectorHook(ctx);
@@ -160,12 +161,12 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should only inject fragments for the matching agent", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           implementer: ["Fragment for implementer"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
 
@@ -180,7 +181,7 @@ describe("E2E: Hook Pipeline", () => {
 
   describe("tool.execute.after pipeline: file ops + comment checker + context", () => {
     it("should track read operations through the file-ops-tracker hook", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
 
       const sessionID = "e2e-session-read";
@@ -199,7 +200,7 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should track write operations as modified files", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
 
       const sessionID = "e2e-session-write";
@@ -218,7 +219,7 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should track edit operations as modified files", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
 
       const sessionID = "e2e-session-edit";
@@ -236,7 +237,7 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should add comment warnings when edit tool produces excessive comments", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const commentHook = createCommentCheckerHook(ctx);
 
       const codeWithBadComments = [
@@ -258,7 +259,7 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should not add comment warnings for clean code", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const commentHook = createCommentCheckerHook(ctx);
 
       const cleanCode = [
@@ -280,7 +281,7 @@ describe("E2E: Hook Pipeline", () => {
       mkdirSync(subDir, { recursive: true });
       writeFileSync(join(subDir, "README.md"), "# Auth Module\nHandles authentication.");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const contextHook = createContextInjectorHook(ctx);
 
       const filePath = join(subDir, "middleware.ts");
@@ -294,7 +295,7 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should not inject directory context for non-file-access tools", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const contextHook = createContextInjectorHook(ctx);
 
       const input = { tool: "Bash", args: { command: "ls -la" } };
@@ -311,12 +312,12 @@ describe("E2E: Hook Pipeline", () => {
       writeFileSync(join(tmpDir, "README.md"), "# README Content");
       setupLedgerFixture(tmpDir, "combined-session");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const userConfig = {
         fragments: {
           commander: ["Custom instruction 1", "Custom instruction 2"],
         },
-      } as any;
+      } satisfies MicodeConfig;
 
       const fragmentHook = createFragmentInjectorHook(ctx, userConfig);
       const ledgerHook = createLedgerLoaderHook(ctx);
@@ -353,7 +354,7 @@ describe("E2E: Hook Pipeline", () => {
       mkdirSync(subDir, { recursive: true });
       writeFileSync(join(subDir, "README.md"), "# Source docs");
 
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
       const contextHook = createContextInjectorHook(ctx);
 
@@ -377,7 +378,7 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should track multiple file operations within a single session", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
 
       const sessionID = "e2e-multi-ops";
@@ -412,7 +413,7 @@ describe("E2E: Hook Pipeline", () => {
     });
 
     it("should clean up file ops on session deletion event", async () => {
-      const ctx = createMockPluginCtx({ directory: tmpDir }) as any;
+      const ctx = createMockPluginCtx({ directory: tmpDir });
       const fileOpsHook = createFileOpsTrackerHook(ctx);
 
       const sessionID = "e2e-cleanup";
