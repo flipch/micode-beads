@@ -1,6 +1,6 @@
 {
   "name": "micode-beads",
-  "version": "1.3.6",
+  "version": "1.4.0",
   "description": "OpenCode plugin with Brainstorm-Plan-Implement workflow + Beads task tracking",
   "module": "dist/index.js",
   "main": "dist/index.js",
