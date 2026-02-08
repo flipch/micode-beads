@@ -90,14 +90,22 @@ describe("file-ops-tracker", () => {
   });
 
   describe("createFileOpsTrackerHook", () => {
-    it("should export hook creator function", () => {
+    it("should export hook creator function that returns hook object", () => {
+      // Guards against: createFileOpsTrackerHook changing signature or return type
       expect(typeof createFileOpsTrackerHook).toBe("function");
+      const mockCtx = { directory: "/test" } as any;
+      const hook = createFileOpsTrackerHook(mockCtx);
+      expect(hook).toBeDefined();
+      expect(typeof hook).toBe("object");
     });
 
-    it("should return hook with tool.execute.after handler", () => {
+    it("should return hook with tool.execute.after as a callable function", () => {
+      // Guards against: hook handler being a non-function value or wrong hook lifecycle key
       const mockCtx = { directory: "/test" } as any;
       const hook = createFileOpsTrackerHook(mockCtx);
       expect(hook["tool.execute.after"]).toBeDefined();
+      expect(typeof hook["tool.execute.after"]).toBe("function");
+      expect(hook["chat.params"]).toBeUndefined();
     });
   });
 });

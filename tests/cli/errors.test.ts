@@ -8,14 +8,17 @@ import {
 } from "../../src/cli/errors";
 
 describe("createAttributedError", () => {
-  it("should create an error with component and message", () => {
+  it("should create an error with component and message matching AttributedError shape", () => {
+    // Guards against: createAttributedError returning incomplete objects or extra fields
     const err = createAttributedError("cli", "Command not found");
     expect(err.component).toBe("cli");
     expect(err.message).toBe("Command not found");
     expect(err.suggestion).toBeUndefined();
+    expect(Object.keys(err).filter((k) => err[k as keyof typeof err] !== undefined)).toEqual(["component", "message"]);
   });
 
   it("should include suggestion when provided", () => {
+    // Guards against: suggestion field being silently dropped from returned error
     const err = createAttributedError(
       "opencode",
       "OpenCode CLI not installed",
@@ -26,11 +29,15 @@ describe("createAttributedError", () => {
     expect(err.suggestion).toBe("Install OpenCode from https://opencode.ai");
   });
 
-  it("should accept all component types", () => {
+  it("should accept all component types and produce valid errors", () => {
+    // Guards against: component type validation silently rejecting valid components
     const components = ["cli", "plugin", "opencode", "config"] as const;
     for (const component of components) {
-      const err = createAttributedError(component, "test");
+      const err = createAttributedError(component, `test-${component}`);
       expect(err.component).toBe(component);
+      expect(err.message).toBe(`test-${component}`);
+      expect(typeof err.component).toBe("string");
+      expect(typeof err.message).toBe("string");
     }
   });
 });
