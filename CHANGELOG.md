@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0](https://github.com/flipch/micode-beads/compare/v1.3.6...v1.4.0) (2026-02-08)
+
+
+### Features
+
+* CLI-driven agent knowledge system with composable fragments ([#35](https://github.com/flipch/micode-beads/issues/35)) ([58ed5bb](https://github.com/flipch/micode-beads/commit/58ed5bb26517f2e0065b43c50702b8e5105f95e1))
+* testing improvements, CI quality gates, demo stress test ([#37](https://github.com/flipch/micode-beads/issues/37)) ([ddd154a](https://github.com/flipch/micode-beads/commit/ddd154a8b7eeaf3cc68a411d2031ec9d10afaebf))
+
+
+### Bug Fixes
+
+* **installer:** redirect info message to stderr in resolve_version ([#32](https://github.com/flipch/micode-beads/issues/32)) ([785c21c](https://github.com/flipch/micode-beads/commit/785c21c8532db04b52fd90bbb3b1e3d6ce0a5ff7))
+* write opencode.json plugin as array, never overwrite user config ([#34](https://github.com/flipch/micode-beads/issues/34)) ([491325f](https://github.com/flipch/micode-beads/commit/491325f10b0724f5cf783f19e5214deaeac62e71)), closes [#19](https://github.com/flipch/micode-beads/issues/19)
+
 ## [1.3.6](https://github.com/flipch/micode-beads/compare/v1.3.5...v1.3.6) (2026-02-06)
 
 
