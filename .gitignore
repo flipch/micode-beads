@@ -20,5 +20,8 @@ yarn.lock
 # Worktrees
 .worktrees/
 
+# Coverage output
+coverage/
+
 # rp1 working files
 .rp1/

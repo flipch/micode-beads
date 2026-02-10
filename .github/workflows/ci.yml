@@ -34,10 +34,10 @@ jobs:
         run: bun run build
 
       - name: Test with coverage
-        run: bun test --coverage --coverageReporter=lcov --coverageDir=./coverage
+        run: bun test --coverage
 
       - name: Upload coverage reports to Codecov
-        if: ${{ !github.event.pull_request.head.repo.fork && (github.event_name == 'push' || github.event_name == 'pull_request') }}
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
