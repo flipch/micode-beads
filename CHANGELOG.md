@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/flipch/micode-beads/compare/v1.4.0...v1.4.1) (2026-02-10)
+
+
+### Bug Fixes
+
+* **ci:** correct bun coverage flags and add codecov config ([#39](https://github.com/flipch/micode-beads/issues/39)) ([e7b2d8f](https://github.com/flipch/micode-beads/commit/e7b2d8fe07b24d84e0d28303d7348ec93baa1b84))
+
 ## [1.4.0](https://github.com/flipch/micode-beads/compare/v1.3.6...v1.4.0) (2026-02-08)
 
 
